@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sign Up - Sultan's Project</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .signup-container {
+    background: #fff;
+    padding: 40px 30px;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    width: 350px;
+    text-align: center;
+  }
+
+  .signup-container h2 {
+    margin-bottom: 25px;
+    color: #333;
+  }
+
+  .signup-container input {
+    width: 100%;
+    padding: 12px 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  .signup-container button {
+    width: 100%;
+    padding: 12px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .signup-container button:hover {
+    background: #1e7e34;
+  }
+
+  .status {
+    margin-top: 15px;
+    color: red;
+    font-size: 14px;
+    min-height: 20px;
+  }
+
+  .login-text {
+    margin-top: 20px;
+    font-size: 13px;
+    color: #555;
+  }
+
+  .login-text a {
+    color: #0077ff;
+    text-decoration: none;
+  }
+
+  .login-text a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<div class="signup-container">
+  <h2>Create Account</h2>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <button onclick="signupUser()">Sign Up</button>
+  <p class="status" id="status"></p>
+  <p class="login-text">Already have an account? <a href="login.html">Log in!</a></p>
+
+<script>
+const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
+const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function signupUser() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const status = document.getElementById("status");
+
+  if (!username || !password) {
+    status.innerText = "Please enter both fields.";
+    return;
+  }
+
+  status.innerText = "Creating account...";
+
+  // Check if username already exists
+  const { data: existing, error: checkError } = await client
+    .from("Users-and-passwords")
+    .select("id")
+    .eq("username", username)
+    .limit(1);
+
+  if (checkError) {
+    status.innerText = "Error: " + checkError.message;
+    return;
+  }
+
+  if (existing.length > 0) {
+    status.innerText = "Username already exists.";
+    return;
+  }
+
+  // Insert new user
+  const { data, error } = await client
+    .from("Users-and-passwords")
+    .insert([{
+      username: username,
+      password: password,
+      created_at: new Date().toISOString()
+    }]);
+
+  if (error) {
+    status.innerText = "Error: " + error.message;
+  } else {
+    status.innerText = "Account created! Redirecting to login...";
+    setTimeout(() => {
+      window.location.href = "login.html";
+    }, 1200);
+  }
+}
+</script>
+
+</body>
+</html>
