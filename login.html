@@ -18,7 +18,7 @@
 
         .login-container {
             background: #fff;
-            padding: 40px 30px
+            padding: 40px 30px; /* Fixed: Added semicolon */
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.12);
             width: 350px;
@@ -33,12 +33,14 @@
             border-radius: 8px;
             font-size: 14px;
             transition: border-color 0.2s;
+            outline: none; /* Removes default browser ring */
+        } /* Fixed: Added missing closing bracket */
 
         .login-container input:focus {
-            border: 2px solid #0077FF; 
-            outline: none;       
+            border: 2px solid #0077FF; /* Blue outline when clicked */
             background: #ffffff;
         }        
+
         .login-container button {
             width: 100%;
             padding: 12px;
@@ -49,13 +51,13 @@
             font-size: 16px;
             cursor: pointer;
             transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(0, 119, 255, 0.3);
-
+            box-shadow: 0 4px 12px rgba(0, 119, 255, 0.2);
         }
 
         .login-container button:hover {
             background: #005fcc;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 119, 255, 0.3);
         }
 
         .login-container button:active {
@@ -63,7 +65,6 @@
             box-shadow: 0 3px 10px rgba(0, 119, 255, 0.2);
         }
 
-        /* Added the missing footer styles */
         .signup-text {
             margin-top: 20px;
             font-size: 13px;
@@ -72,13 +73,13 @@
 
         .signup-text a {
             color: #0077ff;
-            text-decoration: underline;
+            text-decoration: none;
+            font-weight: bold;
         }
 
         .signup-text a:hover {
             text-decoration: underline;
             color: #005fcc;
-
         }
 
         .status { margin-top: 15px; color: red; min-height: 20px; font-size: 14px;}
