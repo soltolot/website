@@ -1,148 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Login - Sultan's Project</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; }
 
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #eaf3ff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-  }
+        body {
+            font-family: Arial, sans-serif;
+            background: #eaf3ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
 
-  .login-container {
-    background: #fff;
-    padding: 40px 30px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-    width: 350px;
-    text-align: center;
-    border: 1px solid rgba(0, 119, 255, 0.08);
-  }
+        .login-container {
+            background: #fff;
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            width: 350px;
+            text-align: center;
+        }
 
-  .login-container h2 {
-    margin-bottom: 25px;
-    color: #333;
-  }
+        .login-container input {
+            width: 100%;
+            padding: 12px 10px;
+            margin-bottom: 15px;
+            border: 2px solid #cfe3d8;
+            border-radius: 8px;
+        }
 
-  .login-container input {
-    width: 100%;
-    padding: 12px 10px;
-    margin-bottom: 15px;
-    border: 2px solid transparent;
-    border-radius: 8px;
-    font-size: 14px;
-    background: #f9fbff;
-    transition: border 0.2s, box-shadow 0.2s, background 0.2s;
-  }
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            background: #0077FF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
+            box-shadow: 0 4px 12px rgba(0, 119, 255, 0.2);
+        }
 
-  .login-container input:focus {
-    outline: none;
-    border-color: #0077FF;
-    box-shadow: 0 0 0 3px rgba(0, 119, 255, 0.15);
-    background: #ffffff;
-  }
+        .login-container button:hover {
+            background: #005fcc;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(0, 119, 255, 0.3);
+        }
 
-  .login-container button {
-    width: 100%;
-    padding: 12px;
-    background: #0077FF;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
-    box-shadow: 0 4px 12px rgba(0, 119, 255, 0.2);
-  }
+        .login-container button:active {
+            transform: translateY(0px);
+            box-shadow: 0 3px 10px rgba(0, 119, 255, 0.2);
+        }
 
-  .login-container button:hover {
-    background: #005fcc;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(0, 119, 255, 0.3);
-  }
-
-  .login-container button:active {
-    transform: translateY(0px);
-    box-shadow: 0 3px 10px rgba(0, 119, 255, 0.2);
-  }
-
-  .status {
-    margin-top: 15px;
-    color: red;
-    font-size: 14px;
-    min-height: 20px;
-  }
-
-  .signup-text {
-    margin-top: 20px;
-    font-size: 13px;
-    color: #555;
-  }
-
-  .signup-text a {
-    color: #0077ff;
-    text-decoration: none;
-  }
-
-  .signup-text a:hover {
-    text-decoration: underline;
-  }
-</style>
+        .status { margin-top: 15px; color: red; min-height: 20px; }
+    </style>
 </head>
-
 <body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <input id="username" placeholder="Username">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="processLogin()">Login</button>
+        <p class="status" id="status"></p>
+    </div>
 
-<div class="login-container">
-  <h2>Login</h2>
-  <input id="username" placeholder="Username">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="loginUser()">Login</button>
-  <p class="status" id="status"></p>
-  <p class="signup-text">Don't have an account? <a href="signup.html">Sign up!</a></p>
-</div>
+    <script>
+        const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
+        const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<script>
-const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
-const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        async function processLogin() {
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const status = document.getElementById("status");
 
-async function loginUser() {
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const status = document.getElementById("status");
+            if (!username || !password) {
+                status.innerText = "Please fill in all fields.";
+                return;
+            }
 
-  if (!username || !password) {
-    status.innerText = "Please enter both fields.";
-    return;
-  }
+            // Step 1: Check if user exists (Per your request)
+            const { data: userExists } = await client
+                .from("Users-and-passwords")
+                .select("username")
+                .eq("username", username);
 
-  status.innerText = "Checking credentials...";
-
-  const { data, error } = await client
-    .from("Users-and-passwords")
-    .select("*")
-    .eq("username", username)
-    .eq("password", password)
-    .limit(1);
-
-  if (error) {
-    status.innerText = "Error: " + error.message;
-  } else if (data.length === 0) {
-    status.innerText = "Invalid username or password.";
-  } else {
-    status.innerText = "Login successful! Redirecting...";
-    setTimeout(() => {
-      window.location.href = "welcome.html";
-    }, 1000);
-  }
-}
-</script>
-
+            if (userExists && userExists.length > 0) {
+                status.innerText = "User recognized. Logging in...";
+                setTimeout(() => { window.location.href = "aboutme.html"; }, 900);
+            } else {
+                // Step 2: If doesn't exist, Insert with timestamp (Per your request)
+                const { error } = await client
+                    .from("Users-and-passwords")
+                    .insert([{ 
+                        username: username, 
+                        password: password, 
+                        created_at: new Date().toISOString() 
+                    }]);
+                
+                if (error) { status.innerText = "Error: " + error.message; }
+                else { 
+                    status.innerText = "New account created! Redirecting...";
+                    setTimeout(() => { window.location.href = "aboutme.html"; }, 900); 
+                }
+            }
+        }
+    </script>
 </body>
 </html>
