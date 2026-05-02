@@ -1,167 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>About Me | Portfolio</title>
+    <title>Sign Up</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
-            --primary-color: #0056b3;
-            --accent-green: #28a745;
-            --bg-shade: #f8f9fa;
-            --text-dark: #2d3436;
-            --text-muted: #636e72;
-            --white: #ffffff;
+            --bg-page: #f0fdf4;       /* Very light green background */
+            --container-bg: #ffffff;
+            --input-off: #e0eedd;     /* Polished Light Green (Off State) */
+            --input-focus: #28a745;   /* Polished Medium-Dark Green (Focus) */
+            --btn-main: #28a745;
+            --btn-hover: #218838;
+            --text-main: #2d3436;
         }
 
         * { box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-shade);
-            color: var(--text-dark);
-            line-height: 1.6;
-            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg-page);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100vh;
+            margin: 0;
         }
 
-        .about-card {
-            background: var(--white);
-            width: 900px;
-            max-width: 95%;
-            display: flex;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        }
-
-        /* Left Side: Visual Identity */
-        .sidebar-profile {
-            background: var(--primary-color);
-            color: var(--white);
-            width: 35%;
-            padding: 40px;
+        .signup-container {
+            background: var(--container-bg);
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 350px;
             text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
-        .profile-img {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid rgba(255,255,255,0.2);
-            margin-bottom: 20px;
-        }
-
-        .name-title h2 { margin: 10px 0 5px; font-size: 24px; }
-        .name-title p { margin: 0; opacity: 0.8; font-size: 14px; text-transform: uppercase; letter-spacing: 1.2px; }
-
-        .contact-info {
-            margin-top: auto;
-            width: 100%;
-            text-align: left;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        .contact-item span { margin-right: 10px; font-size: 18px; }
-
-        /* Right Side: Content */
-        .main-content {
-            width: 65%;
-            padding: 50px;
-        }
-
-        h3 {
-            color: var(--primary-color);
-            border-bottom: 2px solid var(--bg-shade);
-            padding-bottom: 10px;
+        h2 {
             margin-top: 0;
+            color: var(--text-main);
+            margin-bottom: 25px;
         }
 
-        .bio-text {
-            color: var(--text-muted);
-            margin-bottom: 30px;
+        .signup-container input {
+            width: 100%;
+            padding: 12px 10px;
+            margin-bottom: 15px;
+            border: 2px solid var(--input-off);
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f9fff8; /* Clean green-white tint */
+            transition: all 0.2s ease;
+            outline: none;
         }
 
-        .skills-container {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+        .signup-container input:focus {
+            border: 2px solid var(--input-focus);
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.15);
+            background: #ffffff;
         }
 
-        .skill-badge {
-            background: var(--bg-shade);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-
-        .btn-logout {
-            margin-top: 40px;
-            background: none;
-            border: 1px solid #ff7675;
-            color: #ff7675;
-            padding: 8px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .btn-logout:hover {
-            background: #ff7675;
+        .signup-container button {
+            width: 100%;
+            padding: 12px;
+            background: var(--btn-main);
             color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+        }
+
+        .signup-container button:hover {
+            background: var(--btn-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .signup-container button:active {
+            transform: translateY(0px);
+        }
+
+        .login-text {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #636e72;
+        }
+
+        .login-text a {
+            color: var(--btn-main);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .login-text a:hover {
+            text-decoration: underline;
+        }
+
+        .status { 
+            margin-top: 15px; 
+            color: #d63031; 
+            min-height: 20px; 
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
-    <div class="about-card">
-        <div class="sidebar-profile">
-            <img src="https://via.placeholder.com/150" alt="Profile" class="profile-img">
-            
-            <div class="name-title">
-                <h2>Your Name</h2>
-                <p>Web Developer / Designer</p>
-            </div>
-
-            <div class="contact-info">
-                <div class="contact-item"><span>📧</span> user@example.com</div>
-                <div class="contact-item"><span>📱</span> +1 234 567 890</div>
-                <div class="contact-item"><span>📍</span> New York, USA</div>
-            </div>
-        </div>
-
-        <div class="main-content">
-            <h3>About Me</h3>
-            <p class="bio-text">
-                Hello! I am a passionate developer focused on creating polished, professional web experiences. 
-                I specialize in clean UI design and seamless user interactions. My goal is to build 
-                tools that make the internet a more beautiful and functional place.
-            </p>
-
-            <h3>Core Skills</h3>
-            <div class="skills-container">
-                <div class="skill-badge">HTML5 / CSS3</div>
-                <div class="skill-badge">JavaScript</div>
-                <div class="skill-badge">Supabase</div>
-                <div class="skill-badge">UI/UX Design</div>
-            </div>
-
-            <button class="btn-logout" onclick="location.href='login.html'">Logout</button>
-        </div>
+    <div class="signup-container">
+        <h2>Create Account</h2>
+        <input id="username" placeholder="Username">
+        <input id="email" type="email" placeholder="Email Address">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="processSignup()">Sign Up</button>
+        <p class="status" id="status"></p>
+        <p class="login-text">Already have an account? <a href="login.html">Login</a></p>
     </div>
 
+    <script>
+        const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
+        const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function processSignup() {
+            const username = document.getElementById("username").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const status = document.getElementById("status");
+
+            if (!username || !email || !password) {
+                status.innerText = "Please fill in all fields.";
+                return;
+            }
+
+            status.style.color = "#2d3436";
+            status.innerText = "Creating account...";
+
+            // Check if username exists
+            const { data: userExists } = await client
+                .from("Users-and-passwords")
+                .select("username")
+                .eq("username", username);
+
+            if (userExists && userExists.length > 0) {
+                status.style.color = "#d63031";
+                status.innerText = "Username already taken.";
+                return;
+            }
+
+            // Insert new user
+            const { error } = await client
+                .from("Users-and-passwords")
+                .insert([{ 
+                    username: username, 
+                    password: password, 
+                    email: email,
+                    created_at: new Date().toISOString() 
+                }]);
+
+            if (error) {
+                status.style.color = "#d63031";
+                status.innerText = "Error: " + error.message;
+            } else {
+                status.style.color = "#28a745";
+                status.innerText = "Account created! Redirecting...";
+                setTimeout(() => { window.location.href = "aboutme.html"; }, 1200);
+            }
+        }
+    </script>
 </body>
 </html>
