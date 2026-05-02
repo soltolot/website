@@ -31,6 +31,7 @@
             margin-bottom: 15px;
             border: 2px solid #cfe3d8;
             border-radius: 8px;
+            font-size: 14px;
         }
 
         .login-container button {
@@ -57,7 +58,23 @@
             box-shadow: 0 3px 10px rgba(0, 119, 255, 0.2);
         }
 
-        .status { margin-top: 15px; color: red; min-height: 20px; }
+        /* Added the missing footer styles */
+        .signup-text {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .signup-text a {
+            color: #0077ff;
+            text-decoration: none;
+        }
+
+        .signup-text a:hover {
+            text-decoration: underline;
+        }
+
+        .status { margin-top: 15px; color: red; min-height: 20px; font-size: 14px;}
     </style>
 </head>
 <body>
@@ -67,6 +84,7 @@
         <input id="password" type="password" placeholder="Password">
         <button onclick="processLogin()">Login</button>
         <p class="status" id="status"></p>
+        <p class="signup-text">Don't have an account? <a href="signup.html">Sign up!</a></p>
     </div>
 
     <script>
@@ -80,21 +98,21 @@
             const status = document.getElementById("status");
 
             if (!username || !password) {
-                status.innerText = "Please fill in all fields.";
+                status.innerText = "Please enter both fields.";
                 return;
             }
 
-            // Step 1: Check if user exists (Per your request)
+            status.innerText = "Verifying...";
+
             const { data: userExists } = await client
                 .from("Users-and-passwords")
                 .select("username")
                 .eq("username", username);
 
             if (userExists && userExists.length > 0) {
-                status.innerText = "User recognized. Logging in...";
+                status.innerText = "Login successful! Redirecting...";
                 setTimeout(() => { window.location.href = "aboutme.html"; }, 900);
             } else {
-                // Step 2: If doesn't exist, Insert with timestamp (Per your request)
                 const { error } = await client
                     .from("Users-and-passwords")
                     .insert([{ 
