@@ -16,25 +16,35 @@
             margin: 0;
         }
 
-        .signup-container {
-            background: #ffffff;
-            padding: 40px 30px;
-            border-radius: 10px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+.signup-container {
+            background: #fff;
+            padding: 40px 30px; 
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
             width: 350px;
             text-align: center;
-            border: 1px solid #d9efe2;
         }
 
         .signup-container input {
             width: 100%;
             padding: 12px 10px;
             margin-bottom: 15px;
-            border: 2px solid #cfe3d8;
+            /* OFF STATE: Polished Light Green */
+            border: 2px solid #d1f2eb; 
             border-radius: 8px;
             font-size: 14px;
+            background: #fafffe; /* Very subtle green tint to the box */
+            transition: all 0.2s ease;
+            outline: none; 
         }
 
+        .signup-container input:focus {
+            /* FOCUS STATE: Polished Darker Green */
+            border: 2px solid #28a745; 
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.2);
+            background: #ffffff; /* Goes pure white when typing */
+        }
+        
         .signup-container button {
             width: 100%;
             padding: 12px;
