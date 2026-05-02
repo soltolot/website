@@ -4,7 +4,7 @@
     <title>Sign Up</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * { box-sizing: border-box; } /* Ensures identical sizing */
+        * { box-sizing: border-box; }
 
         body {
             font-family: Arial, sans-serif;
@@ -30,7 +30,7 @@
             width: 100%;
             padding: 12px 10px;
             margin-bottom: 15px;
-            border: 2px solid #cfe3d8; /* Matched to Login thickness */
+            border: 2px solid #cfe3d8;
             border-radius: 8px;
             font-size: 14px;
         }
@@ -44,7 +44,6 @@
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-            /* Added smooth transitions */
             transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
             box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
         }
@@ -55,13 +54,28 @@
             box-shadow: 0 6px 18px rgba(40, 167, 69, 0.3);
         }
 
-        /* Added "Pressed Down" effect */
         .signup-container button:active {
             transform: translateY(0px);
             box-shadow: 0 3px 10px rgba(40, 167, 69, 0.2);
         }
 
-        .status { margin-top: 15px; color: #b00020; min-height: 20px; }
+        /* Added the missing footer styles */
+        .login-text {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .login-text a {
+            color: #28a745;
+            text-decoration: none;
+        }
+
+        .login-text a:hover {
+            text-decoration: underline;
+        }
+
+        .status { margin-top: 15px; color: #b00020; min-height: 20px; font-size: 14px;}
     </style>
 </head>
 <body>
@@ -71,6 +85,7 @@
         <input id="password" type="password" placeholder="Password">
         <button onclick="signupUser()">Sign Up</button>
         <p class="status" id="status"></p>
+        <p class="login-text">Already have an account? <a href="login.html">Log in!</a></p>
     </div>
 
     <script>
@@ -84,11 +99,12 @@
             const status = document.getElementById("status");
 
             if (!username || !password) {
-                status.innerText = "Fields cannot be empty.";
+                status.innerText = "Please enter both fields.";
                 return;
             }
 
-            // Step 1: Check if username exists
+            status.innerText = "Checking username...";
+
             const { data: existing } = await client
                 .from("Users-and-passwords")
                 .select("username")
@@ -99,7 +115,6 @@
                 return;
             }
 
-            // Step 2: Insert with timestamp
             const { error } = await client
                 .from("Users-and-passwords")
                 .insert([{ 
@@ -111,7 +126,7 @@
             if (error) {
                 status.innerText = "Error: " + error.message;
             } else {
-                status.innerText = "Success! Redirecting...";
+                status.innerText = "Account created! Redirecting...";
                 setTimeout(() => { window.location.href = "aboutme.html"; }, 900);
             }
         }
