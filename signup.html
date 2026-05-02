@@ -1,144 +1,167 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Sign Up</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>About Me | Portfolio</title>
     <style>
+        :root {
+            --primary-color: #0056b3;
+            --accent-green: #28a745;
+            --bg-shade: #f8f9fa;
+            --text-dark: #2d3436;
+            --text-muted: #636e72;
+            --white: #ffffff;
+        }
+
         * { box-sizing: border-box; }
 
         body {
-            font-family: Arial, sans-serif;
-            background: #eef7f1;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-shade);
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            margin: 0;
+            min-height: 100vh;
         }
 
-.signup-container {
-            background: #fff;
-            padding: 40px 30px; 
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
-            width: 350px;
+        .about-card {
+            background: var(--white);
+            width: 900px;
+            max-width: 95%;
+            display: flex;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        /* Left Side: Visual Identity */
+        .sidebar-profile {
+            background: var(--primary-color);
+            color: var(--white);
+            width: 35%;
+            padding: 40px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .signup-container input {
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid rgba(255,255,255,0.2);
+            margin-bottom: 20px;
+        }
+
+        .name-title h2 { margin: 10px 0 5px; font-size: 24px; }
+        .name-title p { margin: 0; opacity: 0.8; font-size: 14px; text-transform: uppercase; letter-spacing: 1.2px; }
+
+        .contact-info {
+            margin-top: auto;
             width: 100%;
-            padding: 12px 10px;
+            text-align: left;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
             margin-bottom: 15px;
-            /* OFF STATE: Polished Light Green (No blue tint) */
-            border: 2px solid #e0eedd; 
-            border-radius: 8px;
             font-size: 14px;
-            background: #f9fff8; /* Very clean green-white */
-            transition: all 0.2s ease;
-            outline: none; 
         }
 
-        .signup-container input:focus {
-            /* FOCUS STATE: Polished Darker Green */
-            border: 2px solid #1e7e34; 
-            box-shadow: 0 0 8px rgba(30, 126, 52, 0.15);
-            background: #ffffff;
-        }        
-        .signup-container button {
-            width: 100%;
-            padding: 12px;
-            background: #28a745;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(40, 167, 69, 0.3);
+        .contact-item span { margin-right: 10px; font-size: 18px; }
+
+        /* Right Side: Content */
+        .main-content {
+            width: 65%;
+            padding: 50px;
         }
 
-        .signup-container button:hover {
-            background: #1e7e34;
+        h3 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--bg-shade);
+            padding-bottom: 10px;
+            margin-top: 0;
         }
 
-        .signup-container button:active {
-            transform: translateY(0px);
-            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.2);
+        .bio-text {
+            color: var(--text-muted);
+            margin-bottom: 30px;
         }
 
-        .login-text {
-            margin-top: 20px;
+        .skills-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .skill-badge {
+            background: var(--bg-shade);
+            padding: 8px 15px;
+            border-radius: 20px;
             font-size: 13px;
-            color: #555;
+            font-weight: 600;
+            color: var(--primary-color);
         }
 
-        .login-text a {
-            color: #28a745;
-            text-decoration: underline;
-
+        .btn-logout {
+            margin-top: 40px;
+            background: none;
+            border: 1px solid #ff7675;
+            color: #ff7675;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
         }
 
-        .login-text a:hover {
-            color: #1e7e34;
-
+        .btn-logout:hover {
+            background: #ff7675;
+            color: white;
         }
-
-        .status { margin-top: 15px; color: #b00020; min-height: 20px; font-size: 14px;}
     </style>
 </head>
 <body>
-    <div class="signup-container">
-        <h2>Create Account</h2>
-        <input id="username" placeholder="Username">
-        <input id="password" type="password" placeholder="Password">
-        <button onclick="signupUser()">Sign Up</button>
-        <p class="status" id="status"></p>
-        <p class="login-text">Already have an account? <a href="login.html">Log in!</a></p>
+
+    <div class="about-card">
+        <div class="sidebar-profile">
+            <img src="https://via.placeholder.com/150" alt="Profile" class="profile-img">
+            
+            <div class="name-title">
+                <h2>Your Name</h2>
+                <p>Web Developer / Designer</p>
+            </div>
+
+            <div class="contact-info">
+                <div class="contact-item"><span>📧</span> user@example.com</div>
+                <div class="contact-item"><span>📱</span> +1 234 567 890</div>
+                <div class="contact-item"><span>📍</span> New York, USA</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <h3>About Me</h3>
+            <p class="bio-text">
+                Hello! I am a passionate developer focused on creating polished, professional web experiences. 
+                I specialize in clean UI design and seamless user interactions. My goal is to build 
+                tools that make the internet a more beautiful and functional place.
+            </p>
+
+            <h3>Core Skills</h3>
+            <div class="skills-container">
+                <div class="skill-badge">HTML5 / CSS3</div>
+                <div class="skill-badge">JavaScript</div>
+                <div class="skill-badge">Supabase</div>
+                <div class="skill-badge">UI/UX Design</div>
+            </div>
+
+            <button class="btn-logout" onclick="location.href='login.html'">Logout</button>
+        </div>
     </div>
 
-    <script>
-        const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
-        const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        async function signupUser() {
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value.trim();
-            const status = document.getElementById("status");
-
-            if (!username || !password) {
-                status.innerText = "Please enter both fields.";
-                return;
-            }
-
-            status.innerText = "Checking username...";
-
-            const { data: existing } = await client
-                .from("Users-and-passwords")
-                .select("username")
-                .eq("username", username);
-
-            if (existing && existing.length > 0) {
-                status.innerText = "Username already exists.";
-                return;
-            }
-
-            const { error } = await client
-                .from("Users-and-passwords")
-                .insert([{ 
-                    username: username, 
-                    password: password, 
-                    created_at: new Date().toISOString() 
-                }]);
-
-            if (error) {
-                status.innerText = "Error: " + error.message;
-            } else {
-                status.innerText = "Account created! Redirecting...";
-                setTimeout(() => { window.location.href = "aboutme.html"; }, 900);
-            }
-        }
-    </script>
 </body>
 </html>
