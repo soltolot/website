@@ -18,7 +18,7 @@
 
         .login-container {
             background: #fff;
-            padding: 40px 30px;
+            padding: 40px 30px
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.12);
             width: 350px;
@@ -32,8 +32,13 @@
             border: 2px solid #cfe3d8;
             border-radius: 8px;
             font-size: 14px;
-        }
+            transition: border-color 0.2s;
 
+        .login-container input:focus {
+            border: 2px solid #0077FF; 
+            outline: none;       
+            background: #ffffff;
+        }        
         .login-container button {
             width: 100%;
             padding: 12px;
