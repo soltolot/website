@@ -3,15 +3,15 @@
 <head>
     <title>Sign Up</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
+
+<style>
         * {
             box-sizing: border-box;
         }
 
-
         body {
             font-family: Arial, sans-serif;
-            background: #F0F9F4;
+            background: #eef7f1;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -20,26 +20,34 @@
         }
 
         .signup-container {
-            background: #fff;
+            background: #ffffff;
             padding: 40px 30px;
             border-radius: 10px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
             width: 350px;
             text-align: center;
+            border: 1px solid #d9efe2;
         }
 
         .signup-container h2 {
             margin-bottom: 25px;
-            color: #333;
+            color: #2f2f2f;
         }
 
         .signup-container input {
-            width: 100%; /* Changed from 95% to 100% */
+            width: 100%;
             padding: 12px 10px;
             margin-bottom: 15px;
-            border: 1px solid #ccc;
+            border: 1px solid #cfe3d8;
             border-radius: 6px;
             font-size: 14px;
+            background: #ffffff;
+        }
+
+        .signup-container input:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.12);
         }
 
         .signup-container button {
@@ -51,7 +59,6 @@
             border-radius: 6px;
             font-size: 16px;
             cursor: pointer;
-            transition: background 0.3s;
         }
 
         .signup-container button:hover {
@@ -60,7 +67,7 @@
 
         .status {
             margin-top: 15px;
-            color: red;
+            color: #b00020;
             font-size: 14px;
             min-height: 20px;
         }
@@ -72,16 +79,16 @@
         }
 
         .login-text a {
-            color: #0077ff;
-            text-decoration: underline;
+            color: #28a745;
+            text-decoration: none;
         }
 
         .login-text a:hover {
-            transition: color 0.2s;
-            color: #2E00FC;
+            text-decoration: underline;
         }
-    </style>
+</style>
 </head>
+
 <body>
     <div class="signup-container">
         <h2>Create Account</h2>
@@ -92,7 +99,7 @@
         <p class="login-text">Already have an account? <a href="login.html">Log in!</a></p>
     </div>
 
-    <script>
+<script>
         const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
         const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
         const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -109,7 +116,6 @@
 
             status.innerText = "Creating account...";
 
-            // Check if username already exists
             const { data: existing, error: checkError } = await client
                 .from("Users-and-passwords")
                 .select("id")
@@ -126,7 +132,6 @@
                 return;
             }
 
-            // Insert new user
             const { data, error } = await client
                 .from("Users-and-passwords")
                 .insert([{ 
@@ -144,6 +149,6 @@
                 }, 1200);
             }
         }
-    </script>
+</script>
 </body>
 </html>
