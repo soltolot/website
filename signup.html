@@ -112,7 +112,6 @@
     <div class="signup-container">
         <h2>Create Account</h2>
         <input id="username" placeholder="Username">
-        <input id="email" type="email" placeholder="Email Address">
         <input id="password" type="password" placeholder="Password">
         <button onclick="processSignup()">Sign Up</button>
         <p class="status" id="status"></p>
@@ -126,11 +125,10 @@
 
         async function processSignup() {
             const username = document.getElementById("username").value.trim();
-            const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value.trim();
             const status = document.getElementById("status");
 
-            if (!username || !email || !password) {
+            if (!username || !password) {
                 status.innerText = "Please fill in all fields.";
                 return;
             }
@@ -166,7 +164,7 @@
             } else {
                 status.style.color = "#28a745";
                 status.innerText = "Account created! Redirecting...";
-                setTimeout(() => { window.location.href = "aboutme.html"; }, 1200);
+                setTimeout(() => { window.location.href = "aboutme.html"; }, 1000);
             }
         }
     </script>
