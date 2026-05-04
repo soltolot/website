@@ -18,7 +18,7 @@
 
         .login-container {
             background: #fff;
-            padding: 40px 30px; /* Fixed: Added semicolon */
+            padding: 40px 30px;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.12);
             width: 350px;
@@ -39,7 +39,6 @@
         .login-container input:focus {
             border: 2px solid #0056b3; 
             box-shadow: 0 0 8px rgba(0, 86, 179, 0.2);
-            background: #ffffff;
         }
         
         .login-container button {
@@ -58,42 +57,19 @@
         .login-container button:hover {
             background: #005fcc;
             transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(0, 119, 255, 0.3);
         }
 
-        .login-container button:active {
-            transform: translateY(0px);
-            box-shadow: 0 3px 10px rgba(0, 119, 255, 0.2);
-        }
-
-        .signup-text {
-            margin-top: 20px;
-            font-size: 13px;
-            color: #555;
-        }
-
-        .signup-text a {
-            color: #0077ff;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .signup-text a:hover {
-            text-decoration: underline;
-            color: #005fcc;
-        }
-
-        .status { margin-top: 15px; color: red; min-height: 20px; font-size: 14px;}
+        .status { margin-top: 15px; min-height: 20px; font-size: 14px; font-weight: bold;}
     </style>
 </head>
 <body>
+
     <div class="login-container">
         <h2>Login</h2>
         <input id="username" placeholder="Username">
         <input id="password" type="password" placeholder="Password">
         <button onclick="processLogin()">Login</button>
         <p class="status" id="status"></p>
-        <p class="signup-text">Don't have an account? <a href="signup.html">Sign up!</a></p>
     </div>
 
     <script>
@@ -107,34 +83,35 @@
             const status = document.getElementById("status");
 
             if (!username || !password) {
+                status.style.color = "red";
                 status.innerText = "Please enter both fields.";
                 return;
             }
 
+            status.style.color = "#555";
             status.innerText = "Verifying...";
 
-            const { data: userExists } = await client
-                .from("Users-and-passwords")
-                .select("username")
-                .eq("username", username);
-
-            if (userExists && userExists.length > 0) {
-                status.innerText = "Login successful! Redirecting...";
-                setTimeout(() => { window.location.href = "aboutme.html"; }, 900);
-            } else {
-                const { error } = await client
+            try {
+                const { data: user, error } = await client
                     .from("Users-and-passwords")
-                    .insert([{ 
-                        username: username, 
-                        password: password, 
-                        created_at: new Date().toISOString() 
-                    }]);
-                
-                if (error) { status.innerText = "Error: " + error.message; }
-                else { 
-                    status.innerText = "New account created! Redirecting...";
-                    setTimeout(() => { window.location.href = "dashboard.html"; }, 900); 
+                    .select("*")
+                    .eq("username", username)
+                    .eq("password", password)
+                    .maybeSingle(); // maybeSingle returns null instead of error if not found
+
+                if (user) {
+                    status.style.color = "green";
+                    status.innerText = "Login successful! Redirecting...";
+                    setTimeout(() => { 
+                        window.location.href = "aboutme.html"; 
+                    }, 900);
+                } else {
+                    status.style.color = "red";
+                    status.innerText = "Invalid username or password.";
                 }
+            } catch (err) {
+                status.style.color = "red";
+                status.innerText = "An error occurred. Please try again.";
             }
         }
     </script>
