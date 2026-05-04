@@ -97,13 +97,13 @@
                     .select("*")
                     .eq("username", username)
                     .eq("password", password)
-                    .maybeSingle(); // maybeSingle returns null instead of error if not found
+                    .maybeSingle();
 
                 if (user) {
                     status.style.color = "green";
                     status.innerText = "Login successful! Redirecting...";
                     setTimeout(() => { 
-                        window.location.href = "aboutme.html"; 
+                        window.location.href = "dashboard.html"; 
                     }, 900);
                 } else {
                     status.style.color = "red";
