@@ -39,7 +39,7 @@
         async function getHistory() {
             const { data, error } = await _supabase
                 .from('messages')
-                .select('content');
+                .select('contents');
                 
             if (error) {
                 console.error("Error:", error);
