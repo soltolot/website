@@ -14,51 +14,60 @@
             max-width: 500px;
             margin: auto;
         }
-        p { border-bottom: 1px solid #eee; padding: 10px 0; margin: 0; }
+        p { border-bottom: 1px solid #eee; padding: 10px 0; margin: 0; color: #333; }
     </style>
 </head>
 <body>
 
     <div id="chat-box">
         <h2>SultanChat Live Feed</h2>
-        <div id="messages">Loading...</div>
+        <div id="messages">Connecting to Supabase...</div>
     </div>
 
     <script>
+        // Use the EXACT key from your latest screenshot
         const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
         const SUPABASE_KEY = "sb_publishable_vV0deewV5046cJLsLmQyWg_cXzSaXuU";
+        
         const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Load History
         async function loadMessages() {
+            // Using 'content' (singular) as confirmed in your DB
             const { data, error } = await _supabase
                 .from('messages')
                 .select('content');
 
             if (error) {
+                console.log("Detailed Error:", error);
                 document.getElementById('messages').innerText = "Error: " + error.message;
                 return;
             }
 
             const container = document.getElementById('messages');
-            container.innerHTML = ''; // Clear "Loading..."
+            container.innerHTML = ''; 
             
-            if (data.length === 0) {
-                container.innerText = "Connected. No messages found.";
-            } else {
+            if (data && data.length > 0) {
                 data.forEach(msg => {
-                    if (msg.content) container.innerHTML += `<p>${msg.content}</p>`;
+                    if (msg.content) {
+                        const p = document.createElement('p');
+                        p.textContent = msg.content;
+                        container.appendChild(p);
+                    }
                 });
+            } else {
+                container.innerText = "Connected! No messages found in the table.";
             }
         }
 
-        // Listen for New Messages (Realtime)
+        // Realtime listener
         _supabase
             .channel('any')
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
                 const container = document.getElementById('messages');
                 if (container.innerText.includes("No messages")) container.innerHTML = '';
-                container.innerHTML += `<p>${payload.new.content}</p>`;
+                const p = document.createElement('p');
+                p.textContent = payload.new.content;
+                container.appendChild(p);
             })
             .subscribe();
 
