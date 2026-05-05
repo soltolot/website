@@ -2,76 +2,76 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>About me</title>
+    <title>SultanChat</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            display: flex;
-            min-height: 100vh;
+        body { 
+            margin: 0; padding: 40px; 
+            font-family: Arial, sans-serif; 
+            background-color: #f0f0f0; 
         }
-
-
-        .main-content {
-            flex: 1;
-            padding: 40px;
-            border: 2px dashed #b2bec3;
-        }
-
-        .card {
-            background: white;
-            padding: 30px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            max-width: 600px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
         h1 { margin-top: 0; }
-        
-        .info-row {
-            margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+        #raw-messages p { 
+            background: white; 
+            padding: 10px; 
+            border-bottom: 1px solid #eee; 
+            margin: 0;
         }
-
-        .btn {
-            background-color: #ff7675;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 4px;
-        }
-        .btn:hover { background-color: #d63031; }
-
     </style>
 </head>
 <body>
 
     <main class="main-content">
-        
-        <h1>Dashboard</h1>
-        <p style="margin-bottom: 30px; color: #666;">Welcome to my "About me' page.</p>
+        <h1>SultanChat</h1>
+        <p style="margin-bottom: 30px; color: #666;">Welcome to my alternative to Whatsapp: SultanChat.</p>
 
-        <div class="card">
-            <h2>My profile</h2>
-            
-            <div class="info-row">
-                <strong>Name:</strong> Sultan Alawad
-            </div>
-            <div class="info-row">
-                <strong>Email:</strong> sultan.awad.w@gmail.com
-            </div>
-            <div class="info-row">
-                <strong>Status:</strong> <span style="color: green;">Active</span>
-            </div>
-
-
+        <div id="raw-messages">Loading messages...</div>
     </main>
 
+    <script>
+        // Your specific credentials
+        const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 1. Get History (Old Messages)
+        async function getHistory() {
+            const { data, error } = await _supabase
+                .from('messages')
+                .select('content');
+                
+            if (error) {
+                console.error("Error:", error);
+                document.getElementById('raw-messages').innerText = "Error loading messages. Check RLS policies.";
+                return;
+            }
+
+            if (data) {
+                document.getElementById('raw-messages').innerHTML = ''; 
+                data.forEach(msg => {
+                    if(msg.content) {
+                        document.getElementById('raw-messages').innerHTML += `<p>${msg.content}</p>`;
+                    }
+                });
+            }
+        }
+
+        // 2. Realtime (New Messages)
+        _supabase
+          .channel('chat_channel')
+          .on('postgres_changes', { 
+              event: 'INSERT', 
+              schema: 'public', 
+              table: 'messages' 
+          }, (payload) => {
+              console.log("New message arrived!", payload.new);
+              document.getElementById('raw-messages').innerHTML += `<p>${payload.new.content}</p>`;
+          })
+          .subscribe();
+
+        // Start the check
+        getHistory();
+    </script>
 </body>
 </html>
