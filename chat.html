@@ -2,80 +2,67 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SultanChat</title>
+    <title>SultanChat - Live View</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <style>
-        body { 
-            margin: 0; padding: 40px; 
-            font-family: Arial, sans-serif; 
-            background-color: #f0f0f0; 
-        }
-        h1 { margin-top: 0; }
-        #raw-messages p { 
+        body { font-family: sans-serif; padding: 40px; background: #f0f0f0; }
+        #chat-box { 
             background: white; 
-            padding: 10px; 
-            border-bottom: 1px solid #eee; 
-            margin: 0;
+            padding: 20px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            max-width: 500px;
+            margin: auto;
         }
+        p { border-bottom: 1px solid #eee; padding: 10px 0; margin: 0; }
     </style>
 </head>
 <body>
 
-    <main class="main-content">
-        <h1>SultanChat</h1>
-        <p style="margin-bottom: 30px; color: #666;">kk to my alternative to Whatsapp: SultanChat.</p>
+    <div id="chat-box">
+        <h2>SultanChat Live Feed</h2>
+        <div id="messages">Loading...</div>
+    </div>
 
-        <div id="raw-messages">Loading messages...</div>
-    </main>
+    <script>
+        const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_vV0deewV5046cJLsLmQyWg_cXzSaXuU";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<script>
-    // 1. Update these with the EXACT keys from your "Settings > API" page
-    const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
-    // PASTE YOUR NEW KEY STARTING WITH 'sb_publishable_vV0' BELOW
-    const SUPABASE_KEY = "sb_publishable_vV0deewV5046cJLsLmQyWg_cXzSaXuU"; 
-    
-    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Load History
+        async function loadMessages() {
+            const { data, error } = await _supabase
+                .from('messages')
+                .select('content');
 
-    async function getHistory() {
-        const { data, error } = await _supabase
-            .from('messages')
-            .select('content'); // Fixed: removed the 's'
+            if (error) {
+                document.getElementById('messages').innerText = "Error: " + error.message;
+                return;
+            }
+
+            const container = document.getElementById('messages');
+            container.innerHTML = ''; // Clear "Loading..."
             
-        if (error) {
-            console.error("Error:", error);
-            document.getElementById('raw-messages').innerText = "Error: " + error.message;
-            return;
+            if (data.length === 0) {
+                container.innerText = "Connected. No messages found.";
+            } else {
+                data.forEach(msg => {
+                    if (msg.content) container.innerHTML += `<p>${msg.content}</p>`;
+                });
+            }
         }
 
-        if (data && data.length > 0) {
-            document.getElementById('raw-messages').innerHTML = ''; 
-            data.forEach(msg => {
-                // Fixed logic: ensures we only show rows that actually have text
-                if(msg.content) {
-                    document.getElementById('raw-messages').innerHTML += `<p>${msg.content}</p>`;
-                }
-            });
-        } else {
-            document.getElementById('raw-messages').innerText = "Success. No messages in database yet.";
-        }
-    }
+        // Listen for New Messages (Realtime)
+        _supabase
+            .channel('any')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+                const container = document.getElementById('messages');
+                if (container.innerText.includes("No messages")) container.innerHTML = '';
+                container.innerHTML += `<p>${payload.new.content}</p>`;
+            })
+            .subscribe();
 
-    // Realtime logic (stays the same, but fixed 'content' reference)
-    _supabase
-      .channel('chat_channel')
-      .on('postgres_changes', { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'messages' 
-      }, (payload) => {
-          if(payload.new.content) {
-              document.getElementById('raw-messages').innerHTML += `<p>${payload.new.content}</p>`;
-          }
-      })
-      .subscribe();
-
-    getHistory();
-</script>
+        loadMessages();
+    </script>
 </body>
 </html>
