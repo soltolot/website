@@ -2,76 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SultanChat - Live View</title>
+    <title>SultanChat - Final Fix</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; padding: 40px; background: #f0f0f0; }
-        #chat-box { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 10px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            max-width: 500px;
-            margin: auto;
-        }
-        p { border-bottom: 1px solid #eee; padding: 10px 0; margin: 0; color: #333; }
+        body { font-family: sans-serif; padding: 30px; background: #1a1a1a; color: white; }
+        #chat { background: #2a2a2a; padding: 20px; border-radius: 10px; border: 1px solid #444; min-height: 100px; }
+        p { border-bottom: 1px solid #333; padding: 10px; margin: 0; color: #00ff00; font-family: monospace; }
     </style>
 </head>
 <body>
-
-    <div id="chat-box">
-        <h2>SultanChat Live Feed</h2>
-        <div id="messages">Connecting to Supabase...</div>
-    </div>
+    <h2>SultanChat Monitor</h2>
+    <div id="chat">Connecting to the correct project...</div>
 
     <script>
-        // Use the EXACT key from your latest screenshot
-        const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_vV0deewV5046cJLsLmQyWg_cXzSaXuU";
+        // FIXED: URL now matches your specific Key
+        const URL = "https://mixxalydvognourxdtj.supabase.co";
+        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1peHhhbHlkdm9nbG5vdXJ4ZHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTY1NzYsImV4cCI6MjA5MzUzMjU3Nn0.P9_5dOXhJdvZr9KGl7YBwl1vsfDzBxq3JgRxlUqCxLc";
         
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const _supabase = supabase.createClient(URL, KEY);
 
-        async function loadMessages() {
-            // Using 'content' (singular) as confirmed in your DB
+        async function load() {
             const { data, error } = await _supabase
                 .from('messages')
                 .select('content');
 
+            const display = document.getElementById('chat');
+
             if (error) {
-                console.log("Detailed Error:", error);
-                document.getElementById('messages').innerText = "Error: " + error.message;
+                display.innerHTML = `<span style="color:red">Error: ${error.message}</span>`;
                 return;
             }
 
-            const container = document.getElementById('messages');
-            container.innerHTML = ''; 
-            
+            display.innerHTML = "";
             if (data && data.length > 0) {
-                data.forEach(msg => {
-                    if (msg.content) {
-                        const p = document.createElement('p');
-                        p.textContent = msg.content;
-                        container.appendChild(p);
-                    }
+                data.forEach(m => {
+                    if(m.content) display.innerHTML += `<p>> ${m.content}</p>`;
                 });
             } else {
-                container.innerText = "Connected! No messages found in the table.";
+                display.innerText = "Connected! Project matched. Table is empty.";
             }
         }
 
-        // Realtime listener
-        _supabase
-            .channel('any')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-                const container = document.getElementById('messages');
-                if (container.innerText.includes("No messages")) container.innerHTML = '';
-                const p = document.createElement('p');
-                p.textContent = payload.new.content;
-                container.appendChild(p);
-            })
-            .subscribe();
+        // Listen for new rows
+        _supabase.channel('room1').on('postgres_changes', {event:'INSERT', schema:'public', table:'messages'}, () => {
+            load();
+        }).subscribe();
 
-        loadMessages();
+        load();
     </script>
 </body>
 </html>
