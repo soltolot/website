@@ -29,49 +29,53 @@
         <div id="raw-messages">Loading messages...</div>
     </main>
 
-    <script>
-        // Your specific credentials
-        const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
-        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<script>
+    // 1. Update these with the EXACT keys from your "Settings > API" page
+    const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
+    // PASTE YOUR NEW KEY STARTING WITH 'sb_publishable_vV0' BELOW
+    const SUPABASE_KEY = "sb_publishable_vV0deewV5046cJLsLmQyWg_cXzSaXuU"; 
+    
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 1. Get History (Old Messages)
-        async function getHistory() {
-            const { data, error } = await _supabase
-                .from('messages')
-                .select('contents');
-                
-            if (error) {
-                console.error("Error:", error);
-                document.getElementById('raw-messages').innerText = "Error loading messages. Check RLS policies.";
-                return;
-            }
-
-            if (data) {
-                document.getElementById('raw-messages').innerHTML = ''; 
-                data.forEach(msg => {
-                    if(msg.content) {
-                        document.getElementById('raw-messages').innerHTML += `<p>${msg.content}</p>`;
-                    }
-                });
-            }
+    async function getHistory() {
+        const { data, error } = await _supabase
+            .from('messages')
+            .select('content'); // Fixed: removed the 's'
+            
+        if (error) {
+            console.error("Error:", error);
+            document.getElementById('raw-messages').innerText = "Error: " + error.message;
+            return;
         }
 
-        // 2. Realtime (New Messages)
-        _supabase
-          .channel('chat_channel')
-          .on('postgres_changes', { 
-              event: 'INSERT', 
-              schema: 'public', 
-              table: 'messages' 
-          }, (payload) => {
-              console.log("New message arrived!", payload.new);
-              document.getElementById('raw-messages').innerHTML += `<p>${payload.new.content}</p>`;
-          })
-          .subscribe();
+        if (data && data.length > 0) {
+            document.getElementById('raw-messages').innerHTML = ''; 
+            data.forEach(msg => {
+                // Fixed logic: ensures we only show rows that actually have text
+                if(msg.content) {
+                    document.getElementById('raw-messages').innerHTML += `<p>${msg.content}</p>`;
+                }
+            });
+        } else {
+            document.getElementById('raw-messages').innerText = "Success. No messages in database yet.";
+        }
+    }
 
-        // Start the check
-        getHistory();
-    </script>
+    // Realtime logic (stays the same, but fixed 'content' reference)
+    _supabase
+      .channel('chat_channel')
+      .on('postgres_changes', { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'messages' 
+      }, (payload) => {
+          if(payload.new.content) {
+              document.getElementById('raw-messages').innerHTML += `<p>${payload.new.content}</p>`;
+          }
+      })
+      .subscribe();
+
+    getHistory();
+</script>
 </body>
 </html>
