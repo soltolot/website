@@ -2,70 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SultanChat Debugger</title>
+    <title>SultanChat - Final Debug</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: monospace; background: #000; color: #0f0; padding: 20px; }
-        #log-window { border: 1px solid #0f0; padding: 10px; height: 400px; overflow-y: auto; background: #050505; }
-        .err { color: #ff0000; }
-        .msg { color: #ffffff; border-bottom: 1px solid #333; padding: 5px 0; }
+        #log { border: 1px solid #0f0; padding: 15px; height: 300px; background: #050505; }
+        .error { color: #ff3333; font-weight: bold; }
     </style>
 </head>
 <body>
-
-    <h2>SULTANCHAT SYSTEM LOGS</h2>
-    <div id="log-window">Initializing System...<br></div>
+    <h2>SYSTEM LOGS</h2>
+    <div id="log">Starting...<br></div>
 
     <script>
-        const logWin = document.getElementById('log-window');
-        
-        function printLog(text, isError = false) {
-            const span = document.createElement('div');
-            span.className = isError ? 'err' : '';
-            span.innerHTML = `> ${text}`;
-            logWin.appendChild(span);
-            console.log(text);
+        const display = document.getElementById('log');
+        function write(text, isErr = false) {
+            display.innerHTML += `<div class="${isErr ? 'error' : ''}">> ${text}</div>`;
         }
 
-        const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co"; 
-        const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+        // I have pre-cleaned these for you. 
+        // JUST PASTE YOUR KEY INSIDE THE QUOTES BELOW.
+        const rawUrl = "https://vldkmlbfjzdrfzpeyver.supabase.co";
+        const rawKey = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
 
         try {
-            printLog("Connecting to Supabase...");
-            const client = supabase.createClient(URL, KEY);
-            printLog("Client created.");
+            write("Cleaning URL and Key...");
+            const cleanUrl = rawUrl.trim().replace(/\/$/, ""); // Removes spaces and extra slashes
+            const cleanKey = rawKey.trim();
 
-            async function start() {
-                printLog("Requesting data from table: 'messages'...");
-                
-                const { data, error, status } = await client
-                    .from('messages')
-                    .select('content');
+            write("Connecting to: " + cleanUrl);
+            const client = supabase.createClient(cleanUrl, cleanKey);
+            write("Client Created Successfully.");
+
+            async function checkData() {
+                write("Checking 'messages' table...");
+                const { data, error } = await client.from('messages').select('content');
 
                 if (error) {
-                    printLog(`DATABASE ERROR: ${error.message}`, true);
-                    printLog(`ERROR CODE: ${error.code}`, true);
+                    write("DATABASE ERROR: " + error.message, true);
                     return;
                 }
 
-                printLog(`HTTP STATUS: ${status} (Success)`);
-                
                 if (data && data.length > 0) {
-                    printLog(`Found ${data.length} messages:`);
-                    data.forEach(m => {
-                        const d = document.createElement('div');
-                        d.className = "msg";
-                        d.textContent = m.content;
-                        logWin.appendChild(d);
-                    });
+                    write("SUCCESS! Found " + data.length + " messages.");
+                    data.forEach(m => write("MSG: " + m.content));
                 } else {
-                    printLog("Database connected, but no rows were returned. Is the table empty?");
+                    write("Connected, but table is empty. Add a row in Supabase!");
                 }
             }
 
-            start();
+            checkData();
         } catch (e) {
-            printLog("CRITICAL SCRIPT CRASH: " + e.message, true);
+            write("CRASH: " + e.message, true);
         }
     </script>
 </body>
