@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SultanChat - Live</title>
+    <title>SultanChat - Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Modern Orange Gradient Background */
         body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            font-family: 'Segoe UI', sans-serif; 
             background: linear-gradient(135deg, #ff9d42 0%, #f57c00 100%); 
             display: flex; 
             justify-content: center; 
@@ -16,124 +14,88 @@
             height: 100vh; 
             margin: 0; 
         }
-
-        /* Not-too-big Container */
         .chat-container { 
-            background: rgba(255, 255, 255, 0.95); 
+            background: white; 
             padding: 20px; 
-            border-radius: 24px; 
-            width: 90%;
-            max-width: 340px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px; 
+            width: 320px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-
-        h2 { 
-            text-align: center; 
-            color: #e65100; 
-            margin: 0 0 15px 0;
-            font-size: 22px;
-            letter-spacing: -0.5px;
-        }
-
-        /* The Message Window */
+        h2 { text-align: center; color: #e65100; margin: 0 0 15px 0; }
         #log { 
-            background: #f8f9fa; 
-            height: 280px; 
+            background: #fff8f0; 
+            height: 300px; 
             overflow-y: auto; 
-            padding: 12px; 
-            border-radius: 16px; 
+            padding: 10px; 
+            border-radius: 12px; 
             display: flex; 
             flex-direction: column; 
-            gap: 10px;
-            border: 1px solid #eee;
+            gap: 8px;
+            border: 1px solid #ffe0b2;
         }
-
-        /* Polished Message Bubbles */
-        .msg-bubble { 
-            background: #fff3e0; 
-            color: #ef6c00; 
-            padding: 10px 14px; 
-            border-radius: 15px 15px 15px 4px; 
+        .bubble { 
+            background: #ffcc80; 
+            color: #5d4037; 
+            padding: 8px 12px; 
+            border-radius: 12px 12px 12px 4px; 
             font-size: 14px; 
-            font-weight: 500; 
-            line-height: 1.4;
-            border-left: 4px solid #ff9800;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            animation: slideUp 0.3s ease;
+            font-weight: 500;
+            align-self: flex-start;
         }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .status-text { 
-            font-size: 10px; 
-            color: #ffb16d; 
-            margin-top: 12px; 
-            text-align: center; 
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        /* Custom Scrollbar */
-        #log::-webkit-scrollbar { width: 5px; }
-        #log::-webkit-scrollbar-thumb { background: #ffcc80; border-radius: 10px; }
+        .status { font-size: 9px; color: #ffa726; text-align: center; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="chat-container">
         <h2>SultanChat</h2>
-        <div id="log">Connecting...</div>
-        <div id="status" class="status-text">Checking Signal...</div>
-    </div>    <script>
-        const display = document.getElementById('log');
-        function write(text, isErr = false) {
-            display.innerHTML += `<div class="${isErr ? 'error' : ''}">> ${text}</div>`;
-        }
+        <div id="log">Waking up database...</div>
+        <div id="status" class="status">SYNCING...</div>
+    </div>
 
-        // I have pre-cleaned these for you. 
-        // JUST PASTE YOUR KEY INSIDE THE QUOTES BELOW.
-        const rawUrl = "https://vldkmlbfjzdrfzpeyver.supabase.co";
-        const rawKey = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+    <script>
+        // These are your verified working credentials
+        const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co"; 
+        const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+        const client = supabase.createClient(URL, KEY);
 
-async function refreshMessages() {
+        async function updateFeed() {
             const display = document.getElementById('log');
             const status = document.getElementById('status');
 
-            try {
-                console.log("Attempting to fetch...");
-                // Setting a 5-second timeout check
-                const { data, error } = await client
-                    .from('message')
-                    .select('message');
+            // We use a simple fetch. No "Channels" or "Subscriptions" to avoid blocks.
+            const { data, error } = await client
+                .from('message')
+                .select('message');
 
-                if (error) {
-                    console.error(error);
-                    status.innerText = "DB Error: " + error.message;
-                    return;
-                }
+            if (error) {
+                status.innerText = "OFFLINE: " + error.message;
+                return;
+            }
 
-                console.log("Data received:", data);
-                status.innerText = "● Live Feed Active";
-                display.innerHTML = "";
-
-                if (data && data.length > 0) {
-                    data.forEach(row => {
+            status.innerText = "● LIVE FEED ACTIVE";
+            
+            if (data && data.length > 0) {
+                display.innerHTML = ""; // Clear "Loading"
+                data.forEach(row => {
+                    if (row.message) {
                         const div = document.createElement('div');
-                        div.className = "msg-bubble";
+                        div.className = "bubble";
                         div.textContent = row.message;
                         display.appendChild(div);
-                    });
-                } else {
-                    display.innerHTML = '<div style="text-align:center;margin-top:110px;">Table is empty!</div>';
-                }
-            } catch (err) {
-                status.innerText = "Network Blocked";
-                console.error(err);
+                    }
+                });
+                display.scrollTop = display.scrollHeight;
+            } else {
+                display.innerHTML = '<div style="text-align:center;margin-top:120px;color:#ccbaaa;">No messages.</div>';
             }
-        }    </script>
+        }
+
+        // Run immediately
+        updateFeed();
+
+        // Instead of "Realtime" (which hangs), we pulse every 2 seconds
+        setInterval(updateFeed, 2000);
+    </script>
 </body>
 </html>
