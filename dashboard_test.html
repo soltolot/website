@@ -2,54 +2,65 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SultanChat - Fixed Project</title>
+    <title>SultanChat - Live</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: #1e293b; padding: 25px; border-radius: 15px; width: 380px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+        #chat { background: #0f172a; border: 1px solid #334155; height: 300px; overflow-y: auto; padding: 15px; margin-top: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .msg { background: #38bdf8; color: #0f172a; padding: 8px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; align-self: flex-start; }
+        .status { font-size: 11px; color: #94a3b8; margin-top: 10px; text-align: center; font-family: monospace; }
+    </style>
 </head>
-<body style="font-family:sans-serif; background:#0f172a; color:white; padding:20px;">
+<body>
 
-    <div style="max-width:400px; margin:auto; text-align:center;">
-        <h2 style="color:#38bdf8">SultanChat (Working Project)</h2>
-        <div id="box" style="background:#1e293b; height:300px; overflow-y:auto; padding:15px; border-radius:10px; text-align:left; border:1px solid #334155;">
-            Loading...
-        </div>
-        <p id="st" style="font-size:11px; color:gray; margin-top:10px;">Checking connection...</p>
+    <div class="container">
+        <h2 style="text-align:center; color:#38bdf8; margin:0;">SultanChat</h2>
+        <div id="chat">Connecting...</div>
+        <div id="status" class="status">Connecting to vldk...</div>
     </div>
 
     <script>
-        // BACK TO THE URL THAT WORKS ON YOUR NETWORK
-        const URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
-        const KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
+        const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co"; 
+        const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+        
         const client = supabase.createClient(URL, KEY);
 
         async function load() {
-            const { data, error } = await client.from('messages').select('content');
-            const box = document.getElementById("box");
-            const st = document.getElementById("st");
+            const display = document.getElementById("chat");
+            const status = document.getElementById("status");
+
+            const { data, error } = await client.from("messages").select("content");
 
             if (error) {
-                st.innerText = "Error: " + error.message;
-                st.style.color = "red";
+                status.style.color = "#ef4444";
+                status.innerText = "Error: " + error.message;
                 return;
             }
 
-            st.innerText = "● Connected to uhko project";
-            st.style.color = "lime";
-            box.innerHTML = "";
+            status.style.color = "#22c55e";
+            status.innerText = "● ONLINE: vldkmlbfjzdrfzpeyver";
+            display.innerHTML = "";
 
             if (data && data.length > 0) {
-                data.forEach(row => {
-                    const d = document.createElement("div");
-                    d.style.cssText = "background:#38bdf8; color:#0f172a; padding:8px; margin-bottom:8px; border-radius:5px;";
-                    d.textContent = row.content;
-                    box.appendChild(d);
+                data.forEach(m => {
+                    const div = document.createElement("div");
+                    div.className = "msg";
+                    div.textContent = m.content;
+                    display.appendChild(div);
                 });
+                display.scrollTop = display.scrollHeight;
             } else {
-                box.innerText = "Connected, but no messages yet.";
+                display.innerHTML = '<div style="color:#64748b; text-align:center; margin-top:100px;">Connected!<br>Go add a row in Supabase to see it here.</div>';
             }
         }
 
+        // Realtime: This makes the chat "pop" when you add a row in the dashboard
+        client.channel('chat-room').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+            load();
+        }).subscribe();
+
         load();
-        setInterval(load, 5000);
     </script>
 </body>
 </html>
