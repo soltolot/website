@@ -36,7 +36,7 @@
 
             async function checkData() {
                 write("Checking 'messages' table...");
-                const { data, error } = await client.from('message').select('content');
+                const { data, error } = await client.from('message').select('message');
 
                 if (error) {
                     write("DATABASE ERROR: " + error.message, true);
