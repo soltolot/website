@@ -2,22 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SultanChat Debugger</title>
+    <title>SultanChat - Clean Project</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: monospace; padding: 20px; background: #121212; color: #00ff00; }
         .box { background: #1e1e1e; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        h2 { color: #888; font-size: 14px; text-transform: uppercase; margin-top: 0; }
-        #messages { min-height: 50px; color: #fff; font-size: 18px; }
-        #console-log { background: #000; color: #ff5555; padding: 10px; font-size: 12px; height: 150px; overflow-y: auto; border: 1px solid #444; }
+        #console-log { background: #000; color: #ff5555; padding: 10px; font-size: 12px; height: 150px; overflow-y: auto; }
     </style>
 </head>
 <body>
-
-    <div class="box">
-        <h2>Live Chat Feed</h2>
-        <div id="messages">Initializing...</div>
-    </div>
 
     <div class="box">
         <h2>System Console</h2>
@@ -32,44 +25,37 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        // We use .trim() to automatically delete any accidental spaces or invisible characters
-        const rawUrl = "https://mixxalydvognourxdtj.supabase.co";
-        const rawKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1peHhhbHlkdm9nbG5vdXJ4ZHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTY1NzYsImV4cCI6MjA5MzUzMjU3Nn0.P9_5dOXhJdvZr9KGl7YBwl1vsfDzBxq3JgRxlUqCxLc";
+        // 1. HARD-CODED URL (NO COPY-PASTE SPACES)
+        const URL = "https://mixxalydvognourxdtj.supabase.co".trim();
+        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1peHhhbHlkdm9nbG5vdXJ4ZHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTY1NzYsImV4cCI6MjA5MzUzMjU3Nn0.P9_5dOXhJdvZr9KGl7YBwl1vsfDzBxq3JgRxlUqCxLc".trim();
 
-        const URL = rawUrl.trim();
-        const KEY = rawKey.trim();
+        // 2. DIAGNOSTIC: How many characters is the URL? 
+        // (It should be exactly 41 characters)
+        log("URL Length: " + URL.length + " characters");
 
         try {
-            log("Testing URL: " + URL);
+            if (URL.includes(" ")) {
+                log("DANGER: There is a hidden space in your URL!");
+            }
+
             const _supabase = supabase.createClient(URL, KEY);
-            log("Client created successfully.", true);
+            log("Connection initialized!", true);
 
-            async function load() {
-                log("Requesting data from 'messages' table...");
-                const { data, error } = await _supabase.from('messages').select('content');
-
+            async function checkTable() {
+                log("Probing 'messages' table...");
+                const { data, error } = await _supabase.from('messages').select('content').limit(1);
+                
                 if (error) {
                     log("DATABASE ERROR: " + error.message);
-                    return;
-                }
-
-                log("Success! Rows found: " + (data ? data.length : 0), true);
-                const msgDiv = document.getElementById('messages');
-                msgDiv.innerHTML = "";
-
-                if (data && data.length > 0) {
-                    data.forEach(m => {
-                        msgDiv.innerHTML += `<p>> ${m.content || 'Empty Message'}</p>`;
-                    });
                 } else {
-                    msgDiv.innerText = "Table is empty. Add a row in Supabase!";
+                    log("SUCCESS: Table reached. Messages found: " + data.length, true);
                 }
             }
 
-            load();
+            checkTable();
 
         } catch (err) {
-            log("CRITICAL SCRIPT ERROR: " + err.message);
+            log("CRITICAL ERROR: " + err.message);
         }
     </script>
 </body>
