@@ -2,63 +2,119 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SultanChat - Hard Reset</title>
+    <title>SultanChat - Live Feed</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: monospace; padding: 20px; background: #000; color: #0f0; }
-        .box { border: 1px solid #0f0; padding: 15px; margin-bottom: 20px; }
-        #log { font-size: 12px; color: #ff00ff; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #eaf3ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chat-container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+            width: 400px;
+            text-align: center;
+        }
+
+        #messages-box {
+            background: #fafafa;
+            border: 2px solid #d1e3ff;
+            border-radius: 8px;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .message-item {
+            background: #e7f3ff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #333;
+            border-left: 4px solid #0077FF;
+        }
+
+        .status-dot {
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>Sultan Monitor</h2>
-        <div id="messages">Waiting...</div>
+
+    <div class="chat-container">
+        <h2>SultanChat</h2>
+        <div id="status" class="status-dot">Connecting to stream...</div>
+        
+        <div id="messages-box">
+            <div style="color: #999; text-align: center; margin-top: 100px;">Loading messages...</div>
+        </div>
     </div>
-    <div id="log"></div>
 
     <script>
-        function screenLog(text) {
-            document.getElementById('log').innerHTML += `<div>${text}</div>`;
-        }
+        // USING YOUR WORKING PROJECT CREDENTIALS
+        const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
+        const _client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // We are building the URL piece by piece so the computer can't lie to us
-        const parts = [
-            "https://",
-            "mixxalydvognourxdtj",
-            ".supabase.co"
-        ];
-        
-        const CLEAN_URL = parts.join("");
-        const CLEAN_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1peHhhbHlkdm9nbG5vdXJ4ZHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTY1NzYsImV4cCI6MjA5MzUzMjU3Nn0.P9_5dOXhJdvZr9KGl7YBwl1vsfDzBxq3JgRxlUqCxLc".trim();
+        async function loadMessages() {
+            const status = document.getElementById("status");
+            const box = document.getElementById("messages-box");
 
-        screenLog("Testing reconstructed URL...");
-        screenLog("Final string: " + CLEAN_URL);
-        screenLog("New Count: " + CLEAN_URL.length);
+            // 1. Fetch from the 'messages' table
+            const { data, error } = await _client
+                .from("messages")
+                .select("content");
 
-        try {
-            // Attempting creation
-            const _supabase = supabase.createClient(CLEAN_URL, CLEAN_KEY);
-            screenLog("Step 1: Client Object Created.");
-
-            async function forceLoad() {
-                screenLog("Step 2: Pinging Database...");
-                const { data, error } = await _supabase.from('messages').select('content');
-                
-                if (error) {
-                    screenLog("DATABASE REJECTED: " + error.message);
-                } else {
-                    document.getElementById('messages').innerHTML = "SUCCESS! " + data.length + " rows found.";
-                    data.forEach(m => {
-                        document.getElementById('messages').innerHTML += `<p>> ${m.content}</p>`;
-                    });
-                }
+            if (error) {
+                status.style.color = "red";
+                status.innerText = "Error: " + error.message;
+                return;
             }
 
-            forceLoad();
-        } catch (e) {
-            screenLog("SYSTEM CRASH: " + e.message);
+            status.style.color = "green";
+            status.innerText = "● Live Connection Active";
+            box.innerHTML = "";
+
+            if (data && data.length > 0) {
+                data.forEach(msg => {
+                    if (msg.content) {
+                        const div = document.createElement("div");
+                        div.className = "message-item";
+                        div.textContent = msg.content;
+                        box.appendChild(div);
+                    }
+                });
+                // Auto-scroll to the bottom
+                box.scrollTop = box.scrollHeight;
+            } else {
+                box.innerHTML = '<div style="color:#999; text-align:center; margin-top:100px;">No messages yet.</div>';
+            }
         }
+
+        // 2. Listen for new messages in real-time
+        _client
+            .channel('public:messages')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+                // When a new message is added, just reload the list
+                loadMessages();
+            })
+            .subscribe();
+
+        // Initial load
+        loadMessages();
     </script>
 </body>
 </html>
