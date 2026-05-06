@@ -2,16 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SultanChat - Clean Project</title>
+    <title>SultanChat - Character Fix</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: monospace; padding: 20px; background: #121212; color: #00ff00; }
-        .box { background: #1e1e1e; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-        #console-log { background: #000; color: #ff5555; padding: 10px; font-size: 12px; height: 150px; overflow-y: auto; }
+        .box { background: #1e1e1e; border: 1px solid #333; padding: 15px; border-radius: 8px; }
+        #console-log { background: #000; color: #ff5555; padding: 10px; font-size: 12px; height: 200px; overflow-y: auto; }
     </style>
 </head>
 <body>
-
     <div class="box">
         <h2>System Console</h2>
         <div id="console-log"></div>
@@ -22,40 +21,34 @@
             const logBox = document.getElementById('console-log');
             const color = isSuccess ? "#00ff00" : "#ff5555";
             logBox.innerHTML += `<div style="color:${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
-            logBox.scrollTop = logBox.scrollHeight;
         }
 
-        // 1. HARD-CODED URL (NO COPY-PASTE SPACES)
-        const URL = "https://mixxalydvognourxdtj.supabase.co".trim();
-        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1peHhhbHlkdm9nbG5vdXJ4ZHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTY1NzYsImV4cCI6MjA5MzUzMjU3Nn0.P9_5dOXhJdvZr9KGl7YBwl1vsfDzBxq3JgRxlUqCxLc".trim();
+        // MANUALLY RECONSTRUCTED TO AVOID CLIPBOARD GLITCHES
+        const proto = "https://";
+        const id = "mixxalydvognourxdtj";
+        const domain = ".supabase.co";
+        const URL = proto + id + domain;
+        
+        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1peHhhbHlkdm9nbG5vdXJ4ZHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTY1NzYsImV4cCI6MjA5MzUzMjU3Nn0.P9_5dOXhJdvZr9KGl7YBwl1vsfDzBxq3JgRxlUqCxLc";
 
-        // 2. DIAGNOSTIC: How many characters is the URL? 
-        // (It should be exactly 41 characters)
-        log("URL Length: " + URL.length + " characters");
+        log("Final URL Check: " + URL);
+        log("Character Count: " + URL.length);
 
         try {
-            if (URL.includes(" ")) {
-                log("DANGER: There is a hidden space in your URL!");
-            }
-
             const _supabase = supabase.createClient(URL, KEY);
-            log("Connection initialized!", true);
+            log("Client Created!", true);
 
-            async function checkTable() {
-                log("Probing 'messages' table...");
+            async function test() {
                 const { data, error } = await _supabase.from('messages').select('content').limit(1);
-                
                 if (error) {
-                    log("DATABASE ERROR: " + error.message);
+                    log("DB ERROR: " + error.message);
                 } else {
-                    log("SUCCESS: Table reached. Messages found: " + data.length, true);
+                    log("SUCCESS! Table found.", true);
                 }
             }
-
-            checkTable();
-
-        } catch (err) {
-            log("CRITICAL ERROR: " + err.message);
+            test();
+        } catch (e) {
+            log("INIT ERROR: " + e.message);
         }
     </script>
 </body>
