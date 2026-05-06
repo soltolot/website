@@ -2,65 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SultanChat - Live</title>
+    <title>SultanChat Debugger</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: #1e293b; padding: 25px; border-radius: 15px; width: 380px; border: 1px solid #334155; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-        #chat { background: #0f172a; border: 1px solid #334155; height: 300px; overflow-y: auto; padding: 15px; margin-top: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px; }
-        .msg { background: #38bdf8; color: #0f172a; padding: 8px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; align-self: flex-start; }
-        .status { font-size: 11px; color: #94a3b8; margin-top: 10px; text-align: center; font-family: monospace; }
+        body { font-family: monospace; background: #000; color: #0f0; padding: 20px; }
+        #log-window { border: 1px solid #0f0; padding: 10px; height: 400px; overflow-y: auto; background: #050505; }
+        .err { color: #ff0000; }
+        .msg { color: #ffffff; border-bottom: 1px solid #333; padding: 5px 0; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2 style="text-align:center; color:#38bdf8; margin:0;">SultanChat</h2>
-        <div id="chat">Connecting...</div>
-        <div id="status" class="status">Connecting to vldk...</div>
-    </div>
+    <h2>SULTANCHAT SYSTEM LOGS</h2>
+    <div id="log-window">Initializing System...<br></div>
 
     <script>
-        const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co"; 
-        const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+        const logWin = document.getElementById('log-window');
         
-        const client = supabase.createClient(URL, KEY);
-
-        async function load() {
-            const display = document.getElementById("chat");
-            const status = document.getElementById("status");
-
-            const { data, error } = await client.from("messages").select("content");
-
-            if (error) {
-                status.style.color = "#ef4444";
-                status.innerText = "Error: " + error.message;
-                return;
-            }
-
-            status.style.color = "#22c55e";
-            status.innerText = "● ONLINE: vldkmlbfjzdrfzpeyver";
-            display.innerHTML = "";
-
-            if (data && data.length > 0) {
-                data.forEach(m => {
-                    const div = document.createElement("div");
-                    div.className = "msg";
-                    div.textContent = m.content;
-                    display.appendChild(div);
-                });
-                display.scrollTop = display.scrollHeight;
-            } else {
-                display.innerHTML = '<div style="color:#64748b; text-align:center; margin-top:100px;">Connected!<br>Go add a row in Supabase to see it here.</div>';
-            }
+        function printLog(text, isError = false) {
+            const span = document.createElement('div');
+            span.className = isError ? 'err' : '';
+            span.innerHTML = `> ${text}`;
+            logWin.appendChild(span);
+            console.log(text);
         }
 
-        // Realtime: This makes the chat "pop" when you add a row in the dashboard
-        client.channel('chat-room').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-            load();
-        }).subscribe();
+        const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co"; 
+        const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
 
-        load();
+        try {
+            printLog("Connecting to Supabase...");
+            const client = supabase.createClient(URL, KEY);
+            printLog("Client created.");
+
+            async function start() {
+                printLog("Requesting data from table: 'messages'...");
+                
+                const { data, error, status } = await client
+                    .from('messages')
+                    .select('content');
+
+                if (error) {
+                    printLog(`DATABASE ERROR: ${error.message}`, true);
+                    printLog(`ERROR CODE: ${error.code}`, true);
+                    return;
+                }
+
+                printLog(`HTTP STATUS: ${status} (Success)`);
+                
+                if (data && data.length > 0) {
+                    printLog(`Found ${data.length} messages:`);
+                    data.forEach(m => {
+                        const d = document.createElement('div');
+                        d.className = "msg";
+                        d.textContent = m.content;
+                        logWin.appendChild(d);
+                    });
+                } else {
+                    printLog("Database connected, but no rows were returned. Is the table empty?");
+                }
+            }
+
+            start();
+        } catch (e) {
+            printLog("CRITICAL SCRIPT CRASH: " + e.message, true);
+        }
     </script>
 </body>
 </html>
