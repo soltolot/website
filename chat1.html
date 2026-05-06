@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SultanChat - Hard Reset</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #000; color: #0f0; }
+        .box { border: 1px solid #0f0; padding: 15px; margin-bottom: 20px; }
+        #log { font-size: 12px; color: #ff00ff; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>Sultan Monitor</h2>
+        <div id="messages">Waiting...</div>
+    </div>
+    <div id="log"></div>
+
+    <script>
+        function screenLog(text) {
+            document.getElementById('log').innerHTML += `<div>${text}</div>`;
+        }
+
+        // We are building the URL piece by piece so the computer can't lie to us
+        const parts = [
+            "https://",
+            "mixxalydvognourxdtj",
+            ".supabase.co"
+        ];
+        
+        const CLEAN_URL = parts.join("");
+        const CLEAN_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1peHhhbHlkdm9nbG5vdXJ4ZHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTY1NzYsImV4cCI6MjA5MzUzMjU3Nn0.P9_5dOXhJdvZr9KGl7YBwl1vsfDzBxq3JgRxlUqCxLc".trim();
+
+        screenLog("Testing reconstructed URL...");
+        screenLog("Final string: " + CLEAN_URL);
+        screenLog("New Count: " + CLEAN_URL.length);
+
+        try {
+            // Attempting creation
+            const _supabase = supabase.createClient(CLEAN_URL, CLEAN_KEY);
+            screenLog("Step 1: Client Object Created.");
+
+            async function forceLoad() {
+                screenLog("Step 2: Pinging Database...");
+                const { data, error } = await _supabase.from('messages').select('content');
+                
+                if (error) {
+                    screenLog("DATABASE REJECTED: " + error.message);
+                } else {
+                    document.getElementById('messages').innerHTML = "SUCCESS! " + data.length + " rows found.";
+                    data.forEach(m => {
+                        document.getElementById('messages').innerHTML += `<p>> ${m.content}</p>`;
+                    });
+                }
+            }
+
+            forceLoad();
+        } catch (e) {
+            screenLog("SYSTEM CRASH: " + e.message);
+        }
+    </script>
+</body>
+</html>
