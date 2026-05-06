@@ -2,59 +2,117 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SultanChat - Final Debug</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SultanChat - Live Feed</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: monospace; background: #000; color: #0f0; padding: 20px; }
-        #log { border: 1px solid #0f0; padding: 15px; height: 300px; background: #050505; }
-        .error { color: #ff3333; font-weight: bold; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #0f172a; 
+            color: white; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+        .container { 
+            background: #1e293b; 
+            padding: 20px; 
+            border-radius: 15px; 
+            width: 350px; 
+            border: 1px solid #334155; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        h2 { text-align: center; color: #38bdf8; margin-top: 0; }
+        #chat-box { 
+            background: #0f172a; 
+            height: 300px; 
+            overflow-y: auto; 
+            padding: 15px; 
+            border-radius: 10px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            border: 1px solid #334155;
+        }
+        .msg { 
+            background: #38bdf8; 
+            color: #0f172a; 
+            padding: 8px 12px; 
+            border-radius: 10px; 
+            font-size: 14px; 
+            font-weight: 500; 
+            max-width: 85%;
+            word-wrap: break-word;
+        }
+        .status { 
+            font-size: 11px; 
+            color: #94a3b8; 
+            margin-top: 10px; 
+            text-align: center; 
+            font-family: monospace; 
+        }
     </style>
 </head>
 <body>
-    <h2>SYSTEM LOGS</h2>
-    <div id="log">Starting...<br></div>
+
+    <div class="container">
+        <h2>SultanChat</h2>
+        <div id="chat-box">Loading messages...</div>
+        <div id="status" class="status">Connecting...</div>
+    </div>
 
     <script>
-        const display = document.getElementById('log');
-        function write(text, isErr = false) {
-            display.innerHTML += `<div class="${isErr ? 'error' : ''}">> ${text}</div>`;
-        }
+        // CLEANED CREDENTIALS
+        const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co"; 
+        const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+        
+        const client = supabase.createClient(URL, KEY);
 
-        // I have pre-cleaned these for you. 
-        // JUST PASTE YOUR KEY INSIDE THE QUOTES BELOW.
-        const rawUrl = "https://vldkmlbfjzdrfzpeyver.supabase.co";
-        const rawKey = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+        async function fetchMessages() {
+            const chatBox = document.getElementById("chat-box");
+            const status = document.getElementById("status");
 
-        try {
-            write("Cleaning URL and Key...");
-            const cleanUrl = rawUrl.trim().replace(/\/$/, ""); // Removes spaces and extra slashes
-            const cleanKey = rawKey.trim();
+            // Look for table 'message' and column 'message'
+            const { data, error } = await client
+                .from('message')
+                .select('message');
 
-            write("Connecting to: " + cleanUrl);
-            const client = supabase.createClient(cleanUrl, cleanKey);
-            write("Client Created Successfully.");
-
-            async function checkData() {
-                write("Checking 'messages' table...");
-                const { data, error } = await client.from('message').select('message');
-
-                if (error) {
-                    write("DATABASE ERROR: " + error.message, true);
-                    return;
-                }
-
-                if (data && data.length > 0) {
-                    write("SUCCESS! Found " + data.length + " messages.");
-                    data.forEach(m => write("MSG: " + m.content));
-                } else {
-                    write("Connected, but table is empty. Add a row in Supabase!");
-                }
+            if (error) {
+                status.innerText = "Error: " + error.message;
+                status.style.color = "#ef4444";
+                return;
             }
 
-            checkData();
-        } catch (e) {
-            write("CRASH: " + e.message, true);
+            status.innerText = "● ONLINE (vldk)";
+            status.style.color = "#22c55e";
+
+            if (data && data.length > 0) {
+                chatBox.innerHTML = ""; // Clear loader
+                data.forEach(row => {
+                    if (row.message) {
+                        const div = document.createElement("div");
+                        div.className = "msg";
+                        div.textContent = row.message;
+                        chatBox.appendChild(div);
+                    }
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else {
+                chatBox.innerHTML = '<div style="color:#64748b;text-align:center;margin-top:100px;">No messages yet.</div>';
+            }
         }
+
+        // Listen for new messages in real-time
+        client.channel('any')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, (payload) => {
+                fetchMessages();
+            })
+            .subscribe();
+
+        // Initial load
+        fetchMessages();
     </script>
 </body>
 </html>
