@@ -10,7 +10,6 @@
         h2 { color: #888; font-size: 14px; text-transform: uppercase; margin-top: 0; }
         #messages { min-height: 50px; color: #fff; font-size: 18px; }
         #console-log { background: #000; color: #ff5555; padding: 10px; font-size: 12px; height: 150px; overflow-y: auto; border: 1px solid #444; }
-        .success { color: #00ff00; }
     </style>
 </head>
 <body>
@@ -21,57 +20,51 @@
     </div>
 
     <div class="box">
-        <h2>System Console (Internal Errors)</h2>
-        <div id="console-log">Standing by for logs...</div>
+        <h2>System Console</h2>
+        <div id="console-log"></div>
     </div>
 
     <script>
-        // Helper to print errors to the screen
         function log(msg, isSuccess = false) {
             const logBox = document.getElementById('console-log');
-            const color = isSuccess ? "line-height:1.5;color:#00ff00" : "line-height:1.5;color:#ff5555";
-            logBox.innerHTML += `<div style="${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+            const color = isSuccess ? "#00ff00" : "#ff5555";
+            logBox.innerHTML += `<div style="color:${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        const URL = "https://mixxalydvognourxdtj.supabase.co";
-        const KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1peHhhbHlkdm9nbG5vdXJ4ZHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTY1NzYsImV4cCI6MjA5MzUzMjU3Nn0.P9_5dOXhJdvZr9KGl7YBwl1vsfDzBxq3JgRxlUqCxLc";
+        // We use .trim() to automatically delete any accidental spaces or invisible characters
+        const rawUrl = "https://mixxalydvognourxdtj.supabase.co";
+        const rawKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1peHhhbHlkdm9nbG5vdXJ4ZHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5NTY1NzYsImV4cCI6MjA5MzUzMjU3Nn0.P9_5dOXhJdvZr9KGl7YBwl1vsfDzBxq3JgRxlUqCxLc";
 
-        log("Checking connection to " + URL + "...");
+        const URL = rawUrl.trim();
+        const KEY = rawKey.trim();
 
         try {
+            log("Testing URL: " + URL);
             const _supabase = supabase.createClient(URL, KEY);
-            log("Client created. Attempting to fetch data...", true);
+            log("Client created successfully.", true);
 
             async function load() {
-                const { data, error } = await _supabase
-                    .from('messages')
-                    .select('content');
+                log("Requesting data from 'messages' table...");
+                const { data, error } = await _supabase.from('messages').select('content');
 
                 if (error) {
                     log("DATABASE ERROR: " + error.message);
-                    document.getElementById('messages').innerText = "Failed to load.";
                     return;
                 }
 
-                log("Data received successfully!", true);
+                log("Success! Rows found: " + (data ? data.length : 0), true);
                 const msgDiv = document.getElementById('messages');
                 msgDiv.innerHTML = "";
 
                 if (data && data.length > 0) {
                     data.forEach(m => {
-                        msgDiv.innerHTML += `<p style="margin:5px 0;">> ${m.content}</p>`;
+                        msgDiv.innerHTML += `<p>> ${m.content || 'Empty Message'}</p>`;
                     });
                 } else {
-                    msgDiv.innerText = "Connection active, but table is empty.";
+                    msgDiv.innerText = "Table is empty. Add a row in Supabase!";
                 }
             }
-
-            // Realtime
-            _supabase.channel('any').on('postgres_changes', {event:'INSERT', schema:'public', table:'messages'}, () => {
-                log("New message detected!", true);
-                load();
-            }).subscribe();
 
             load();
 
