@@ -99,43 +99,47 @@
         const rawUrl = "https://vldkmlbfjzdrfzpeyver.supabase.co";
         const rawKey = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
 
-        try {
-            write("Cleaning URL and Key...");
-            const cleanUrl = rawUrl.trim().replace(/\/$/, ""); // Removes spaces and extra slashes
-            const cleanKey = rawKey.trim();
+async function refreshMessages() {
+            const display = document.getElementById('log');
+            const status = document.getElementById('status');
 
-            write("Connecting to: " + cleanUrl);
-            const client = supabase.createClient(cleanUrl, cleanKey);
-            write("Client Created Successfully.");
+            // Table: message | Column: message
+            const { data, error } = await client
+                .from('message')
+                .select('message');
 
-async function checkData() {
-    write("Checking 'message' table...");
-    
-    // 1. We change .from() to 'message'
-    // 2. We change .select() to 'message'
-    const { data, error } = await client
-        .from('message') 
-        .select('message'); 
+            if (error) {
+                status.innerText = "Connection Failed";
+                status.style.color = "red";
+                return;
+            }
 
-    if (error) {
-        write("DATABASE ERROR: " + error.message, true);
-        return;
-    }
+            status.innerText = "● Live Feed Active";
+            display.innerHTML = "";
 
-    if (data && data.length > 0) {
-        write("SUCCESS! Found " + data.length + " rows.");
-        data.forEach(m => {
-            // 3. We access the data using m.message
-            write("DATA: " + m.message);
-        });
-    } else {
-        write("Connected, but the 'message' table is empty.");
-    }
-}
-            checkData();
-        } catch (e) {
-            write("CRASH: " + e.message, true);
+            if (data && data.length > 0) {
+                data.forEach(row => {
+                    if (row.message) {
+                        const div = document.createElement('div');
+                        div.className = "msg-bubble";
+                        div.textContent = row.message;
+                        display.appendChild(div);
+                    }
+                });
+                display.scrollTop = display.scrollHeight;
+            } else {
+                display.innerHTML = '<div style="color:#999;text-align:center;margin-top:110px;font-size:12px;">No messages yet.</div>';
+            }
         }
+
+        // Realtime Refresh
+        client.channel('main')
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, () => {
+                refreshMessages();
+            })
+            .subscribe();
+
+        refreshMessages();
     </script>
 </body>
 </html>
