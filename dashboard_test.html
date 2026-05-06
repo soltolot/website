@@ -2,70 +2,134 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SultanChat - Final Attempt</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SultanChat - Live</title>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; background: #f57c00; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: white; padding: 20px; border-radius: 20px; width: 300px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        h2 { text-align: center; color: #e65100; margin-top: 0; }
-        #feed { background: #fff3e0; height: 250px; overflow-y: auto; padding: 10px; border-radius: 10px; border: 1px solid #ffe0b2; }
-        .msg { background: #ffcc80; padding: 8px; margin-bottom: 8px; border-radius: 8px; font-size: 14px; color: #5d4037; }
-        .st { font-size: 10px; text-align: center; margin-top: 10px; color: #ef6c00; font-weight: bold; }
+        /* Polished Orange Background */
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #ff9d42 0%, #f57c00 100%); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
+
+        /* Not-too-big Container */
+        .chat-card { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 24px; 
+            width: 320px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        h2 { 
+            color: #e65100; 
+            margin: 0 0 15px 0;
+            font-size: 22px;
+        }
+
+        /* Message Display Area */
+        #feed { 
+            background: #fff8f0; 
+            height: 300px; 
+            overflow-y: auto; 
+            padding: 12px; 
+            border-radius: 16px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px;
+            border: 1px solid #ffe0b2;
+            text-align: left;
+        }
+
+        /* Orange Message Bubbles */
+        .bubble { 
+            background: #ffcc80; 
+            color: #5d4037; 
+            padding: 10px 14px; 
+            border-radius: 15px 15px 15px 4px; 
+            font-size: 14px; 
+            font-weight: 500;
+            line-height: 1.4;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            max-width: 85%;
+            animation: pop 0.3s ease;
+        }
+
+        @keyframes pop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .status-dot { 
+            font-size: 10px; 
+            color: #ffa726; 
+            margin-top: 12px; 
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Clean Scrollbar */
+        #feed::-webkit-scrollbar { width: 4px; }
+        #feed::-webkit-scrollbar-thumb { background: #ffcc80; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="box">
+    <div class="chat-card">
         <h2>SultanChat</h2>
-        <div id="feed">Checking Connection...</div>
-        <div id="st" class="st">STARTING...</div>
+        <div id="feed">Syncing messages...</div>
+        <div id="status" class="status-dot">● Connecting</div>
     </div>
 
     <script>
-        // Use a try-block to catch the "immediate" crash
-        try {
-            const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co"; 
-            const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+        const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co"; 
+        const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+        const client = supabase.createClient(URL, KEY);
+
+        async function updateChat() {
+            const feed = document.getElementById('feed');
+            const status = document.getElementById('status');
+
+            // Table: message | Column: message
+            const { data, error } = await client
+                .from('message')
+                .select('message');
+
+            if (error) {
+                status.innerText = "Error: " + error.message;
+                return;
+            }
+
+            status.innerText = "● Live Feed Active";
             
-            // Check if the library even loaded
-            if (typeof supabase === 'undefined') {
-                alert("CRITICAL ERROR: The Supabase library is blocked by your network/Chromebook. Try using a phone hotspot.");
+            if (data && data.length > 0) {
+                feed.innerHTML = ""; 
+                data.forEach(row => {
+                    if (row.message) {
+                        const div = document.createElement('div');
+                        div.className = "bubble";
+                        div.textContent = row.message;
+                        feed.appendChild(div);
+                    }
+                });
+                // Auto-scroll to bottom
+                feed.scrollTop = feed.scrollHeight;
+            } else {
+                feed.innerHTML = '<div style="color:#ccbaaa;text-align:center;margin-top:120px;">No messages yet.</div>';
             }
-
-            const client = supabase.createClient(URL, KEY);
-
-            async function getData() {
-                const feed = document.getElementById('feed');
-                const st = document.getElementById('st');
-
-                const { data, error } = await client.from('message').select('message');
-
-                if (error) {
-                    st.innerText = "DB ERROR: " + error.message;
-                    return;
-                }
-
-                st.innerText = "● LIVE";
-                if (data && data.length > 0) {
-                    feed.innerHTML = "";
-                    data.forEach(r => {
-                        const d = document.createElement('div');
-                        d.className = "msg";
-                        d.textContent = r.message;
-                        feed.appendChild(d);
-                    });
-                    feed.scrollTop = feed.scrollHeight;
-                } else {
-                    feed.innerHTML = "No messages found.";
-                }
-            }
-
-            getData();
-            setInterval(getData, 3000);
-
-        } catch (e) {
-            alert("Script Crash: " + e.message);
         }
+
+        // Initial update
+        updateChat();
+
+        // Refresh every 3 seconds (The "Pulse" method)
+        setInterval(updateChat, 3000);
     </script>
 </body>
 </html>
