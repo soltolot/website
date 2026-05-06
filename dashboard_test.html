@@ -103,43 +103,37 @@ async function refreshMessages() {
             const display = document.getElementById('log');
             const status = document.getElementById('status');
 
-            // Table: message | Column: message
-            const { data, error } = await client
-                .from('message')
-                .select('message');
+            try {
+                console.log("Attempting to fetch...");
+                // Setting a 5-second timeout check
+                const { data, error } = await client
+                    .from('message')
+                    .select('message');
 
-            if (error) {
-                status.innerText = "Connection Failed";
-                status.style.color = "red";
-                return;
-            }
+                if (error) {
+                    console.error(error);
+                    status.innerText = "DB Error: " + error.message;
+                    return;
+                }
 
-            status.innerText = "● Live Feed Active";
-            display.innerHTML = "";
+                console.log("Data received:", data);
+                status.innerText = "● Live Feed Active";
+                display.innerHTML = "";
 
-            if (data && data.length > 0) {
-                data.forEach(row => {
-                    if (row.message) {
+                if (data && data.length > 0) {
+                    data.forEach(row => {
                         const div = document.createElement('div');
                         div.className = "msg-bubble";
                         div.textContent = row.message;
                         display.appendChild(div);
-                    }
-                });
-                display.scrollTop = display.scrollHeight;
-            } else {
-                display.innerHTML = '<div style="color:#999;text-align:center;margin-top:110px;font-size:12px;">No messages yet.</div>';
+                    });
+                } else {
+                    display.innerHTML = '<div style="text-align:center;margin-top:110px;">Table is empty!</div>';
+                }
+            } catch (err) {
+                status.innerText = "Network Blocked";
+                console.error(err);
             }
-        }
-
-        // Realtime Refresh
-        client.channel('main')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, () => {
-                refreshMessages();
-            })
-            .subscribe();
-
-        refreshMessages();
-    </script>
+        }    </script>
 </body>
 </html>
