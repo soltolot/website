@@ -3,7 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SultanChat - Live</title<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>SultanChat - Live</title>
+
+    <!-- Supabase v2 (stable CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #ff9d42, #f57c00);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 24px;
+            width: 340px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        h2 {
+            color: #e65100;
+            margin-bottom: 12px;
+        }
+
+        #feed {
+            background: #fff8f0;
+            height: 300px;
+            overflow-y: auto;
+            padding: 12px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 1px solid #ffe0b2;
+            text-align: left;
+        }
+
+        .bubble {
+            background: #ffcc80;
+            color: #5d4037;
+            padding: 10px 14px;
+            border-radius: 15px 15px 15px 4px;
+            font-size: 14px;
+            line-height: 1.4;
+            max-width: 85%;
+            animation: pop 0.2s ease;
+        }
+
+        @keyframes pop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .status {
+            margin-top: 10px;
+            font-size: 11px;
+            color: #ffa726;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="chat-card">
+    <h2>SultanChat</h2>
+    <div id="feed">Loading messages...</div>
+    <div id="status" class="status">● Connecting...</div>
+</div>
+
+<script>
+    // 🔴 REPLACE THESE WITH YOUR REAL SUPABASE VALUES
+    const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
+    const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+
+    const client = supabase.createClient(URL, KEY);
+
+    async function updateChat() {
+        const feed = document.getElementById("feed");
+        const status = document.getElementById("status");
+
+        try {
+            const { data, error } = await client
+                .from("message")
+                .select("message");
+
+            if (error) {
+                status.innerText = "Error: " + error.message;
+                return;
+            }
+
+            status.innerText = "● Live Feed Active";
+
+            feed.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                feed.innerHTML = "<div style='color:#aaa;text-align:center;margin-top:120px;'>No messages yet</div>";
+                return;
+            }
+
+            data.forEach(row => {
+                if (row.message) {
+                    const div = document.createElement("div");
+                    div.className = "bubble";
+                    div.textContent = row.message;
+                    feed.appendChild(div);
+                }
+            });
+
+            feed.scrollTop = feed.scrollHeight;
+
+        } catch (err) {
+            status.innerText = "JS Error: " + err.message;
+            console.error(err);
+        }
+    }
+
+    updateChat();
+    setInterval(updateChat, 3000);
+</script>
+
+</body>
+</html>>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         /* Polished Orange Background */
