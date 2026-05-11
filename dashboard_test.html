@@ -39,29 +39,59 @@
             
             updateStatus("Step 3: Client created. Making request to Supabase...", "#ffff00");
 
-            client.from("message")
-                .select("*")
-                .limit(5)
-                .then(({ data, error }) => {
-                    if (error) {
-                        updateStatus("❌ Error from Supabase", "#ff6666");
-                        rawEl.style.display = "block";
-                        rawEl.textContent = JSON.stringify(error, null, 2);
-                    } else {
-                        updateStatus(`✅ Success! ${data.length} messages loaded`, "#00ff88");
-                    }
-                })
-                .catch(err => {
-                    updateStatus("❌ Promise Error", "#ff6666");
-                    rawEl.style.display = "block";
-                    rawEl.textContent = JSON.stringify(err, null, 2);
-                });
+async function loadMessages() {
+            const chat = document.getElementById("chat");
+            const status = document.getElementById("status");
 
-        } catch (err) {
-            updateStatus("❌ JavaScript Error before request", "#ff0000");
-            rawEl.style.display = "block";
-            rawEl.textContent = err.message + "\n\n" + err.stack;
+            try {
+                const { data, error } = await client
+                    .from("message")        // Correct table name
+                    .select("content")
+                    .order('id', { ascending: true });
+
+                if (error) throw error;
+
+                status.style.background = "#003300";
+                status.style.color = "#00ff00";
+                status.textContent = `● ONLINE - ${data.length} messages`;
+
+                chat.innerHTML = "";
+
+                if (data && data.length > 0) {
+                    data.forEach(item => {
+                        const div = document.createElement("div");
+                        div.className = "msg";
+                        div.textContent = item.content;
+                        chat.appendChild(div);
+                    });
+                    chat.scrollTop = chat.scrollHeight;
+                } else {
+                    chat.innerHTML = `<div style="color:#777; text-align:center; padding:100px 20px;">
+                        No messages yet.
+                    </div>`;
+                }
+
+            } catch (err) {
+                status.style.background = "#330000";
+                status.style.color = "#ff6666";
+                status.textContent = "Failed to load messages";
+                chat.innerHTML = `<div style="color:#ff7777; padding:20px;">
+                    Error: ${err.message}
+                </div>`;
+            }
         }
+
+        // Real-time updates
+        client.channel('room1')
+            .on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'message' 
+            }, loadMessages)
+            .subscribe();
+
+        // Load messages when page opens
+        loadMessages();    
     </script>
 </body>
 </html>
