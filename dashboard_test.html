@@ -6,57 +6,37 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: auto; background: #1e1e1e; padding: 25px; border-radius: 12px; }
-        #chat { height: 350px; overflow-y: auto; background: #111; padding: 15px; border-radius: 10px; border: 1px solid #444; margin-bottom: 15px; }
-        .msg { background: #0077FF; padding: 12px; border-radius: 10px; margin-bottom: 10px; word-break: break-word; }
-        #status { padding: 15px; border-radius: 8px; font-family: monospace; margin: 10px 0; background: #333; }
-        #raw { 
-            background: #220000; 
-            color: #ffdddd; 
-            padding: 15px; 
-            border-radius: 8px; 
-            white-space: pre-wrap; 
-            font-size: 13px; 
-            display: none; 
+        .container { max-width: 420px; margin: auto; background: #1e1e1e; padding: 25px; border-radius: 15px; border: 1px solid #333; }
+        #chat { height: 380px; overflow-y: auto; background: #111; padding: 15px; border-radius: 10px; border: 1px solid #444; }
+        .msg { 
+            background: #0077FF; 
+            padding: 12px; 
+            border-radius: 10px; 
+            margin-bottom: 10px; 
+            word-break: break-word;
+            white-space: pre-wrap;
         }
+        #status { padding: 12px; background: #003300; color: #00ff00; border-radius: 8px; text-align: center; font-family: monospace; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 style="color:#0077FF;">SultanChat</h2>
-        <div id="chat">Loading messages...</div>
-        <div id="status">Step 1: Loading Supabase library...</div>
-        <div id="raw"></div>
+        <h2 style="color:#0077FF; text-align:center;">SultanChat</h2>
+        <div id="chat"></div>
+        <div id="status">Loading...</div>
     </div>
 
     <script>
-        const statusEl = document.getElementById("status");
-        const rawEl = document.getElementById("raw");
-        const chatEl = document.getElementById("chat");
+        const client = supabase.createClient(
+            "https://vldkmlbfjzdrfzpeyver.supabase.co",
+            "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
+        );
 
-        function updateStatus(text, color = "#ffff00") {
-            statusEl.style.background = "#333300";
-            statusEl.style.color = color;
-            statusEl.textContent = text;
-        }
-
-        async function init() {
-            // Step 1
-            if (typeof supabase === "undefined") {
-                updateStatus("❌ Supabase library failed to load", "#ff0000");
-                return;
-            }
-
-            updateStatus("Step 2: Supabase loaded. Creating client...", "#ffff00");
+        async function load() {
+            const chat = document.getElementById("chat");
+            const status = document.getElementById("status");
 
             try {
-                const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
-                const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
-
-                const client = supabase.createClient(URL, KEY);
-                
-                updateStatus("Step 3: Fetching messages from 'message' table...", "#ffff00");
-
                 const { data, error } = await client
                     .from("message")
                     .select("message")
@@ -64,29 +44,27 @@
 
                 if (error) throw error;
 
-                // Success
-                updateStatus(`✅ Success! ${data.length} messages loaded`, "#00ff88");
+                status.textContent = `✅ ONLINE - ${data.length} message(s)`;
 
-                chatEl.innerHTML = "";
-                if (data.length === 0) {
-                    chatEl.innerHTML = `<div style="color:#777; text-align:center; padding:100px;">No messages in the table yet.</div>`;
-                } else {
-                    data.forEach(item => {
-                        const div = document.createElement("div");
-                        div.className = "msg";
-                        div.textContent = item.content;
-                        chatEl.appendChild(div);
-                    });
-                }
+                chat.innerHTML = "";
+
+                data.forEach(row => {
+                    const div = document.createElement("div");
+                    div.className = "msg";
+                    
+                    // Show full row so we can see column names
+                    div.innerHTML = "<strong>Full Row:</strong><br>" + JSON.stringify(row, null, 2);
+                    chat.appendChild(div);
+                });
 
             } catch (err) {
-                updateStatus("❌ Error from Supabase", "#ff6666");
-                rawEl.style.display = "block";
-                rawEl.textContent = JSON.stringify(err, null, 2);
+                status.style.background = "#330000";
+                status.style.color = "#ff6666";
+                status.textContent = "Error: " + err.message;
             }
         }
 
-        init();
+        load();
     </script>
 </body>
 </html>
