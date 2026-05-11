@@ -7,75 +7,85 @@
     <style>
         body {
             font-family: sans-serif;
-            background: #121212;
-            color: white;
+            background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
+            color: #2C2C2C;
             margin: 0;
             padding: 20px;
+            min-height: 100vh;
         }
         .container {
             max-width: 420px;
             margin: auto;
-            background: #1e1e1e;
+            background: white;
             padding: 25px;
-            border-radius: 15px;
-            border: 1px solid #333;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
+            border: 2px solid #FFBB66;
         }
         #chat {
             height: 380px;
             overflow-y: auto;
-            background: #111;
+            background: #FFF9F0;
             padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #444;
+            border-radius: 15px;
+            border: 1px solid #FFDDAA;
             margin-bottom: 15px;
         }
         .msg {
-            background: #FF6200;           /* Professional Deep Orange */
+            background: #FF6200;
             color: white;
-            padding: 12px;
-            border-radius: 10px;
+            padding: 12px 15px;
+            border-radius: 12px;
             margin-bottom: 10px;
             word-break: break-word;
+            box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
+        }
+        .msg:nth-child(even) {
+            background: #FF8A00;
         }
         .status {
             padding: 12px;
-            background: #003300;
-            color: #00ff00;
-            border-radius: 8px;
+            background: #FFEDD5;
+            color: #E85D04;
+            border-radius: 10px;
             text-align: center;
             font-family: monospace;
+            font-weight: bold;
         }
         #send-area {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             margin-top: 10px;
         }
         #message-input {
             flex: 1;
-            padding: 12px;
-            background: #333;
-            border: none;
-            border-radius: 8px;
-            color: white;
+            padding: 14px;
+            background: #FFF4E0;
+            border: 2px solid #FFBB66;
+            border-radius: 12px;
+            color: #2C2C2C;
+            font-size: 16px;
         }
         #send-btn {
-            padding: 0 24px;
-            background: #FF6200;           /* Main Professional Orange */
+            padding: 0 28px;
+            background: #FF6200;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 98, 0, 0.3);
             transition: all 0.3s;
         }
         #send-btn:hover {
-            background: #E85D04;           /* Darker orange on hover */
-            transform: translateY(-1px);
+            background: #FF8A00;
+            transform: scale(1.05);
         }
         h2 {
-            color: #FF8A00;                /* Bright professional orange for title */
+            color: #FF6200;
             margin-top: 0;
             text-align: center;
+            font-size: 28px;
         }
     </style>
 </head>
@@ -83,9 +93,8 @@
     <div class="container">
         <h2>SultanChat</h2>
         <div id="chat">Loading messages...</div>
-        <div id="status" class="status">Connecting...</div>
+        <div id="status" class="status">● ONLINE</div>
        
-        <!-- Send Area -->
         <div id="send-area">
             <input type="text" id="message-input" placeholder="Type your message..." />
             <button id="send-btn">Send</button>
@@ -114,7 +123,9 @@
 
                 chat.innerHTML = "";
                 if (data.length === 0) {
-                    chat.innerHTML = `<div style="color:#777; text-align:center; padding:100px 20px;">No messages yet.</div>`;
+                    chat.innerHTML = `<div style="color:#FF8A00; text-align:center; padding:100px 20px; font-size:18px;">
+                        No messages yet. Be the first to say something! 👋
+                    </div>`;
                 } else {
                     data.forEach(item => {
                         const div = document.createElement("div");
@@ -125,8 +136,8 @@
                     chat.scrollTop = chat.scrollHeight;
                 }
             } catch (err) {
-                status.style.background = "#330000";
-                status.style.color = "#ff6666";
+                status.style.background = "#FFE0E0";
+                status.style.color = "#FF4444";
                 status.textContent = "Error loading messages";
             }
         }
@@ -148,23 +159,18 @@
                 if (error) throw error;
                 input.value = "";
             } catch (err) {
-                alert("Failed to send message: " + err.message);
+                alert("Failed to send: " + err.message);
             } finally {
                 sendBtn.disabled = false;
                 sendBtn.textContent = "Send";
             }
         }
 
-        // Real-time listener
+        // Real-time
         client.channel('room1')
-            .on('postgres_changes', {
-                event: '*',
-                schema: 'public',
-                table: 'message'
-            }, loadMessages)
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, loadMessages)
             .subscribe();
 
-        // Event Listeners
         document.getElementById("send-btn").addEventListener("click", sendMessage);
         document.getElementById("message-input").addEventListener("keypress", (e) => {
             if (e.key === "Enter") sendMessage();
