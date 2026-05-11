@@ -35,7 +35,7 @@
             padding: 12px; 
             border-radius: 10px; 
             margin-bottom: 10px; 
-            word-break: break-word;
+            word-break: break-word; 
         }
         .status { 
             padding: 12px; 
@@ -67,7 +67,7 @@
             try {
                 const { data, error } = await client
                     .from("message")
-                    .select("message")           // Correct column name
+                    .select("message")
                     .order('id', { ascending: true });
 
                 if (error) throw error;
@@ -75,19 +75,17 @@
                 status.textContent = `● ONLINE - ${data.length} messages`;
 
                 chat.innerHTML = "";
-
                 if (data.length === 0) {
                     chat.innerHTML = `<div style="color:#777; text-align:center; padding:100px 20px;">No messages yet.</div>`;
                 } else {
                     data.forEach(item => {
                         const div = document.createElement("div");
                         div.className = "msg";
-                        div.textContent = item.message;        // Correct column
+                        div.textContent = item.message;
                         chat.appendChild(div);
                     });
                     chat.scrollTop = chat.scrollHeight;
                 }
-
             } catch (err) {
                 status.style.background = "#330000";
                 status.style.color = "#ff6666";
@@ -95,15 +93,19 @@
             }
         }
 
-        // Real-time listener
+        // Listen to ALL changes: INSERT, UPDATE, DELETE
         client.channel('room1')
-            .on('postgres_changes', { 
-                event: 'INSERT', 
-                schema: 'public', 
-                table: 'message' 
-            }, loadMessages)
+            .on('postgres_changes', 
+                { 
+                    event: '*',           // '*' means all events (INSERT, UPDATE, DELETE)
+                    schema: 'public', 
+                    table: 'message' 
+                }, 
+                loadMessages
+            )
             .subscribe();
 
+        // Initial load
         loadMessages();
     </script>
 </body>
