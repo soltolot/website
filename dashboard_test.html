@@ -5,51 +5,50 @@
     <title>SultanChat</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { 
-            font-family: sans-serif; 
-            background: #ff8c00; 
-            color: white; 
-            margin: 0; 
-            padding: 20px; 
+        body {
+            font-family: sans-serif;
+            background: #121212;
+            color: white;
+            margin: 0;
+            padding: 20px;
         }
-        .container { 
-            max-width: 420px; 
-            margin: auto; 
-            background: #E85D04; 
-            padding: 25px; 
-            border-radius: 15px; 
-            border: 1px solid #333; 
+        .container {
+            max-width: 420px;
+            margin: auto;
+            background: #1e1e1e;
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid #333;
         }
-        #chat { 
-            height: 380px; 
-            overflow-y: auto; 
-            background: #FF8A00; 
-            padding: 15px; 
-            border-radius: 10px; 
-            border: 1px solid #444; 
-            margin-bottom: 15px; 
+        #chat {
+            height: 380px;
+            overflow-y: auto;
+            background: #111;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #444;
+            margin-bottom: 15px;
         }
-        .msg { 
-            background: #FF6200; 
-            color: black; 
-            padding: 12px; 
-            border-radius: 10px; 
-            margin-bottom: 10px; 
-            word-break: break-word; 
+        .msg {
+            background: #FF6200;           /* Professional Deep Orange */
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            word-break: break-word;
         }
-        .status { 
-            padding: 12px; 
-            background: #003300; 
-            color: #00ff00; 
-            border-radius: 8px; 
-            text-align: center; 
-            font-family: monospace; 
+        .status {
+            padding: 12px;
+            background: #003300;
+            color: #00ff00;
+            border-radius: 8px;
+            text-align: center;
+            font-family: monospace;
         }
         #send-area {
             display: flex;
             gap: 8px;
             margin-top: 10px;
-            background: #FF8A00
         }
         #message-input {
             flex: 1;
@@ -61,21 +60,31 @@
         }
         #send-btn {
             padding: 0 24px;
-            background: #0077FF;
+            background: #FF6200;           /* Main Professional Orange */
             color: white;
             border: none;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
+            transition: all 0.3s;
+        }
+        #send-btn:hover {
+            background: #E85D04;           /* Darker orange on hover */
+            transform: translateY(-1px);
+        }
+        h2 {
+            color: #FF8A00;                /* Bright professional orange for title */
+            margin-top: 0;
+            text-align: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 style="margin-top:0; color:#0077FF; text-align:center;">SultanChat</h2>
+        <h2>SultanChat</h2>
         <div id="chat">Loading messages...</div>
         <div id="status" class="status">Connecting...</div>
-        
+       
         <!-- Send Area -->
         <div id="send-area">
             <input type="text" id="message-input" placeholder="Type your message..." />
@@ -122,11 +131,9 @@
             }
         }
 
-        // Send Message Function
         async function sendMessage() {
             const input = document.getElementById("message-input");
             const text = input.value.trim();
-
             if (!text) return;
 
             const sendBtn = document.getElementById("send-btn");
@@ -139,10 +146,7 @@
                     .insert({ message: text });
 
                 if (error) throw error;
-
-                input.value = "";           // Clear input
-                // No need to call loadMessages() because realtime will handle it
-
+                input.value = "";
             } catch (err) {
                 alert("Failed to send message: " + err.message);
             } finally {
@@ -151,24 +155,21 @@
             }
         }
 
-        // Real-time listener (All changes)
+        // Real-time listener
         client.channel('room1')
-            .on('postgres_changes', { 
-                event: '*', 
-                schema: 'public', 
-                table: 'message' 
+            .on('postgres_changes', {
+                event: '*',
+                schema: 'public',
+                table: 'message'
             }, loadMessages)
             .subscribe();
 
         // Event Listeners
         document.getElementById("send-btn").addEventListener("click", sendMessage);
-
-        // Allow pressing Enter to send
         document.getElementById("message-input").addEventListener("keypress", (e) => {
             if (e.key === "Enter") sendMessage();
         });
 
-        // Initial load
         loadMessages();
     </script>
 </body>
