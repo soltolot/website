@@ -2,22 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SultanChat - Mixx Feed</title>
+    <title>SultanChat</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: #1e1e1e; padding: 25px; border-radius: 15px; width: 380px; border: 1px solid #333; text-align: center; }
-        #chat { background: #111; border: 1px solid #444; height: 300px; overflow-y: auto; padding: 15px; margin-top: 10px; border-radius: 10px; text-align: left; }
-        .msg { background: #0077FF; color: white; padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 14px; word-break: break-word; }
-        .status { font-size: 11px; color: #888; margin-top: 10px; font-family: monospace; }
-        .error { color: #ff5555; }
+        body { font-family: sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
+        .container { max-width: 420px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #333; }
+        #chat { height: 300px; overflow-y: auto; background: #111; padding: 15px; border-radius: 10px; border: 1px solid #444; margin-bottom: 10px; }
+        .msg { background: #0077FF; padding: 10px; border-radius: 8px; margin-bottom: 8px; word-break: break-word; }
+        .status { margin: 10px 0; font-family: monospace; font-size: 13px; padding: 8px; border-radius: 6px; }
+        .error-box { background: #330000; color: #ff8888; padding: 12px; border-radius: 8px; font-size: 14px; margin-top: 10px; white-space: pre-wrap; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 style="margin:0; color:#0077FF;">SultanChat</h2>
+        <h2 style="color:#0077FF;">SultanChat</h2>
         <div id="chat">Loading messages...</div>
         <div id="status" class="status">Connecting...</div>
+        <div id="error" class="error-box" style="display:none;"></div>
     </div>
 
     <script>
@@ -26,49 +27,63 @@
        
         const client = supabase.createClient(URL, KEY);
 
+        function showError(msg) {
+            const errorDiv = document.getElementById("error");
+            errorDiv.style.display = "block";
+            errorDiv.textContent = msg;
+        }
+
         async function load() {
             const display = document.getElementById("chat");
             const status = document.getElementById("status");
             
+            status.style.background = "#333";
+            status.style.color = "#ffff00";
+            status.textContent = "Fetching messages from Supabase...";
+
             try {
                 const { data, error } = await client
                     .from("messages")
-                    .select("content")
+                    .select("*")
                     .order('id', { ascending: true });
 
                 if (error) throw error;
 
+                status.style.background = "#003300";
                 status.style.color = "#00ff00";
-                status.innerText = "● ONLINE";
+                status.textContent = `● ONLINE - ${data.length} messages`;
 
                 display.innerHTML = "";
-                if (data && data.length > 0) {
+                if (data.length === 0) {
+                    display.innerHTML = '<div style="color:#777; text-align:center; padding:80px 20px;">No messages yet.</div>';
+                } else {
                     data.forEach(m => {
                         const div = document.createElement("div");
                         div.className = "msg";
-                        div.textContent = m.content;
+                        div.textContent = m.content || JSON.stringify(m);
                         display.appendChild(div);
                     });
-                    display.scrollTop = display.scrollHeight;
-                } else {
-                    display.innerHTML = '<div style="color:#666; text-align:center; margin-top:100px;">No messages yet.<br>Send your first message!</div>';
                 }
+                display.scrollTop = display.scrollHeight;
+
             } catch (err) {
-                console.error("Supabase Error:", err);
-                status.style.color = "#ff5555";
-                status.innerText = "Error: " + err.message;
-                display.innerHTML = `<div class="error">Failed to load messages.<br><small>${err.message}</small></div>`;
+                console.error(err);
+                status.style.background = "#330000";
+                status.style.color = "#ff6666";
+                status.textContent = "FAILED TO CONNECT";
+
+                let errorText = err.message || err;
+                if (err.code) errorText += `\nCode: ${err.code}`;
+                if (err.details) errorText += `\nDetails: ${err.details}`;
+                
+                showError("ERROR:\n" + errorText);
             }
         }
 
-        // Realtime listener
+        // Realtime
         client.channel('room1')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
-                load();
-            })
-            .subscribe((status) => {
-                console.log("Subscription status:", status);
-            });
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, load)
+            .subscribe();
 
         load();
     </script>
