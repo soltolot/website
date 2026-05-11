@@ -5,25 +5,53 @@
     <title>SultanChat</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
-        .container { max-width: 420px; margin: auto; background: #1e1e1e; padding: 25px; border-radius: 15px; border: 1px solid #333; }
-        #chat { height: 380px; overflow-y: auto; background: #111; padding: 15px; border-radius: 10px; border: 1px solid #444; }
+        body { 
+            font-family: sans-serif; 
+            background: #121212; 
+            color: white; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 420px; 
+            margin: auto; 
+            background: #1e1e1e; 
+            padding: 25px; 
+            border-radius: 15px; 
+            border: 1px solid #333; 
+        }
+        #chat { 
+            height: 380px; 
+            overflow-y: auto; 
+            background: #111; 
+            padding: 15px; 
+            border-radius: 10px; 
+            border: 1px solid #444; 
+            margin-bottom: 15px; 
+        }
         .msg { 
             background: #0077FF; 
+            color: white; 
             padding: 12px; 
             border-radius: 10px; 
             margin-bottom: 10px; 
             word-break: break-word;
-            white-space: pre-wrap;
         }
-        #status { padding: 12px; background: #003300; color: #00ff00; border-radius: 8px; text-align: center; font-family: monospace; }
+        .status { 
+            padding: 12px; 
+            background: #003300; 
+            color: #00ff00; 
+            border-radius: 8px; 
+            text-align: center; 
+            font-family: monospace; 
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 style="color:#0077FF; text-align:center;">SultanChat</h2>
-        <div id="chat"></div>
-        <div id="status">Loading...</div>
+        <h2 style="margin-top:0; color:#0077FF; text-align:center;">SultanChat</h2>
+        <div id="chat">Loading messages...</div>
+        <div id="status" class="status">Connecting...</div>
     </div>
 
     <script>
@@ -32,39 +60,51 @@
             "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
         );
 
-        async function load() {
+        async function loadMessages() {
             const chat = document.getElementById("chat");
             const status = document.getElementById("status");
 
             try {
                 const { data, error } = await client
                     .from("message")
-                    .select("message")
+                    .select("message")           // Correct column name
                     .order('id', { ascending: true });
 
                 if (error) throw error;
 
-                status.textContent = `✅ ONLINE - ${data.length} message(s)`;
+                status.textContent = `● ONLINE - ${data.length} messages`;
 
                 chat.innerHTML = "";
 
-                data.forEach(row => {
-                    const div = document.createElement("div");
-                    div.className = "msg";
-                    
-                    // Show full row so we can see column names
-                    div.innerHTML = "<strong>Full Row:</strong><br>" + JSON.stringify(row, null, 2);
-                    chat.appendChild(div);
-                });
+                if (data.length === 0) {
+                    chat.innerHTML = `<div style="color:#777; text-align:center; padding:100px 20px;">No messages yet.</div>`;
+                } else {
+                    data.forEach(item => {
+                        const div = document.createElement("div");
+                        div.className = "msg";
+                        div.textContent = item.message;        // Correct column
+                        chat.appendChild(div);
+                    });
+                    chat.scrollTop = chat.scrollHeight;
+                }
 
             } catch (err) {
                 status.style.background = "#330000";
                 status.style.color = "#ff6666";
-                status.textContent = "Error: " + err.message;
+                status.textContent = "Error loading messages";
             }
         }
 
-        load();
+        // Real-time listener
+        client.channel('room1')
+            .on('postgres_changes', { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'message' 
+            }, loadMessages)
+            .subscribe();
+
+        loadMessages();
     </script>
 </body>
 </html>
