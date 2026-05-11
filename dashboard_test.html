@@ -45,6 +45,28 @@
             text-align: center; 
             font-family: monospace; 
         }
+        #send-area {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        #message-input {
+            flex: 1;
+            padding: 12px;
+            background: #333;
+            border: none;
+            border-radius: 8px;
+            color: white;
+        }
+        #send-btn {
+            padding: 0 24px;
+            background: #0077FF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -52,6 +74,12 @@
         <h2 style="margin-top:0; color:#0077FF; text-align:center;">SultanChat</h2>
         <div id="chat">Loading messages...</div>
         <div id="status" class="status">Connecting...</div>
+        
+        <!-- Send Area -->
+        <div id="send-area">
+            <input type="text" id="message-input" placeholder="Type your message..." />
+            <button id="send-btn">Send</button>
+        </div>
     </div>
 
     <script>
@@ -93,17 +121,51 @@
             }
         }
 
-        // Listen to ALL changes: INSERT, UPDATE, DELETE
+        // Send Message Function
+        async function sendMessage() {
+            const input = document.getElementById("message-input");
+            const text = input.value.trim();
+
+            if (!text) return;
+
+            const sendBtn = document.getElementById("send-btn");
+            sendBtn.disabled = true;
+            sendBtn.textContent = "Sending...";
+
+            try {
+                const { error } = await client
+                    .from("message")
+                    .insert({ message: text });
+
+                if (error) throw error;
+
+                input.value = "";           // Clear input
+                // No need to call loadMessages() because realtime will handle it
+
+            } catch (err) {
+                alert("Failed to send message: " + err.message);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = "Send";
+            }
+        }
+
+        // Real-time listener (All changes)
         client.channel('room1')
-            .on('postgres_changes', 
-                { 
-                    event: '*',           // '*' means all events (INSERT, UPDATE, DELETE)
-                    schema: 'public', 
-                    table: 'message' 
-                }, 
-                loadMessages
-            )
+            .on('postgres_changes', { 
+                event: '*', 
+                schema: 'public', 
+                table: 'message' 
+            }, loadMessages)
             .subscribe();
+
+        // Event Listeners
+        document.getElementById("send-btn").addEventListener("click", sendMessage);
+
+        // Allow pressing Enter to send
+        document.getElementById("message-input").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
 
         // Initial load
         loadMessages();
