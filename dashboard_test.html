@@ -2,91 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SultanChat</title>
+    <title>SultanChat - Debug</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
         .container { max-width: 500px; margin: auto; background: #1e1e1e; padding: 25px; border-radius: 12px; }
-        #chat { height: 300px; overflow-y: auto; background: #111; padding: 15px; border-radius: 10px; border: 1px solid #444; margin-bottom: 15px; }
-        .msg { background: #0077FF; padding: 10px; border-radius: 8px; margin-bottom: 8px; word-break: break-word; }
-        .status { padding: 12px; border-radius: 8px; font-family: monospace; text-align: center; margin-bottom: 10px; }
-        #raw-error { 
-            background: #220000; 
-            color: #ffdddd; 
-            padding: 15px; 
-            border-radius: 8px; 
-            white-space: pre-wrap; 
-            font-size: 13px; 
-            overflow-x: auto;
-            display: none;
-        }
+        #status { padding: 15px; border-radius: 8px; font-family: monospace; margin: 10px 0; background: #333; }
+        #raw { background: #220000; color: #ffdddd; padding: 15px; border-radius: 8px; white-space: pre-wrap; font-size: 13px; display: none; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 style="color:#0077FF; margin-top:0;">SultanChat</h2>
-        <div id="chat">Loading messages...</div>
-        <div id="status" class="status">Connecting...</div>
-        <div id="raw-error"></div>
+        <h2 style="color:#0077FF;">SultanChat - Step by Step Debug</h2>
+        <div id="status">Step 1: Loading Supabase library...</div>
+        <div id="raw"></div>
     </div>
 
     <script>
-        const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
-        const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+        const statusEl = document.getElementById("status");
+        const rawEl = document.getElementById("raw");
 
-        const client = supabase.createClient(URL, KEY);
-
-        async function load() {
-            const display = document.getElementById("chat");
-            const status = document.getElementById("status");
-            const rawError = document.getElementById("raw-error");
-
-            status.textContent = "Fetching messages...";
-            status.style.background = "#333300";
-            rawError.style.display = "none";
-
-            try {
-                const { data, error } = await client
-                    .from("message")           // Correct table name
-                    .select("content")
-                    .order('id', { ascending: true });
-
-                if (error) throw error;
-
-                status.style.background = "#003300";
-                status.style.color = "#00ff00";
-                status.textContent = `● ONLINE (${data.length} messages)`;
-
-                display.innerHTML = "";
-                if (data.length === 0) {
-                    display.innerHTML = '<div style="color:#777; text-align:center; padding:80px 20px;">No messages yet.</div>';
-                } else {
-                    data.forEach(m => {
-                        const div = document.createElement("div");
-                        div.className = "msg";
-                        div.textContent = m.content;
-                        display.appendChild(div);
-                    });
-                    display.scrollTop = display.scrollHeight;
-                }
-
-            } catch (err) {
-                status.style.background = "#330000";
-                status.style.color = "#ff6666";
-                status.textContent = "❌ Error from Supabase";
-
-                // Show raw error like you wanted
-                rawError.style.display = "block";
-                rawError.textContent = JSON.stringify(err, null, 2);
-            }
+        function updateStatus(text, color = "#ffff00") {
+            statusEl.style.background = "#333300";
+            statusEl.style.color = color;
+            statusEl.textContent = text;
         }
 
-        // Realtime (using correct table name)
-        client.channel('room1')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message' }, load)
-            .subscribe();
+        // Step 1: Check if Supabase loaded
+        updateStatus("Step 2: Supabase script loaded. Creating client...", "#ffff00");
 
-        load();
+        try {
+            const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
+            const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+
+            const client = supabase.createClient(URL, KEY);
+            
+            updateStatus("Step 3: Client created. Making request to Supabase...", "#ffff00");
+
+            client.from("message")
+                .select("*")
+                .limit(5)
+                .then(({ data, error }) => {
+                    if (error) {
+                        updateStatus("❌ Error from Supabase", "#ff6666");
+                        rawEl.style.display = "block";
+                        rawEl.textContent = JSON.stringify(error, null, 2);
+                    } else {
+                        updateStatus(`✅ Success! ${data.length} messages loaded`, "#00ff88");
+                    }
+                })
+                .catch(err => {
+                    updateStatus("❌ Promise Error", "#ff6666");
+                    rawEl.style.display = "block";
+                    rawEl.textContent = JSON.stringify(err, null, 2);
+                });
+
+        } catch (err) {
+            updateStatus("❌ JavaScript Error before request", "#ff0000");
+            rawEl.style.display = "block";
+            rawEl.textContent = err.message + "\n\n" + err.stack;
+        }
     </script>
 </body>
 </html>
