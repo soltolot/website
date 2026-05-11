@@ -6,17 +6,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: sans-serif; background: #121212; color: white; margin: 0; padding: 20px; }
-        .container { max-width: 420px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 12px; }
+        .container { max-width: 450px; margin: auto; background: #1e1e1e; padding: 25px; border-radius: 12px; }
         #chat { height: 280px; overflow-y: auto; background: #111; padding: 15px; border-radius: 10px; border: 1px solid #444; margin-bottom: 15px; }
-        .status { padding: 12px; border-radius: 8px; font-family: monospace; margin: 10px 0; }
-        .error-box { background: #440000; color: #ffaaaa; padding: 15px; border-radius: 8px; white-space: pre-wrap; font-size: 14px; }
+        .status { padding: 12px; border-radius: 8px; font-family: monospace; margin: 10px 0; text-align: center; }
+        .error-box { background: #440000; color: #ffaaaa; padding: 15px; border-radius: 8px; white-space: pre-wrap; margin-top: 10px; }
+        .success { background: #003300; color: #00ff00; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2 style="color:#0077FF; margin-top:0;">SultanChat</h2>
-        <div id="chat">Loading messages...</div>
-        <div id="status" class="status">Initializing...</div>
+        <h2 style="color:#0077FF; margin-top:0;">SultanChat - Debug Mode</h2>
+        <div id="chat">Waiting...</div>
+        <div id="status" class="status">Initializing Supabase...</div>
         <div id="error" class="error-box" style="display:none;"></div>
     </div>
 
@@ -24,61 +25,59 @@
         const URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
         const KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
 
-        function showError(title, msg) {
-            document.getElementById("error").style.display = "block";
-            document.getElementById("error").innerHTML = `<strong>${title}</strong><br>${msg}`;
-        }
-
-        // Check if Supabase loaded
-        if (typeof supabase === "undefined") {
-            showError("Script Error", "Failed to load Supabase library");
-            document.getElementById("status").innerHTML = "❌ Supabase JS not loaded";
-            document.getElementById("status").style.background = "#330000";
-            return;
-        }
-
         const client = supabase.createClient(URL, KEY);
 
         async function load() {
             const display = document.getElementById("chat");
             const status = document.getElementById("status");
+            const errorDiv = document.getElementById("error");
 
-            status.textContent = "Trying to connect to Supabase...";
+            status.textContent = "Sending request to Supabase...";
             status.style.background = "#333300";
 
             try {
+                const start = Date.now();
+                
                 const { data, error } = await client
                     .from("messages")
-                    .select("content")
-                    .limit(50);
+                    .select("*")
+                    .limit(20);
+
+                const timeTaken = Date.now() - start;
 
                 if (error) {
                     throw error;
                 }
 
-                status.style.background = "#003300";
-                status.style.color = "#00ff00";
-                status.textContent = `✅ ONLINE (${data.length} messages)`;
+                // Success
+                status.classList.add("success");
+                status.textContent = `✅ Query successful (${timeTaken}ms) - ${data.length} messages returned`;
 
                 display.innerHTML = "";
                 if (data.length === 0) {
-                    display.innerHTML = '<div style="color:#777; text-align:center; padding:60px;">No messages yet</div>';
+                    display.innerHTML = `
+                        <div style="color:#777; text-align:center; padding:80px 20px;">
+                            <strong>No messages found</strong><br><br>
+                            This usually means:<br>
+                            • Table is empty<br>
+                            • RLS is blocking access (most common)
+                        </div>`;
                 } else {
                     data.forEach(m => {
                         const div = document.createElement("div");
-                        div.style.cssText = "background:#0077FF; padding:10px; border-radius:8px; margin-bottom:8px;";
-                        div.textContent = m.content;
+                        div.style.cssText = "background:#0077FF; padding:10px; border-radius:8px; margin-bottom:8px; word-break:break-word;";
+                        div.textContent = m.content || JSON.stringify(m);
                         display.appendChild(div);
                     });
                 }
 
             } catch (err) {
-                console.error(err);
                 status.style.background = "#330000";
                 status.style.color = "#ff6666";
-                status.textContent = "❌ CONNECTION FAILED";
+                status.textContent = "❌ Query Failed";
 
-                showError("Supabase Error", err.message || JSON.stringify(err));
+                errorDiv.style.display = "block";
+                errorDiv.innerHTML = `<strong>Error:</strong><br>${err.message || err}<br><br>Code: ${err.code || 'N/A'}`;
             }
         }
 
