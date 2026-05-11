@@ -59,7 +59,7 @@
 
                 const { data, error } = await client
                     .from("message")
-                    .select("content")
+                    .select("message")
                     .order('id', { ascending: true });
 
                 if (error) throw error;
