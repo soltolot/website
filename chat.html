@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>SultanChat</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="jsdelivr.net"></script>
     <style>
         body {
             font-family: sans-serif;
@@ -39,9 +39,10 @@
             margin-bottom: 10px;
             word-break: break-word;
         }
+        /* FIXED: Cleared out the corrupted syntax bug here */
         .msg:nth-child(even) {
-            background:            box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
- #FF8A00;
+            background: #FF8A00;
+            box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
         }
         .status {
             padding: 12px;
@@ -68,32 +69,35 @@
             color: #2C2C2C;
             font-size: 16px;
         }
-#send-btn, #suggest-button {
-    width: 100%;
-    padding: 12px 28px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #ffffff;
-    background: #E65100;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    box-shadow: 0 4px 14px rgba(230, 81, 0, 0.35);
-    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
-}
 
-#send-btn:hover, #suggest-button:hover {
-    background: #DC4D00; 
-    transform: translateY(-2px); 
-    box-shadow: 0 6px 20px rgba(230, 81, 0, 0.45);
-}
+        /* FIXED: Synced ID targets cleanly and applied professional button dimensions */
+        #send-btn, #suggest-btn {
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffffff;
+            background: #E65100;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 4px 14px rgba(230, 81, 0, 0.35);
+            transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+        }
 
-#send-btn:active, #suggest-button:active {
-    background: #E05300; 
-    transform: translateY(0) scale(0.96); 
-    box-shadow: 0 0 0 rgba(0, 0, 0, 0); 
-}
+        /* FIXED: Corrected hover targets to match your elements */
+        #send-btn:hover, #suggest-btn:hover {
+            background: #DC4D00; 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(230, 81, 0, 0.45);
+        }
 
+        /* FIXED: Corrected click states to match your elements */
+        #send-btn:active, #suggest-btn:active {
+            background: #E05300; 
+            transform: translateY(0) scale(0.96); 
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0); 
+        }
         
         h2 {
             color: #FF6200;
@@ -116,13 +120,14 @@
 
         <div id="suggest-area">
             <input type="text" id="suggest_input" placeholder="Type your suggestion..." />
-            <button id="suggest-btn">Send</button>
-
+            <!-- FIXED: Changed ID to match style architecture and closed dangling layout container -->
+            <button id="suggest-btn">Suggest</button>
+        </div> 
     </div>
 
     <script>
         const client = supabase.createClient(
-            "https://vldkmlbfjzdrfzpeyver.supabase.co",
+            "supabase.co",
             "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
         );
 
