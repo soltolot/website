@@ -1,295 +1,234 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <!-- 🛑 GLOBAL FIRST DEFENSE: Intercepts script, asset, or parsing crashes immediately before layout compilation -->
-    <script>
-        window.addEventListener('error', function(event) {
-            setTimeout(() => {
-                const chatContainer = document.getElementById("chat");
-                if (chatContainer) {
-                    chatContainer.innerHTML = `
-                        <div style="color:#FF4444; padding:12px; font-family:monospace; font-size:13px; background:#FFEAEB; border-radius:8px; border-left:4px solid #FF4444; word-break:break-word; text-align: left;">
-                            <strong>[Fatal Execution / Script Crash]</strong><br>
-                            Source: ${event.filename || 'Inline Code Block'}<br>
-                            Line: ${event.lineno} | Column: ${event.colno}<br>
-                            Trace: ${event.message}
-                        </div>
-                    `;
-                    
-                    const statusText = document.getElementById("status");
-                    if (statusText) {
-                        statusText.style.background = "#FFE0E0";
-                        statusText.style.color = "#FF4444";
-                        statusText.textContent = "CRITICAL ENGINE BREAKDOWN";
-                    }
-                }
-            }, 10);
-        }, true);
-    </script>
+<script>
+/* =========================
+   SUPABASE CLIENT (PLACEHOLDER)
+========================= */
+const client = supabase.createClient(
+    "YOUR_SUPABASE_URL_HERE",
+    "YOUR_SUPABASE_KEY_HERE"
+);
 
-    <meta charset="UTF-8">
-    <title>SultanChat</title>
-    <!-- 🏗️ CDN DEPENDENCY: Secure library path ensuring global 'supabase' target initiates cleanly -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <style>
-        body {
-            font-family: sans-serif;
-            background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
-            color: #2C2C2C;
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 420px;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
-            border: 2px solid #FFBB66;
-        }
-        #chat {
-            height: 380px;
-            overflow-y: auto;
-            background: #FFF9F0;
-            padding: 15px;
-            border-radius: 15px;
-            border: 1px solid #FFDDAA;
-            margin-bottom: 15px;
-        }
-        
-        /* 🎨 STYLE - ERROR LOGS: Standard raw-msg row injected exclusively during catch triggers */
-        .raw-msg {
-            color: #FF4444;             
-            padding: 8px 12px;
-            font-family: monospace;     
-            font-size: 13px;
-            background: #FFEAEB;        
-            border-radius: 8px;
-            border-left: 4px solid #FF4444; 
-            margin-bottom: 10px;
-            word-break: break-word;
-        }
+/* =========================
+   UI ERROR DISPLAY CORE
+========================= */
 
-        /* 🎨 STYLE - SUCCESS CHAT: Message bubbles used when data pulls successfully */
-        .msg {
-            background: #FF6200; 
-            color: white;
-            padding: 12px 15px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            word-break: break-word;
-            box-shadow: 0 4px 10px rgba(255, 98, 0, 0.15); 
-        }
+function showFatalError(title, details) {
+    const chat = document.getElementById("chat");
+    const status = document.getElementById("status");
 
-        /* 🎨 STYLE - SUCCESS ALTERNATE: Lighter chat rows for optimal reading contrast */
-        .msg:nth-child(even) {
-            background: #FF8A00; 
-            box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
-        }
+    console.error("FATAL ERROR:", title, details);
 
-        .status {
-            padding: 12px;
-            background: #FFEDD5;
-            color: #E85D04;
-            border-radius: 10px;
-            text-align: center;
-            font-family: monospace;
-            font-weight: bold;
-        }
-        
-        #send-area, #suggest-area {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        #message-input, #suggest-input  {
-            flex: 1;
-            padding: 14px;
-            background: #FFF4E0;
-            border: 2px solid #FFBB66;
-            border-radius: 12px;
-            color: #2C2C2C;
-            font-size: 16px;
+    if (status) {
+        status.style.background = "#FFE0E0";
+        status.style.color = "#FF4444";
+        status.textContent = "CRITICAL ENGINE BREAKDOWN";
+    }
+
+    if (chat) {
+        chat.innerHTML = `
+            <div style="
+                color:#FF4444;
+                padding:12px;
+                font-family:monospace;
+                font-size:13px;
+                background:#FFEAEB;
+                border-radius:8px;
+                border-left:4px solid #FF4444;
+                white-space:pre-wrap;
+            ">
+                <strong>${title}</strong>
+
+                ${details}
+            </div>
+        `;
+    }
+}
+
+/* =========================
+   GLOBAL JS ERROR CATCHER
+========================= */
+
+window.addEventListener("error", function (event) {
+    showFatalError(
+        "JavaScript Runtime Error",
+        `
+Message: ${event.message}
+File: ${event.filename}
+Line: ${event.lineno} | Column: ${event.colno}
+Stack: ${event.error?.stack || "No stack available"}
+        `
+    );
+}, true);
+
+/* =========================
+   PROMISE ERROR CATCHER
+========================= */
+
+window.addEventListener("unhandledrejection", function (event) {
+    showFatalError(
+        "Unhandled Promise Rejection",
+        `
+Reason: ${event.reason}
+        `
+    );
+});
+
+/* =========================
+   LOAD MESSAGES
+========================= */
+
+async function loadMessages() {
+    const chat = document.getElementById("chat");
+    const status = document.getElementById("status");
+
+    try {
+        const { data, error } = await client
+            .from("wrong_table_name") // intentional crash works here
+            .select("message")
+            .not("message", "is", null)
+            .neq("message", "")
+            .order("id", { ascending: true });
+
+        if (error) throw error;
+
+        status.textContent = `● ONLINE - ${data.length} messages`;
+        chat.innerHTML = "";
+
+        if (data.length === 0) {
+            chat.innerHTML = `
+                <div style="color:#FF8A00; text-align:center; padding:80px 20px;">
+                    No messages yet 👋
+                </div>
+            `;
+            return;
         }
 
-        #send-btn, #suggest-btn {
-            padding: 12px 28px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #ffffff;
-            background: #E65100;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            white-space: nowrap;
-            box-shadow: 0 4px 14px rgba(230, 81, 0, 0.35);
-            transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+        for (const item of data) {
+            const div = document.createElement("div");
+            div.className = "msg";
+            div.textContent = item.message;
+            chat.appendChild(div);
         }
 
-        #send-btn:hover, #suggest-btn:hover {
-            background: #DC4D00; 
-            transform: translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(230, 81, 0, 0.45);
-        }
+        chat.scrollTop = chat.scrollHeight;
 
-        #send-btn:active, #suggest-btn:active {
-            background: #E05300; 
-            transform: translateY(0) scale(0.96); 
-            box-shadow: 0 0 0 rgba(0, 0, 0, 0); 
-        }
-        
-        h2 {
-            color: #FF6200;
-            margin-top: 0;
-            text-align: center;
-            font-size: 28px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>SultanChat</h2>
-        <div id="chat">Loading messages...</div>
-        <div id="status" class="status">● ONLINE</div>
-       
-        <div id="send-area">
-            <input type="text" id="message-input" placeholder="Type your message..." />
-            <button id="send-btn">Send</button>
-        </div>
+    } catch (err) {
 
-        <div id="suggest-area">
-            <input type="text" id="suggest-input" placeholder="Type your suggestion..." />
-            <button id="suggest-btn">Suggest</button>
-        </div> 
-    </div>
-
-    <script>
-        // 🏗️ INITIALIZATION: Connects to your live Supabase environment parameters
-        const client = supabase.createClient(
-            "supabase.co",
-            "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
+        // 🔥 REAL SUPABASE ERROR INTROSPECTION
+        showFatalError(
+            "Supabase Query Failure",
+            `
+Message: ${err.message || "Unknown"}
+Code: ${err.code || "N/A"}
+Details: ${err.details || "N/A"}
+Hint: ${err.hint || "N/A"}
+Full: ${JSON.stringify(err, null, 2)}
+            `
         );
+    }
+}
 
-        // 🔄 FETCH LOGS WORKSPACE: Clears display rows and paints chat elements
-        async function loadMessages() {
-            const chat = document.getElementById("chat");
-            const status = document.getElementById("status");
+/* =========================
+   SEND MESSAGE
+========================= */
 
-            try {
-                // 🛑 FORCED ERROR: Intentional typo targeting a non-existent table to test the raw-msg catch style
-                const { data, error } = await client
-                    .from("wrong_table_name")
-                    .select("message")
-                    .not("message", "is", null) 
-                    .neq("message", "")         
-                    .order('id', { ascending: true });
+async function sendMessage() {
+    const input = document.getElementById("message-input");
+    const btn = document.getElementById("send-btn");
 
-                if (error) throw error;
+    const text = input.value.trim();
+    if (!text) return;
 
-                status.textContent = `● ONLINE - ${data.length} messages`;
-                chat.innerHTML = ""; 
+    btn.disabled = true;
+    btn.textContent = "Sending...";
 
-                if (data.length === 0) {
-                    chat.innerHTML = `<div style="color:#FF8A00; text-align:center; padding:100px 20px; font-size:18px;">
-                        No messages yet. Be the first to say something! 👋
-                    </div>`;
-                } else {
-                    data.forEach(item => {
-                        const div = document.createElement("div");
-                        div.className = "msg";
-                        div.textContent = item.message;
-                        chat.appendChild(div);
-                    });
-                    chat.scrollTop = chat.scrollHeight;
-                }
-            } catch (err) {
-                // 🛠️ ERROR PRESENTATION WORKSPACE: Intercepts query failures and structures diagnostic logs
-                status.style.background = "#FFE0E0";
-                status.style.color = "#FF4444";
-                status.textContent = "Error loading messages";
-                
-                const rawErrorLog = err.message || JSON.stringify(err);
-                chat.innerHTML = ""; 
+    try {
+        const { error } = await client
+            .from("message")
+            .insert({ message: text });
 
-                const errorDiv = document.createElement("div");
-                errorDiv.className = "raw-msg"; 
-                errorDiv.textContent = `[System Error]: ${rawErrorLog}`;
-                chat.appendChild(errorDiv);
-            }
-        }
+        if (error) throw error;
 
-        // 📤 SUBMIT MESSAGES HOOK
-        async function sendMessage() {
-            const input = document.getElementById("message-input");
-            const text = input.value.trim();
-            if (!text) return;
+        input.value = "";
 
-            const messBtn = document.getElementById("send-btn");
-            messBtn.disabled = true;
-            messBtn.textContent = "Sending...";
+    } catch (err) {
+        alert("Failed to send message: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Send";
+    }
+}
 
-            try {
-                const { error } = await client
-                    .from("message")
-                    .insert({ message: text });
+/* =========================
+   SEND SUGGESTION
+========================= */
 
-                if (error) throw error;
-                input.value = "";
-            } catch (err) {
-                alert("Failed to send message: " + err.message);
-            } finally {
-                messBtn.disabled = false;
-                messBtn.textContent = "Send";
-            }
-        }
+async function sendSuggest() {
+    const input = document.getElementById("suggest-input");
+    const btn = document.getElementById("suggest-btn");
 
-        // 💡 SUBMIT FEEDBACK HOOK: Completed truncated logic loop cleanly
-        async function sendSuggest() {
-            const input = document.getElementById("suggest-input");
-            const text = input.value.trim();
-            if (!text) return;
+    const text = input.value.trim();
+    if (!text) return;
 
-            const toggBtn = document.getElementById("suggest-btn");
-            toggBtn.disabled = true;
-            toggBtn.textContent = "Sending...";
+    btn.disabled = true;
+    btn.textContent = "Sending...";
 
-            try {
-                const { error } = await client
-                    .from("message")
-                    .insert({ suggestion: text });
+    try {
+        const { error } = await client
+            .from("message")
+            .insert({ suggestion: text });
 
-                if (error) throw error;
-                input.value = "";
-            } catch (err) {
-                alert("Failed to send suggestion: " + err.message);
-            } finally {
-                toggBtn.disabled = false;
-                toggBtn.textContent = "Suggest";
-            }
-        }
+        if (error) throw error;
 
-        // ⚡ REAL-TIME STREAM PIPELINE
-        client.channel('room1')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, loadMessages)
-            .subscribe();
+        input.value = "";
 
-        // 🔌 EVENT BINDINGS: Hooks visual buttons to their respective logic scripts
-        document.getElementById("send-btn").addEventListener("click", sendMessage);
-        document.getElementById("message-input").addEventListener("keypress", (e) => {
+    } catch (err) {
+        alert("Failed to send suggestion: " + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = "Suggest";
+    }
+}
+
+/* =========================
+   EVENT BINDING SAFETY
+========================= */
+
+function bindUI() {
+    const sendBtn = document.getElementById("send-btn");
+    const msgInput = document.getElementById("message-input");
+    const suggestBtn = document.getElementById("suggest-btn");
+    const suggestInput = document.getElementById("suggest-input");
+
+    if (sendBtn && msgInput) {
+        sendBtn.addEventListener("click", sendMessage);
+        msgInput.addEventListener("keypress", (e) => {
             if (e.key === "Enter") sendMessage();
         });
+    }
 
-        document.getElementById("suggest-btn").addEventListener("click", sendSuggest);
-        document.getElementById("suggest-input").addEventListener("keypress", (e) => {
+    if (suggestBtn && suggestInput) {
+        suggestBtn.addEventListener("click", sendSuggest);
+        suggestInput.addEventListener("keypress", (e) => {
             if (e.key === "Enter") sendSuggest();
         });
+    }
+}
 
-        // 🚀 FIRE STREAM ON INITIAL CONNECT
-        loadMessages();
-    </script>
-</body>
-</html>
+document.addEventListener("DOMContentLoaded", () => {
+    bindUI();
+    loadMessages();
+});
+
+/* =========================
+   REALTIME UPDATES
+========================= */
+
+client.channel("room1")
+    .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "message" },
+        loadMessages
+    )
+    .subscribe();
+
+</script>
