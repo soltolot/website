@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SultanChat</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
+            color: #2C2C2C;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 420px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
+            border: 2px solid #FFBB66;
+        }
+        #chat {
+            height: 380px;
+            overflow-y: auto;
+            background: #FFF9F0;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid #FFDDAA;
+            margin-bottom: 15px;
+        }
+        .msg {
+            background: #FF6200;
+            color: white;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            word-break: break-word;
+            box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
+        }
+        .msg:nth-child(even) {
+            background: #FF8A00;
+        }
+        .status {
+            padding: 12px;
+            background: #FFEDD5;
+            color: #E85D04;
+            border-radius: 10px;
+            text-align: center;
+            font-family: monospace;
+            font-weight: bold;
+        }
+        #send-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        #message-input {
+            flex: 1;
+            padding: 14px;
+            background: #FFF4E0;
+            border: 2px solid #FFBB66;
+            border-radius: 12px;
+            color: #2C2C2C;
+            font-size: 16px;
+        }
+#send-btn {
+    width: 100%;
+    padding: 12px 28px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    background: #E65100;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(230, 81, 0, 0.35);
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+#send-btn:hover {
+    background: #DC4D00; 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 20px rgba(230, 81, 0, 0.45);
+}
+
+#send-btn:active {
+    background: #E05300; 
+    transform: translateY(0) scale(0.96); 
+    box-shadow: 0 0 0 rgba(0, 0, 0, 0); 
+}
+
+        
+        h2 {
+            color: #FF6200;
+            margin-top: 0;
+            text-align: center;
+            font-size: 28px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>SultanChat</h2>
+        <div id="chat">Loading messages...</div>
+        <div id="status" class="status">● ONLINE</div>
+       
+        <div id="send-area">
+            <input type="text" id="message-input" placeholder="Type your message..." />
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const client = supabase.createClient(
+            "https://vldkmlbfjzdrfzpeyver.supabase.co",
+            "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
+        );
+
+        async function loadMessages() {
+            const chat = document.getElementById("chat");
+            const status = document.getElementById("status");
+
+            try {
+                const { data, error } = await client
+                    .from("message")
+                    .select("message")
+                    .order('id', { ascending: true });
+
+                if (error) throw error;
+
+                status.textContent = `● ONLINE - ${data.length} messages`;
+
+                chat.innerHTML = "";
+                if (data.length === 0) {
+                    chat.innerHTML = `<div style="color:#FF8A00; text-align:center; padding:100px 20px; font-size:18px;">
+                        No messages yet. Be the first to say something! 👋
+                    </div>`;
+                } else {
+                    data.forEach(item => {
+                        const div = document.createElement("div");
+                        div.className = "msg";
+                        div.textContent = item.message;
+                        chat.appendChild(div);
+                    });
+                    chat.scrollTop = chat.scrollHeight;
+                }
+            } catch (err) {
+                status.style.background = "#FFE0E0";
+                status.style.color = "#FF4444";
+                status.textContent = "Error loading messages";
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById("message-input");
+            const text = input.value.trim();
+            if (!text) return;
+
+            const sendBtn = document.getElementById("send-btn");
+            sendBtn.disabled = true;
+            sendBtn.textContent = "Sending...";
+
+            try {
+                const { error } = await client
+                    .from("message")
+                    .insert({ message: text });
+
+                if (error) throw error;
+                input.value = "";
+            } catch (err) {
+                alert("Failed to send: " + err.message);
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.textContent = "Send";
+            }
+        }
+
+        // Real-time
+        client.channel('room1')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, loadMessages)
+            .subscribe();
+
+        document.getElementById("send-btn").addEventListener("click", sendMessage);
+        document.getElementById("message-input").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+
+        loadMessages();
+    </script>
+</body>
+</html>
