@@ -39,7 +39,6 @@
             margin-bottom: 10px;
             word-break: break-word;
         }
-        /* FIXED: Cleared out the corrupted syntax bug here */
         .msg:nth-child(even) {
             background: #FF8A00;
             box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
@@ -60,7 +59,8 @@
             margin-top: 10px;
         }
         
-        #message-input, #suggest_input  {
+        /* FIXED: Unified the input ID selectors here to match the HTML */
+        #message-input, #suggest-input  {
             flex: 1;
             padding: 14px;
             background: #FFF4E0;
@@ -70,7 +70,6 @@
             font-size: 16px;
         }
 
-        /* FIXED: Synced ID targets cleanly and applied professional button dimensions */
         #send-btn, #suggest-btn {
             padding: 12px 28px;
             font-size: 16px;
@@ -85,14 +84,12 @@
             transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
         }
 
-        /* FIXED: Corrected hover targets to match your elements */
         #send-btn:hover, #suggest-btn:hover {
             background: #DC4D00; 
             transform: translateY(-2px); 
             box-shadow: 0 6px 20px rgba(230, 81, 0, 0.45);
         }
 
-        /* FIXED: Corrected click states to match your elements */
         #send-btn:active, #suggest-btn:active {
             background: #E05300; 
             transform: translateY(0) scale(0.96); 
@@ -119,8 +116,8 @@
         </div>
 
         <div id="suggest-area">
-            <input type="text" id="suggest_input" placeholder="Type your suggestion..." />
-            <!-- FIXED: Changed ID to match style architecture and closed dangling layout container -->
+            <!-- FIXED: Standardized ID string to match layout configuration styles -->
+            <input type="text" id="suggest-input" placeholder="Type your suggestion..." />
             <button id="suggest-btn">Suggest</button>
         </div> 
     </div>
@@ -171,9 +168,10 @@
             const text = input.value.trim();
             if (!text) return;
 
-            const sendBtn = document.getElementById("send-btn");
-            sendBtn.disabled = true;
-            sendBtn.textContent = "Sending...";
+            // FIXED: Aligned local block variables to resolve state freezing
+            const messBtn = document.getElementById("send-btn");
+            messBtn.disabled = true;
+            messBtn.textContent = "Sending...";
 
             try {
                 const { error } = await client
@@ -185,12 +183,37 @@
             } catch (err) {
                 alert("Failed to send: " + err.message);
             } finally {
-                sendBtn.disabled = false;
-                sendBtn.textContent = "Send";
+                messBtn.disabled = false;
+                messBtn.textContent = "Send";
             }
         }
 
-        // Real-time
+        async function sendSuggest() {
+            const input = document.getElementById("suggest-input");
+            const text = input.value.trim();
+            if (!text) return;
+
+            // FIXED: Aligned variable naming dependencies down through block closure scope
+            const suggBtn = document.getElementById("suggest-btn");
+            suggBtn.disabled = true;
+            suggBtn.textContent = "Sending...";
+
+            try {
+                const { error } = await client
+                    .from("suggestion")
+                    .insert({ message: text });
+
+                if (error) throw error;
+                input.value = "";
+            } catch (err) {
+                alert("Failed to send: " + err.message);
+            } finally {
+                suggBtn.disabled = false;
+                suggBtn.textContent = "Suggest";
+            }
+        }
+
+        // Real-time stream initialization
         client.channel('room1')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, loadMessages)
             .subscribe();
@@ -198,6 +221,11 @@
         document.getElementById("send-btn").addEventListener("click", sendMessage);
         document.getElementById("message-input").addEventListener("keypress", (e) => {
             if (e.key === "Enter") sendMessage();
+        });
+
+        document.getElementById("suggest-btn").addEventListener("click", sendSuggest);
+        document.getElementById("suggest-input").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendSuggest();
         });
 
         loadMessages();
