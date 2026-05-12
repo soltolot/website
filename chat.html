@@ -136,6 +136,8 @@
                 const { data, error } = await client
                     .from("message")
                     .select("message")
+                    .not("message", "is", null) // <-- Add this: Ignores rows with empty messages
+                    .neq("message", "")         // <-- Add this: Ignores rows with empty string spaces
                     .order('id', { ascending: true });
 
                 if (error) throw error;
