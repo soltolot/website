@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>SultanChat</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="jsdelivr.net"></script>
     <style>
         body {
             font-family: sans-serif;
@@ -31,18 +31,17 @@
             border: 1px solid #FFDDAA;
             margin-bottom: 15px;
         }
-        .msg {
-            background: #FF6200;
-            color: white;
-            padding: 12px 15px;
-            border-radius: 12px;
-            margin-bottom: 10px;
+        
+        /* NEW STYLE: Clean, unstyled raw text rows instead of orange bubbles */
+        .raw-msg {
+            color: #2C2C2C;
+            padding: 8px 0;
+            font-family: monospace;
+            font-size: 14px;
+            border-bottom: 1px solid #FFE4D3;
             word-break: break-word;
         }
-        .msg:nth-child(even) {
-            background: #FF8A00;
-            box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
-        }
+
         .status {
             padding: 12px;
             background: #FFEDD5;
@@ -59,7 +58,6 @@
             margin-top: 10px;
         }
         
-        /* FIXED: Unified the input ID selectors here to match the HTML */
         #message-input, #suggest-input  {
             flex: 1;
             padding: 14px;
@@ -116,7 +114,6 @@
         </div>
 
         <div id="suggest-area">
-            <!-- FIXED: Standardized ID string to match layout configuration styles -->
             <input type="text" id="suggest-input" placeholder="Type your suggestion..." />
             <button id="suggest-btn">Suggest</button>
         </div> 
@@ -124,7 +121,7 @@
 
     <script>
         const client = supabase.createClient(
-            "https://vldkmlbfjzdrfzpeyver.supabase.co",
+            "supabase.co",
             "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
         );
 
@@ -136,8 +133,8 @@
                 const { data, error } = await client
                     .from("message")
                     .select("message")
-                    .not("message", "is", null) // <-- Add this: Ignores rows with empty messages
-                    .neq("message", "")         // <-- Add this: Ignores rows with empty string spaces
+                    .not("message", "is", null) 
+                    .neq("message", "")         
                     .order('id', { ascending: true });
 
                 if (error) throw error;
@@ -152,16 +149,28 @@
                 } else {
                     data.forEach(item => {
                         const div = document.createElement("div");
-                        div.className = "msg";
+                        
+                        /* CHANGED: Swapped out orange .msg bubble for raw-msg text line style */
+                        div.className = "raw-msg"; 
+                        
                         div.textContent = item.message;
                         chat.appendChild(div);
                     });
                     chat.scrollTop = chat.scrollHeight;
                 }
             } catch (err) {
+                /* CHANGED: This block now prints the raw, technical database error text dynamically */
                 status.style.background = "#FFE0E0";
                 status.style.color = "#FF4444";
-                status.textContent = "Error loading messages";
+                
+                const rawErrorLog = err.message || JSON.stringify(err);
+                
+                status.innerHTML = `
+                    <strong>● Error loading messages</strong>
+                    <div style="font-size: 11px; margin-top: 4px; font-family: monospace; opacity: 0.85; text-align: left;">
+                        Raw log: ${rawErrorLog}
+                    </div>
+                `;
             }
         }
 
@@ -170,7 +179,6 @@
             const text = input.value.trim();
             if (!text) return;
 
-            // FIXED: Aligned local block variables to resolve state freezing
             const messBtn = document.getElementById("send-btn");
             messBtn.disabled = true;
             messBtn.textContent = "Sending...";
@@ -201,10 +209,8 @@
 
             try {
                 const { error } = await client
-                    .from("message") // 1. Target your original 'message' table
-                    .insert({ 
-                        suggestion: text              // 3. Pushes the input into your new column
-                    });
+                    .from("message")
+                    .insert({ suggestion: text });
 
                 if (error) throw error;
                 input.value = "";
@@ -215,6 +221,7 @@
                 suggBtn.textContent = "Suggest";
             }
         }
+
         // Real-time stream initialization
         client.channel('room1')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, loadMessages)
