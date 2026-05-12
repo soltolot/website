@@ -193,15 +193,17 @@
             const text = input.value.trim();
             if (!text) return;
 
-            // FIXED: Aligned variable naming dependencies down through block closure scope
             const suggBtn = document.getElementById("suggest-btn");
             suggBtn.disabled = true;
             suggBtn.textContent = "Sending...";
 
             try {
                 const { error } = await client
-                    .from("suggestion")
-                    .insert({ message: text });
+                    .from("message") // 1. Target your original 'message' table
+                    .insert({ 
+                        message: "[User Suggestion]", // 2. Fills mandatory chat column so it doesn't crash
+                        suggestion: text              // 3. Pushes the input into your new column
+                    });
 
                 if (error) throw error;
                 input.value = "";
@@ -212,7 +214,6 @@
                 suggBtn.textContent = "Suggest";
             }
         }
-
         // Real-time stream initialization
         client.channel('room1')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, loadMessages)
