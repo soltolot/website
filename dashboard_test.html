@@ -4,30 +4,63 @@
     <meta charset="UTF-8">
     <title>SultanChat has been relocated</title>
     <style>
-        .container {
-            max-width: 420px;
-            margin: auto;
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
-            border: 2px solid #FFBB66;
+
+        
+        body {
+            display: flex;
+            justify-content: center; /* Centers the card horizontally */
+            align-items: center;     /* Centers the card vertically */
+            font-family: sans-serif;
+            background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
+            color: #2C2C2C;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
         }
 
+        /* The container acts as a clean, floating card widget */
+        .container {
+            max-width: 420px;
+            width: 100%;             /* Ensures responsiveness on mobile */
+            background: white;
+            padding: 35px 25px;      /* Generous padding inside the card */
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(255, 98, 0, 0.2); /* Your bright orange glow */
+            border: 2px solid #FFBB66;
+            text-align: center;      /* Centers internal text rows */
+            box-sizing: border-box;  /* Prevents padding from breaking width */
+        }
         
         h2 {
             color: #FF6200;
             margin-top: 0;
-            text-align: center;
+            margin-bottom: 12px;
             font-size: 28px;
+        }
+
+        .reloacate_text {
+            font-size: 16px;
+            color: #444444;          /* Soft gray for modern readability */
+            margin: 0;
+        }
+
+        .reloacate_text a {
+            color: #FF6200;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .reloacate_text a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
+    
     <div class="container">
+        <!-- Clean HTML structure with no raw CSS mixed in -->
         <h2>SultanChat has been relocated</h2>
         <p class="reloacate_text">SultanChat has been relocated to <a href="sultanchat.html">Here!</a></p>
-       
     </div>
 
 </body>
