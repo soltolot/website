@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>SultanChat</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 🏗️ CDN DEPENDENCY: If core functions fail, ensure this library loads with status 200 -->
+    <script src="jsdelivr.net"></script>
     <style>
         body {
             font-family: sans-serif;
@@ -32,14 +33,34 @@
             margin-bottom: 15px;
         }
         
-        /* NEW STYLE: Clean, unstyled raw text rows instead of orange bubbles */
+        /* 🎨 STYLE - ERROR LOGS: Standard raw-msg row injected exclusively during catch triggers */
         .raw-msg {
-            color: #2C2C2C;
-            padding: 8px 0;
-            font-family: monospace;
-            font-size: 14px;
-            border-bottom: 1px solid #FFE4D3;
+            color: #FF4444;             
+            padding: 8px 12px;
+            font-family: monospace;     
+            font-size: 13px;
+            background: #FFEAEB;        
+            border-radius: 8px;
+            border-left: 4px solid #FF4444; 
+            margin-bottom: 10px;
             word-break: break-word;
+        }
+
+        /* 🎨 STYLE - SUCCESS CHAT: Message bubbles used when data pulls successfully */
+        .msg {
+            background: #FF6200; 
+            color: white;
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            word-break: break-word;
+            box-shadow: 0 4px 10px rgba(255, 98, 0, 0.15); 
+        }
+
+        /* 🎨 STYLE - SUCCESS ALTERNATE: Lighter chat rows for optimal reading contrast */
+        .msg:nth-child(even) {
+            background: #FF8A00; 
+            box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
         }
 
         .status {
@@ -120,16 +141,19 @@
     </div>
 
     <script>
+        // 🏗️ INITIALIZATION: If "supabase is not defined" error breaks here, check script source URL in head
         const client = supabase.createClient(
-            "https://vldkmlbfjzdrfzpeyver.supabase.co",
+            "supabase.co",
             "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
         );
 
+        // 🔄 FETCH DATA PIPELINE: Automatically reads, clears, and renders message rows
         async function loadMessages() {
             const chat = document.getElementById("chat");
             const status = document.getElementById("status");
 
             try {
+                // 🛑 DEBUG QUERY: Confirm 'message' table exists and matches casing exactly
                 const { data, error } = await client
                     .from("message")
                     .select("message")
@@ -137,53 +161,54 @@
                     .neq("message", "")         
                     .order('id', { ascending: true });
 
+                // 🛑 DEBUG CHECK: Catches network disconnects, schema cache misses, or policy blocks
                 if (error) throw error;
 
                 status.textContent = `● ONLINE - ${data.length} messages`;
+                chat.innerHTML = ""; 
 
-                chat.innerHTML = "";
                 if (data.length === 0) {
                     chat.innerHTML = `<div style="color:#FF8A00; text-align:center; padding:100px 20px; font-size:18px;">
                         No messages yet. Be the first to say something! 👋
                     </div>`;
                 } else {
+                    // 🎨 RENDERING WORKSPACE: Loops through entries and assigns styles
                     data.forEach(item => {
                         const div = document.createElement("div");
-                        
-                        /* CHANGED: Swapped out orange .msg bubble for raw-msg text line style */
-                        div.className = "raw-msg"; 
-                        
+                        div.className = "msg"; // Assigns normal orange bubbles
                         div.textContent = item.message;
                         chat.appendChild(div);
                     });
                     chat.scrollTop = chat.scrollHeight;
                 }
             } catch (err) {
-                /* CHANGED: This block now prints the raw, technical database error text dynamically */
+                // 🛑 DEBUG DISPLAY: Clears chat log on crash and prints exact Supabase system engine error text
                 status.style.background = "#FFE0E0";
                 status.style.color = "#FF4444";
+                status.textContent = "Error loading messages";
                 
                 const rawErrorLog = err.message || JSON.stringify(err);
-                
-                status.innerHTML = `
-                    <strong>● Error loading messages</strong>
-                    <div style="font-size: 11px; margin-top: 4px; font-family: monospace; opacity: 0.85; text-align: left;">
-                        Raw log: ${rawErrorLog}
-                    </div>
-                `;
+                chat.innerHTML = ""; 
+
+                const errorDiv = document.createElement("div");
+                errorDiv.className = "raw-msg"; // Assigns plain red raw-msg look
+                errorDiv.textContent = `[System Error]: ${rawErrorLog}`;
+                chat.appendChild(errorDiv);
             }
         }
 
+        //  SUBMIT CHAT PIPELINE: Handles message-input submission
         async function sendMessage() {
             const input = document.getElementById("message-input");
             const text = input.value.trim();
-            if (!text) return;
+            if (!text) return; // Silent return keeps app clean if field contains spaces
 
             const messBtn = document.getElementById("send-btn");
             messBtn.disabled = true;
             messBtn.textContent = "Sending...";
 
             try {
+                //  Requires a string text column explicitly named 'message' inside table
                 const { error } = await client
                     .from("message")
                     .insert({ message: text });
@@ -191,13 +216,16 @@
                 if (error) throw error;
                 input.value = "";
             } catch (err) {
-                alert("Failed to send: " + err.message);
+                //  Populates warning if RLS policies block row submission updates
+                alert("Failed to send message: " + err.message);
             } finally {
+                // CLEANUP STATE: Always returns button control back to user
                 messBtn.disabled = false;
                 messBtn.textContent = "Send";
             }
         }
 
+        // SUBMIT SUGGESTION PIPELINE: Handles suggest-input submission
         async function sendSuggest() {
             const input = document.getElementById("suggest-input");
             const text = input.value.trim();
@@ -208,6 +236,7 @@
             suggBtn.textContent = "Sending...";
 
             try {
+                // Requires a column explicitly named 'suggestion' inside 'message' table
                 const { error } = await client
                     .from("message")
                     .insert({ suggestion: text });
@@ -215,18 +244,21 @@
                 if (error) throw error;
                 input.value = "";
             } catch (err) {
-                alert("Failed to send: " + err.message);
+                // Warns user if missing column error strings kick back from server
+                alert("Failed to send suggestion: " + err.message);
             } finally {
+                // CLEANUP STATE: Always restores indicator buttons back to ready positions
                 suggBtn.disabled = false;
                 suggBtn.textContent = "Suggest";
             }
         }
 
-        // Real-time stream initialization
+        // REAL-TIME STREAM PIPELINE: Watches table events live without page reloads
         client.channel('room1')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, loadMessages)
             .subscribe();
 
+        // EVENT LISTENERS: Hooks UI buttons to functional execution blocks
         document.getElementById("send-btn").addEventListener("click", sendMessage);
         document.getElementById("message-input").addEventListener("keypress", (e) => {
             if (e.key === "Enter") sendMessage();
@@ -237,6 +269,7 @@
             if (e.key === "Enter") sendSuggest();
         });
 
+        // Pre-loads previous logs immediately when user connects
         loadMessages();
     </script>
 </body>
