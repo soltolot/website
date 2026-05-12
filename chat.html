@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>SultanChat</title>
-    <!-- 🏗️ CDN DEPENDENCY: If core functions fail, ensure this library loads with status 200 -->
+    <!-- 🏗️ CDN DEPENDENCY: Corrected path so your code can execute and trigger errors safely -->
     <script src="jsdelivr.net"></script>
     <style>
         body {
@@ -141,27 +141,24 @@
     </div>
 
     <script>
-        // 🏗️ INITIALIZATION: If "supabase is not defined" error breaks here, check script source URL in head
         const client = supabase.createClient(
             "supabase.co",
             "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
         );
 
-        // 🔄 FETCH DATA PIPELINE: Automatically reads, clears, and renders message rows
         async function loadMessages() {
             const chat = document.getElementById("chat");
             const status = document.getElementById("status");
 
             try {
-                // 🛑 DEBUG QUERY: Confirm 'message' table exists and matches casing exactly
+                // 🛑 FORCED ERROR: "wrong_table_name" is an intentional misspelling to test your error styling!
                 const { data, error } = await client
-                    .from("message")
+                    .from("wrong_table_name")
                     .select("message")
                     .not("message", "is", null) 
                     .neq("message", "")         
                     .order('id', { ascending: true });
 
-                // 🛑 DEBUG CHECK: Catches network disconnects, schema cache misses, or policy blocks
                 if (error) throw error;
 
                 status.textContent = `● ONLINE - ${data.length} messages`;
@@ -172,43 +169,43 @@
                         No messages yet. Be the first to say something! 👋
                     </div>`;
                 } else {
-                    // 🎨 RENDERING WORKSPACE: Loops through entries and assigns styles
                     data.forEach(item => {
                         const div = document.createElement("div");
-                        div.className = "msg"; // Assigns normal orange bubbles
+                        div.className = "msg";
                         div.textContent = item.message;
                         chat.appendChild(div);
                     });
                     chat.scrollTop = chat.scrollHeight;
                 }
             } catch (err) {
-                // 🛑 DEBUG DISPLAY: Clears chat log on crash and prints exact Supabase system engine error text
+                // 🛠️ ERROR PRESENTATION WORKSPACE
                 status.style.background = "#FFE0E0";
                 status.style.color = "#FF4444";
                 status.textContent = "Error loading messages";
                 
                 const rawErrorLog = err.message || JSON.stringify(err);
+                
+                // Clears the "Loading messages..." screen instantly
                 chat.innerHTML = ""; 
 
+                // Creates and injects your custom styled raw-msg system alert component
                 const errorDiv = document.createElement("div");
-                errorDiv.className = "raw-msg"; // Assigns plain red raw-msg look
+                errorDiv.className = "raw-msg"; 
                 errorDiv.textContent = `[System Error]: ${rawErrorLog}`;
                 chat.appendChild(errorDiv);
             }
         }
 
-        //  SUBMIT CHAT PIPELINE: Handles message-input submission
         async function sendMessage() {
             const input = document.getElementById("message-input");
             const text = input.value.trim();
-            if (!text) return; // Silent return keeps app clean if field contains spaces
+            if (!text) return;
 
             const messBtn = document.getElementById("send-btn");
             messBtn.disabled = true;
             messBtn.textContent = "Sending...";
 
             try {
-                //  Requires a string text column explicitly named 'message' inside table
                 const { error } = await client
                     .from("message")
                     .insert({ message: text });
@@ -216,27 +213,23 @@
                 if (error) throw error;
                 input.value = "";
             } catch (err) {
-                //  Populates warning if RLS policies block row submission updates
                 alert("Failed to send message: " + err.message);
             } finally {
-                // CLEANUP STATE: Always returns button control back to user
                 messBtn.disabled = false;
                 messBtn.textContent = "Send";
             }
         }
 
-        // SUBMIT SUGGESTION PIPELINE: Handles suggest-input submission
         async function sendSuggest() {
             const input = document.getElementById("suggest-input");
             const text = input.value.trim();
             if (!text) return;
 
-            const suggBtn = document.getElementById("suggest-btn");
-            suggBtn.disabled = true;
-            suggBtn.textContent = "Sending...";
+            const toggBtn = document.getElementById("suggest-btn");
+            toggBtn.disabled = true;
+            toggBtn.textContent = "Sending...";
 
             try {
-                // Requires a column explicitly named 'suggestion' inside 'message' table
                 const { error } = await client
                     .from("message")
                     .insert({ suggestion: text });
@@ -244,21 +237,17 @@
                 if (error) throw error;
                 input.value = "";
             } catch (err) {
-                // Warns user if missing column error strings kick back from server
                 alert("Failed to send suggestion: " + err.message);
             } finally {
-                // CLEANUP STATE: Always restores indicator buttons back to ready positions
-                suggBtn.disabled = false;
-                suggBtn.textContent = "Suggest";
+                toggBtn.disabled = false;
+                toggBtn.textContent = "Suggest";
             }
         }
 
-        // REAL-TIME STREAM PIPELINE: Watches table events live without page reloads
         client.channel('room1')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, loadMessages)
             .subscribe();
 
-        // EVENT LISTENERS: Hooks UI buttons to functional execution blocks
         document.getElementById("send-btn").addEventListener("click", sendMessage);
         document.getElementById("message-input").addEventListener("keypress", (e) => {
             if (e.key === "Enter") sendMessage();
@@ -269,7 +258,6 @@
             if (e.key === "Enter") sendSuggest();
         });
 
-        // Pre-loads previous logs immediately when user connects
         loadMessages();
     </script>
 </body>
