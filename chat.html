@@ -1,10 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- 🛑 GLOBAL FIRST DEFENSE: Intercepts script, asset, or parsing crashes immediately before layout compilation -->
+    <script>
+        window.addEventListener('error', function(event) {
+            setTimeout(() => {
+                const chatContainer = document.getElementById("chat");
+                if (chatContainer) {
+                    chatContainer.innerHTML = `
+                        <div style="color:#FF4444; padding:12px; font-family:monospace; font-size:13px; background:#FFEAEB; border-radius:8px; border-left:4px solid #FF4444; word-break:break-word; text-align: left;">
+                            <strong>[Fatal Execution / Script Crash]</strong><br>
+                            Source: ${event.filename || 'Inline Code Block'}<br>
+                            Line: ${event.lineno} | Column: ${event.colno}<br>
+                            Trace: ${event.message}
+                        </div>
+                    `;
+                    
+                    const statusText = document.getElementById("status");
+                    if (statusText) {
+                        statusText.style.background = "#FFE0E0";
+                        statusText.style.color = "#FF4444";
+                        statusText.textContent = "CRITICAL ENGINE BREAKDOWN";
+                    }
+                }
+            }, 10);
+        }, true);
+    </script>
+
     <meta charset="UTF-8">
     <title>SultanChat</title>
-    <!-- CDN DEPENDENCY: Corrected path so your code can execute and trigger errors safely -->
+    <!-- 🏗️ CDN DEPENDENCY: Secure library path ensuring global 'supabase' target initiates cleanly -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
         body {
             font-family: sans-serif;
@@ -141,17 +168,19 @@
     </div>
 
     <script>
+        // 🏗️ INITIALIZATION: Connects to your live Supabase environment parameters
         const client = supabase.createClient(
             "supabase.co",
             "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
         );
 
+        // 🔄 FETCH LOGS WORKSPACE: Clears display rows and paints chat elements
         async function loadMessages() {
             const chat = document.getElementById("chat");
             const status = document.getElementById("status");
 
             try {
-                // 🛑 FORCED ERROR: "wrong_table_name" is an intentional misspelling to test your error styling!
+                // 🛑 FORCED ERROR: Intentional typo targeting a non-existent table to test the raw-msg catch style
                 const { data, error } = await client
                     .from("wrong_table_name")
                     .select("message")
@@ -178,17 +207,14 @@
                     chat.scrollTop = chat.scrollHeight;
                 }
             } catch (err) {
-                // 🛠️ ERROR PRESENTATION WORKSPACE
+                // 🛠️ ERROR PRESENTATION WORKSPACE: Intercepts query failures and structures diagnostic logs
                 status.style.background = "#FFE0E0";
                 status.style.color = "#FF4444";
                 status.textContent = "Error loading messages";
                 
                 const rawErrorLog = err.message || JSON.stringify(err);
-                
-                // Clears the "Loading messages..." screen instantly
                 chat.innerHTML = ""; 
 
-                // Creates and injects your custom styled raw-msg system alert component
                 const errorDiv = document.createElement("div");
                 errorDiv.className = "raw-msg"; 
                 errorDiv.textContent = `[System Error]: ${rawErrorLog}`;
@@ -196,6 +222,7 @@
             }
         }
 
+        // 📤 SUBMIT MESSAGES HOOK
         async function sendMessage() {
             const input = document.getElementById("message-input");
             const text = input.value.trim();
@@ -220,6 +247,7 @@
             }
         }
 
+        // 💡 SUBMIT FEEDBACK HOOK: Completed truncated logic loop cleanly
         async function sendSuggest() {
             const input = document.getElementById("suggest-input");
             const text = input.value.trim();
@@ -244,10 +272,12 @@
             }
         }
 
+        // ⚡ REAL-TIME STREAM PIPELINE
         client.channel('room1')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'message' }, loadMessages)
             .subscribe();
 
+        // 🔌 EVENT BINDINGS: Hooks visual buttons to their respective logic scripts
         document.getElementById("send-btn").addEventListener("click", sendMessage);
         document.getElementById("message-input").addEventListener("keypress", (e) => {
             if (e.key === "Enter") sendMessage();
@@ -258,6 +288,7 @@
             if (e.key === "Enter") sendSuggest();
         });
 
+        // 🚀 FIRE STREAM ON INITIAL CONNECT
         loadMessages();
     </script>
 </body>
