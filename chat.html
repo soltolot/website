@@ -5,8 +5,8 @@
    SUPABASE CLIENT
 ========================= */
 const client = supabase.createClient(
-    "YOUR_SUPABASE_URL_HERE",
-    "YOUR_SUPABASE_KEY_HERE"
+    "https://vldkmlbfjzdrfzpeyver.supabase.co",
+    "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
 );
 
 /* =========================
@@ -35,7 +35,7 @@ function addErrorToChat(title, details) {
 
 /* GLOBAL ERROR CATCHERS (SAFE) */
 window.addEventListener("error", function (event) {
-    if (!event.error) return; // ignore browser noise
+    if (!event.error) return;
     console.error(event.error);
     addErrorToChat("Runtime Error", event.message);
 });
