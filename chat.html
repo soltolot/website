@@ -5,8 +5,23 @@
 <title>SultanChat</title>
 
 <!-- Supabase -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // Protect the page
+    async function checkSession() {
+        const { data: { session } } = await client.auth.getSession();
+
+        if (!session) {
+            window.location.href = "login.html";
+        }
+    }
+
+    checkSession();
+</script>
 <style>
 body {
     font-family: sans-serif;
@@ -129,14 +144,6 @@ button:active {
 </div>
 
 <script>
-/* =========================
-   SUPABASE CLIENT
-========================= */
-const client = supabase.createClient(
-    "https://vldkmlbfjzdrfzpeyver.supabase.co",
-    "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
-);
-
 /* =========================
    SAFE ERROR LOGGER
 ========================= */
