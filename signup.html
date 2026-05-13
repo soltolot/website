@@ -118,54 +118,47 @@
         <p class="login-text">Already have an account? <a href="login.html">Login</a></p>
     </div>
 
-    <script>
-        const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
-        const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <script><script>
+    const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function processSignup() {
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value.trim();
-            const status = document.getElementById("status");
+    async function processSignup() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const status = document.getElementById("status");
 
-            if (!username || !password) {
-                status.innerText = "Please fill in all fields.";
-                return;
-            }
-
-            status.style.color = "#2d3436";
-            status.innerText = "Creating account...";
-
-            // Check if username exists
-            const { data: userExists } = await client
-                .from("Users-and-passwords")
-                .select("username")
-                .eq("username", username);
-
-            if (userExists && userExists.length > 0) {
-                status.style.color = "#d63031";
-                status.innerText = "Username already taken.";
-                return;
-            }
-
-            // Insert new user
-            const { error } = await client
-                .from("Users-and-passwords")
-                .insert([{ 
-                    username: username, 
-                    password: password, 
-                    created_at: new Date().toISOString() 
-                }]);
-
-            if (error) {
-                status.style.color = "#d63031";
-                status.innerText = "Error: " + error.message;
-            } else {
-                status.style.color = "#28a745";
-                status.innerText = "Account created! Redirecting...";
-                setTimeout(() => { window.location.href = "login.html"; }, 1000);
-            }
+        if (!username || !password) {
+            status.innerText = "Please fill in all fields.";
+            return;
         }
-    </script>
+
+        status.style.color = "#2d3436";
+        status.innerText = "Creating account...";
+
+        // Create Supabase Auth user
+        const { data, error } = await client.auth.signUp({
+            email: username,      // username is treated as email
+            password: password,
+            options: {
+                expiresIn: 60 * 60 * 24 * 7 // 1 week session
+            }
+        });
+
+        if (error) {
+            status.style.color = "#d63031";
+            status.innerText = "Error: " + error.message;
+            return;
+        }
+
+        // User is automatically logged in (email confirmation OFF)
+        status.style.color = "#28a745";
+        status.innerText = "Account created! Redirecting...";
+
+        setTimeout(() => {
+            window.location.href = "chat.html";
+        }, 1000);
+    }
+</script>
 </body>
 </html>
