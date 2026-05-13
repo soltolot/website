@@ -1,3 +1,5 @@
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
 <script>
 /* =========================
    SUPABASE CLIENT
@@ -8,58 +10,39 @@ const client = supabase.createClient(
 );
 
 /* =========================
-   ERROR DISPLAY (SAFE)
+   SAFE ERROR LOGGER
 ========================= */
 
-function showFatalError(title, details) {
+function addErrorToChat(title, details) {
     const chat = document.getElementById("chat");
-    const status = document.getElementById("status");
 
-    console.error("FATAL ERROR:", title, details);
-
-    if (status) {
-        status.style.background = "#FFE0E0";
-        status.style.color = "#FF4444";
-        status.textContent = "CRITICAL ENGINE BREAKDOWN";
-    }
-
-    if (chat) {
-        const div = document.createElement("div");
-        div.className = "msg error";
-        div.style.cssText = `
-            color:#FF4444;
-            padding:12px;
-            font-family:monospace;
-            font-size:13px;
-            background:#FFEAEB;
-            border-radius:8px;
-            border-left:4px solid #FF4444;
-            white-space:pre-wrap;
-            margin:8px 0;
-        `;
-        div.textContent = `${title}\n\n${details.trim()}`;
-        chat.appendChild(div);
-        chat.scrollTop = chat.scrollHeight;
-    }
+    const div = document.createElement("div");
+    div.style.cssText = `
+        color:#FF4444;
+        padding:12px;
+        font-family:monospace;
+        font-size:13px;
+        background:#FFEAEB;
+        border-radius:8px;
+        border-left:4px solid #FF4444;
+        white-space:pre-wrap;
+        margin:8px 0;
+    `;
+    div.textContent = `${title}\n\n${details}`;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
 }
 
-/* =========================
-   GLOBAL JS ERROR CATCHER
-========================= */
-
+/* GLOBAL ERROR CATCHERS (SAFE) */
 window.addEventListener("error", function (event) {
-    if (!event.error) return; // ignore harmless errors
-    showFatalError(
-        "JavaScript Runtime Error",
-        `Message: ${event.message}\nFile: ${event.filename}\nLine: ${event.lineno}:${event.colno}`
-    );
-}, true);
+    if (!event.error) return; // ignore browser noise
+    console.error(event.error);
+    addErrorToChat("Runtime Error", event.message);
+});
 
 window.addEventListener("unhandledrejection", function (event) {
-    showFatalError(
-        "Unhandled Promise Rejection",
-        `Reason: ${event.reason}`
-    );
+    console.error(event.reason);
+    addErrorToChat("Promise Rejection", String(event.reason));
 });
 
 /* =========================
@@ -72,7 +55,7 @@ async function loadMessages() {
 
     try {
         const { data, error } = await client
-            .from("message") // FIXED: real table name
+            .from("message")
             .select("*")
             .order("id", { ascending: true });
 
@@ -81,7 +64,7 @@ async function loadMessages() {
         status.textContent = `● ONLINE - ${data.length} messages`;
         chat.innerHTML = "";
 
-        if (data.length === 0) {
+        if (!data.length) {
             chat.innerHTML = `
                 <div style="color:#FF8A00; text-align:center; padding:80px 20px;">
                     No messages yet 👋
@@ -100,10 +83,7 @@ async function loadMessages() {
         chat.scrollTop = chat.scrollHeight;
 
     } catch (err) {
-        showFatalError(
-            "Supabase Query Failure",
-            `Message: ${err.message}\nCode: ${err.code}\nDetails: ${err.details}\nHint: ${err.hint}`
-        );
+        addErrorToChat("Supabase Query Error", err.message);
     }
 }
 
@@ -131,7 +111,7 @@ async function sendMessage() {
         input.value = "";
 
     } catch (err) {
-        showFatalError("Send Message Error", err.message);
+        addErrorToChat("Send Message Error", err.message);
     } finally {
         btn.disabled = false;
         btn.textContent = "Send";
@@ -162,7 +142,7 @@ async function sendSuggest() {
         input.value = "";
 
     } catch (err) {
-        showFatalError("Send Suggestion Error", err.message);
+        addErrorToChat("Send Suggestion Error", err.message);
     } finally {
         btn.disabled = false;
         btn.textContent = "Suggest";
