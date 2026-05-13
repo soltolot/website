@@ -136,9 +136,12 @@
         status.style.color = "#2d3436";
         status.innerText = "Creating account...";
 
+        const email = username + "@user.local";
+
+        
         // Create Supabase Auth user
         const { data, error } = await client.auth.signUp({
-            email: username,      // username is treated as email
+            email: email,      // username is treated as email
             password: password,
             options: {
                 expiresIn: 60 * 60 * 24 * 7 // 1 week session
