@@ -72,48 +72,45 @@
         <p class="status" id="status"></p>
     </div>
 
-    <script>
-        const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
-        const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<script>
+    const SUPABASE_URL = "https://uhkoictzfseglnxbtdkw.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_-PUjgfccR3jtZcLLIyVz0w_ZL8966QQ";
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        async function processLogin() {
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value.trim();
-            const status = document.getElementById("status");
+    async function processLogin() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const status = document.getElementById("status");
 
-            if (!username || !password) {
-                status.style.color = "red";
-                status.innerText = "Please enter both fields.";
-                return;
-            }
-
-            status.style.color = "#555";
-            status.innerText = "Verifying...";
-
-            try {
-                const { data: user, error } = await client
-                    .from("Users-and-passwords")
-                    .select("*")
-                    .eq("username", username)
-                    .eq("password", password)
-                    .maybeSingle();
-
-                if (user) {
-                    status.style.color = "green";
-                    status.innerText = "Login successful! Redirecting...";
-                    setTimeout(() => { 
-                        window.location.href = "dashboard.html"; 
-                    }, 900);
-                } else {
-                    status.style.color = "red";
-                    status.innerText = "Invalid username or password.";
-                }
-            } catch (err) {
-                status.style.color = "red";
-                status.innerText = "An error occurred. Please try again.";
-            }
+        if (!username || !password) {
+            status.innerText = "Please fill in all fields.";
+            return;
         }
-    </script>
+
+        status.style.color = "#2d3436";
+        status.innerText = "Logging in...";
+
+        const { data, error } = await client.auth.signInWithPassword({
+            email: username,
+            password: password,
+            options: {
+                expiresIn: 60 * 60 * 24 * 7 // 1 week session
+            }
+        });
+
+        if (error) {
+            status.style.color = "#d63031";
+            status.innerText = "Error: " + error.message;
+            return;
+        }
+
+        status.style.color = "#28a745";
+        status.innerText = "Login successful! Redirecting...";
+
+        setTimeout(() => {
+            window.location.href = "chat.html";
+        }, 1000);
+    }
+</script>
 </body>
 </html>
