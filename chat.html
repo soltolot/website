@@ -1,18 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SultanChat</title>
+
+<!-- Supabase -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+<style>
+body {
+    font-family: sans-serif;
+    background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
+    color: #2C2C2C;
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 420px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
+    border: 2px solid #FFBB66;
+}
+
+h2 {
+    color: #FF6200;
+    margin-top: 0;
+    text-align: center;
+    font-size: 28px;
+}
+
+#chat {
+    height: 380px;
+    overflow-y: auto;
+    background: #FFF9F0;
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid #FFDDAA;
+    margin-bottom: 15px;
+}
+
+.msg {
+    background: #FF6200;
+    color: white;
+    padding: 12px 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    word-break: break-word;
+    box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
+}
+
+.msg:nth-child(even) {
+    background: #FF8A00;
+    box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
+}
+
+.status {
+    padding: 12px;
+    background: #FFEDD5;
+    color: #E85D04;
+    border-radius: 10px;
+    text-align: center;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+#send-area {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+#message-input, #suggest-input {
+    flex: 1;
+    padding: 14px;
+    background: #FFF4E0;
+    border: 2px solid #FFBB66;
+    border-radius: 12px;
+    color: #2C2C2C;
+    font-size: 16px;
+}
+
+button {
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background: #E65100;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(230, 81, 0, 0.35);
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+button:hover {
+    background: #DC4D00;
+    transform: translateY(-2px);
+}
+
+button:active {
+    background: #E05300;
+    transform: scale(0.96);
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h2>SultanChat</h2>
+
+    <div id="chat">Loading messages...</div>
+    <div id="status" class="status">● CONNECTING…</div>
+
+    <div id="send-area">
+        <input type="text" id="message-input" placeholder="Type your message...">
+        <button id="send-btn">Send</button>
+    </div>
+
+    <div id="send-area">
+        <input type="text" id="suggest-input" placeholder="Type a suggestion...">
+        <button id="suggest-btn">Suggest</button>
+    </div>
+</div>
 
 <script>
 /* =========================
    SUPABASE CLIENT
 ========================= */
 const client = supabase.createClient(
-    "https://vldkmlbfjzdrfzpeyver.supabase.co",
-    "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
+    "YOUR_SUPABASE_URL_HERE",
+    "YOUR_SUPABASE_KEY_HERE"
 );
 
 /* =========================
    SAFE ERROR LOGGER
 ========================= */
-
 function addErrorToChat(title, details) {
     const chat = document.getElementById("chat");
 
@@ -33,14 +160,13 @@ function addErrorToChat(title, details) {
     chat.scrollTop = chat.scrollHeight;
 }
 
-/* GLOBAL ERROR CATCHERS (SAFE) */
-window.addEventListener("error", function (event) {
+window.addEventListener("error", (event) => {
     if (!event.error) return;
     console.error(event.error);
     addErrorToChat("Runtime Error", event.message);
 });
 
-window.addEventListener("unhandledrejection", function (event) {
+window.addEventListener("unhandledrejection", (event) => {
     console.error(event.reason);
     addErrorToChat("Promise Rejection", String(event.reason));
 });
@@ -48,7 +174,6 @@ window.addEventListener("unhandledrejection", function (event) {
 /* =========================
    LOAD MESSAGES
 ========================= */
-
 async function loadMessages() {
     const chat = document.getElementById("chat");
     const status = document.getElementById("status");
@@ -65,20 +190,16 @@ async function loadMessages() {
         chat.innerHTML = "";
 
         if (!data.length) {
-            chat.innerHTML = `
-                <div style="color:#FF8A00; text-align:center; padding:80px 20px;">
-                    No messages yet 👋
-                </div>
-            `;
+            chat.innerHTML = `<div style="color:#FF8A00; text-align:center; padding:80px 20px;">No messages yet 👋</div>`;
             return;
         }
 
-        for (const item of data) {
+        data.forEach(item => {
             const div = document.createElement("div");
             div.className = "msg";
             div.textContent = item.message || item.suggestion || "(empty)";
             chat.appendChild(div);
-        }
+        });
 
         chat.scrollTop = chat.scrollHeight;
 
@@ -90,14 +211,12 @@ async function loadMessages() {
 /* =========================
    SEND MESSAGE
 ========================= */
-
 async function sendMessage() {
     const input = document.getElementById("message-input");
-    const btn = document.getElementById("send-btn");
-
     const text = input.value.trim();
     if (!text) return;
 
+    const btn = document.getElementById("send-btn");
     btn.disabled = true;
     btn.textContent = "Sending...";
 
@@ -109,7 +228,6 @@ async function sendMessage() {
         if (error) throw error;
 
         input.value = "";
-
     } catch (err) {
         addErrorToChat("Send Message Error", err.message);
     } finally {
@@ -121,14 +239,12 @@ async function sendMessage() {
 /* =========================
    SEND SUGGESTION
 ========================= */
-
 async function sendSuggest() {
     const input = document.getElementById("suggest-input");
-    const btn = document.getElementById("suggest-btn");
-
     const text = input.value.trim();
     if (!text) return;
 
+    const btn = document.getElementById("suggest-btn");
     btn.disabled = true;
     btn.textContent = "Sending...";
 
@@ -140,7 +256,6 @@ async function sendSuggest() {
         if (error) throw error;
 
         input.value = "";
-
     } catch (err) {
         addErrorToChat("Send Suggestion Error", err.message);
     } finally {
@@ -152,43 +267,25 @@ async function sendSuggest() {
 /* =========================
    EVENT BINDING
 ========================= */
+document.getElementById("send-btn").addEventListener("click", sendMessage);
+document.getElementById("message-input").addEventListener("keypress", e => {
+    if (e.key === "Enter") sendMessage();
+});
 
-function bindUI() {
-    const sendBtn = document.getElementById("send-btn");
-    const msgInput = document.getElementById("message-input");
-    const suggestBtn = document.getElementById("suggest-btn");
-    const suggestInput = document.getElementById("suggest-input");
-
-    if (sendBtn && msgInput) {
-        sendBtn.addEventListener("click", sendMessage);
-        msgInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") sendMessage();
-        });
-    }
-
-    if (suggestBtn && suggestInput) {
-        suggestBtn.addEventListener("click", sendSuggest);
-        suggestInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") sendSuggest();
-        });
-    }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    bindUI();
-    loadMessages();
+document.getElementById("suggest-btn").addEventListener("click", sendSuggest);
+document.getElementById("suggest-input").addEventListener("keypress", e => {
+    if (e.key === "Enter") sendSuggest();
 });
 
 /* =========================
    REALTIME UPDATES
 ========================= */
-
 client.channel("room1")
-    .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "message" },
-        loadMessages
-    )
+    .on("postgres_changes", { event: "*", schema: "public", table: "message" }, loadMessages)
     .subscribe();
 
+loadMessages();
 </script>
+
+</body>
+</html>
