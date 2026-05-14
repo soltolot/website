@@ -124,7 +124,7 @@
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function processSignup() {
-        const username = document.getElementById("username").value.trim().toLowerCase();
+        const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value.trim();
         const status = document.getElementById("status");
 
