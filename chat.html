@@ -20,12 +20,19 @@
         if (!session) window.location.href = "login.html";
     }
 
-    async function loadUser() {
-        const { data: { user }, error } = await client.auth.getUser();
-        if (error || !user) window.location.href = "login.html";
+async function loadUser() {
+    const { data: { user }, error } = await client.auth.getUser();
+    if (error || !user) window.location.href = "login.html";
 
-        window.displayName = user.user_metadata.display_name;
-        console.log("Logged in as:", window.displayName);
+    window.displayName = user.user_metadata.display_name;
+    console.log("Logged in as:", window.displayName);
+}
+
+// Register service worker globally
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+}
+
     }
 
     checkSession();
