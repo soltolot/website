@@ -251,8 +251,10 @@ async function sendMessage() {
     try {
         const { error } = await client
             .from("message")
-            .insert({ message: text });
-            username: window.displayName
+            .insert({
+                suggestion: text,
+                username: window.displayName
+            });
 
         if (error) throw error;
 
@@ -279,9 +281,11 @@ async function sendSuggest() {
 
     try {
         const { error } = await client
-            .from("message")
-            .insert({ suggestion: text });
-            username: window.displayName
+            .from("suggestion")
+            .insert({
+                suggestion: text,
+                username: window.displayName
+            });
         if (error) throw error;
 
         input.value = "";
