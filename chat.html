@@ -62,6 +62,7 @@ h2 {
     border: 1px solid #FFDDAA;
     margin-bottom: 15px;
 }
+
 .msg {
     background: #FF6200;
     color: white;
@@ -69,10 +70,21 @@ h2 {
     border-radius: 12px;
     margin-bottom: 10px;
     word-break: break-word;
+    
 }
-.msg:nth-child(even) {
-    background: #FF8A00;
+
+.my-msg {
+    background: #FF6200; /* darker orange */
+    color: white;
+    text-align: right;
 }
+
+.other-msg {
+    background: #FF8A00; /* lighter orange */
+    color: white;
+    text-align: left;
+}
+
 .status {
     padding: 12px;
     background: #FFEDD5;
@@ -143,8 +155,11 @@ async function loadMessages() {
             .select("*")
             .order("id", { ascending: true });
 
-        if (error) throw error;
-
+        if (error){
+            status.textContent = `● OFFLINE - ERROR`;
+            throw error;
+        }
+        
         status.textContent = `● ONLINE - ${data.length} messages`;
         chat.innerHTML = "";
 
@@ -153,21 +168,26 @@ async function loadMessages() {
             return;
         }
 
-        data.forEach(item => {
+data.forEach(item => {
 
-            // ⭐ HIDE SUGGESTIONS FROM CHAT
-            if (item.suggestion) return;
+    // Skip suggestions
+    if (item.suggestion) return;
 
-            const div = document.createElement("div");
-            div.className = "msg";
+    const div = document.createElement("div");
 
-            const name = item.username || "Unknown";
-            const text = item.message || "(empty)";
+    // Check if message belongs to me
+    if (item.username === window.displayName) {
+        div.className = "msg my-msg";
+    } else {
+        div.className = "msg other-msg";
+    }
 
-            div.textContent = `${name}: ${text}`;
-            chat.appendChild(div);
-        });
+    const name = item.username || "Unknown";
+    const text = item.message || "(empty)";
 
+    div.textContent = `${name}: ${text}`;
+    chat.appendChild(div);
+});
         chat.scrollTop = chat.scrollHeight;
 
     } catch (err) {
