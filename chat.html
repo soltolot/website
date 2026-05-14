@@ -11,7 +11,6 @@
     const SUPABASE_KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
     const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Protect the page
     async function checkSession() {
         const { data: { session } } = await client.auth.getSession();
         if (!session) window.location.href = "login.html";
@@ -70,7 +69,6 @@ h2 {
     border-radius: 12px;
     margin-bottom: 10px;
     word-break: break-word;
-    box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
 }
 .msg:nth-child(even) {
     background: #FF8A00;
@@ -156,6 +154,10 @@ async function loadMessages() {
         }
 
         data.forEach(item => {
+
+            // ⭐ HIDE SUGGESTIONS FROM CHAT
+            if (item.suggestion) return;
+
             const div = document.createElement("div");
             div.className = "msg";
 
