@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>SultanChat</title>
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="manifest" href="/website/manifest.json">
@@ -42,7 +44,6 @@ if ("serviceWorker" in navigator) {
 </script>
 
 <style>
-/* your CSS unchanged */
 body {
     font-family: sans-serif;
     background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
@@ -51,8 +52,10 @@ body {
     padding: 20px;
     min-height: 100vh;
 }
+
 .container {
     max-width: 420px;
+    width: 100%;
     margin: auto;
     background: white;
     padding: 25px;
@@ -60,12 +63,7 @@ body {
     box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
     border: 2px solid #FFBB66;
 }
-h2 {
-    color: #FF6200;
-    margin-top: 0;
-    text-align: center;
-    font-size: 28px;
-}
+
 #chat {
     height: 380px;
     overflow-y: auto;
@@ -76,63 +74,73 @@ h2 {
     margin-bottom: 15px;
 }
 
+
 .msg {
     background: #FF6200;
     color: white;
-    padding: 12px 15px;
+    padding: 10px 12px;
     border-radius: 12px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     word-break: break-word;
-    
+    font-size: 15px;
 }
 
 .my-msg {
-    background: #FF8A00; /* lighter orange */
-    color: white;
-    text-align: left;
+    background: #FF8A00;
 }
 
 .other-msg {
-    background: #FF6200; /* darker orange */
-    color: white;
-    text-align: left;
+    background: #FF6200;
 }
 
 .status {
-    padding: 12px;
+    padding: 10px;
     background: #FFEDD5;
     color: #E85D04;
     border-radius: 10px;
     text-align: center;
     font-family: monospace;
     font-weight: bold;
+    font-size: 14px;
 }
+
 #send-area {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     margin-top: 10px;
 }
-#message-input, #suggest-input {
+
+#message-input,
+#suggest-input {
     flex: 1;
-    padding: 14px;
+    padding: 12px;
     background: #FFF4E0;
     border: 2px solid #FFBB66;
-    border-radius: 12px;
-    color: #2C2C2C;
-    font-size: 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
 }
+
 button {
-    padding: 12px 20px;
-    font-size: 16px;
+    padding: 12px 14px;
+    font-size: 14px;
     font-weight: bold;
     color: white;
     background: #E65100;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
 }
-button:hover { background: #DC4D00; }
+
+button:hover {
+    background: #DC4D00;
+}
+
+button:active {
+    transform: scale(0.96);
+}button:hover { background: #DC4D00; }
 button:active { transform: scale(0.96); }
+    
 </style>
 </head>
 
