@@ -280,12 +280,12 @@ async function sendSuggest() {
     btn.textContent = "Sending...";
 
     try {
-        const { error } = await client
-            .from("suggestion")
-            .insert({
-                suggestion: text,
-                username: window.displayName
-            });
+            const { error } = await client
+                .from("message")
+                .insert({
+                    suggestion: text,
+                    username: window.displayName
+                });
         if (error) throw error;
 
         input.value = "";
