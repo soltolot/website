@@ -279,13 +279,14 @@ async function sendSuggest() {
     btn.disabled = true;
     btn.textContent = "Sending...";
 
-    try {
+        try {
             const { error } = await client
-                .from("message")
-                .insert({
-                    suggestion: text,
-                    username: window.displayName
-                });
+            .from("message")
+            .insert({
+                suggestion: text,
+                username: window.displayName
+            });
+                        });
         if (error) throw error;
 
         input.value = "";
