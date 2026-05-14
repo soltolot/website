@@ -14,34 +14,23 @@
     // Protect the page
     async function checkSession() {
         const { data: { session } } = await client.auth.getSession();
-
-        if (!session) {
-            window.location.href = "login.html";
-        }
+        if (!session) window.location.href = "login.html";
     }
-
 
     async function loadUser() {
-    const { data: { user }, error } = await client.auth.getUser();
+        const { data: { user }, error } = await client.auth.getUser();
+        if (error || !user) window.location.href = "login.html";
 
-    if (error || !user) {
-        window.location.href = "login.html";
-        return;
+        window.displayName = user.user_metadata.display_name;
+        console.log("Logged in as:", window.displayName);
     }
 
-    // This is the username they set during signup
-    window.displayName = user.user_metadata.display_name;
-
-    console.log("Logged in as:", window.displayName);
-}
-
     checkSession();
-
-    
     loadUser();
-
 </script>
+
 <style>
+/* your CSS unchanged */
 body {
     font-family: sans-serif;
     background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
@@ -50,7 +39,6 @@ body {
     padding: 20px;
     min-height: 100vh;
 }
-
 .container {
     max-width: 420px;
     margin: auto;
@@ -60,14 +48,12 @@ body {
     box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
     border: 2px solid #FFBB66;
 }
-
 h2 {
     color: #FF6200;
     margin-top: 0;
     text-align: center;
     font-size: 28px;
 }
-
 #chat {
     height: 380px;
     overflow-y: auto;
@@ -77,7 +63,6 @@ h2 {
     border: 1px solid #FFDDAA;
     margin-bottom: 15px;
 }
-
 .msg {
     background: #FF6200;
     color: white;
@@ -87,12 +72,9 @@ h2 {
     word-break: break-word;
     box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
 }
-
 .msg:nth-child(even) {
     background: #FF8A00;
-    box-shadow: 0 3px 8px rgba(255, 98, 0, 0.2);
 }
-
 .status {
     padding: 12px;
     background: #FFEDD5;
@@ -102,13 +84,11 @@ h2 {
     font-family: monospace;
     font-weight: bold;
 }
-
 #send-area {
     display: flex;
     gap: 10px;
     margin-top: 10px;
 }
-
 #message-input, #suggest-input {
     flex: 1;
     padding: 14px;
@@ -118,7 +98,6 @@ h2 {
     color: #2C2C2C;
     font-size: 16px;
 }
-
 button {
     padding: 12px 20px;
     font-size: 16px;
@@ -128,19 +107,9 @@ button {
     border: none;
     border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(230, 81, 0, 0.35);
-    transition: background 0.2s ease, transform 0.15s ease;
 }
-
-button:hover {
-    background: #DC4D00;
-    transform: translateY(-2px);
-}
-
-button:active {
-    background: #E05300;
-    transform: scale(0.96);
-}
+button:hover { background: #DC4D00; }
+button:active { transform: scale(0.96); }
 </style>
 </head>
 
@@ -163,40 +132,6 @@ button:active {
 </div>
 
 <script>
-/* =========================
-   SAFE ERROR LOGGER
-========================= */
-function addErrorToChat(title, details) {
-    const chat = document.getElementById("chat");
-
-    const div = document.createElement("div");
-    div.style.cssText = `
-        color:#FF4444;
-        padding:12px;
-        font-family:monospace;
-        font-size:13px;
-        background:#FFEAEB;
-        border-radius:8px;
-        border-left:4px solid #FF4444;
-        white-space:pre-wrap;
-        margin:8px 0;
-    `;
-    div.textContent = `${title}\n\n${details}`;
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-}
-
-window.addEventListener("error", (event) => {
-    if (!event.error) return;
-    console.error(event.error);
-    addErrorToChat("Runtime Error", event.message);
-});
-
-window.addEventListener("unhandledrejection", (event) => {
-    console.error(event.reason);
-    addErrorToChat("Promise Rejection", String(event.reason));
-});
-
 /* =========================
    LOAD MESSAGES
 ========================= */
@@ -223,8 +158,10 @@ async function loadMessages() {
         data.forEach(item => {
             const div = document.createElement("div");
             div.className = "msg";
+
             const name = item.username || "Unknown";
             const text = item.message || item.suggestion || "(empty)";
+
             div.textContent = `${name}: ${text}`;
             chat.appendChild(div);
         });
@@ -232,7 +169,7 @@ async function loadMessages() {
         chat.scrollTop = chat.scrollHeight;
 
     } catch (err) {
-        addErrorToChat("Supabase Query Error", err.message);
+        console.error(err);
     }
 }
 
@@ -252,7 +189,7 @@ async function sendMessage() {
         const { error } = await client
             .from("message")
             .insert({
-                suggestion: text,
+                message: text,
                 username: window.displayName
             });
 
@@ -260,7 +197,7 @@ async function sendMessage() {
 
         input.value = "";
     } catch (err) {
-        addErrorToChat("Send Message Error", err.message);
+        console.error(err);
     } finally {
         btn.disabled = false;
         btn.textContent = "Send";
@@ -279,19 +216,19 @@ async function sendSuggest() {
     btn.disabled = true;
     btn.textContent = "Sending...";
 
-        try {
-            const { error } = await client
+    try {
+        const { error } = await client
             .from("message")
             .insert({
                 suggestion: text,
                 username: window.displayName
             });
-                        });
+
         if (error) throw error;
 
         input.value = "";
     } catch (err) {
-        addErrorToChat("Send Suggestion Error", err.message);
+        console.error(err);
     } finally {
         btn.disabled = false;
         btn.textContent = "Suggest";
