@@ -160,7 +160,7 @@ async function loadMessages() {
             div.className = "msg";
 
             const name = item.username || "Unknown";
-            const text = item.message || item.suggestion || "(empty)";
+            const text = item.message || "(empty)";
 
             div.textContent = `${name}: ${text}`;
             chat.appendChild(div);
