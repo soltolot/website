@@ -20,7 +20,26 @@
         }
     }
 
+
+    async function loadUser() {
+    const { data: { user }, error } = await client.auth.getUser();
+
+    if (error || !user) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    // This is the username they set during signup
+    window.displayName = user.user_metadata.display_name;
+
+    console.log("Logged in as:", window.displayName);
+}
+
     checkSession();
+
+    
+    loadUser();
+
 </script>
 <style>
 body {
@@ -231,6 +250,7 @@ async function sendMessage() {
         const { error } = await client
             .from("message")
             .insert({ message: text });
+            username: window.displayName
 
         if (error) throw error;
 
@@ -259,7 +279,7 @@ async function sendSuggest() {
         const { error } = await client
             .from("message")
             .insert({ suggestion: text });
-
+            username: window.displayName
         if (error) throw error;
 
         input.value = "";
