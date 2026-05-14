@@ -144,9 +144,12 @@
             email: email,      // username is treated as email
             password: password,
             options: {
+                data: {
+                    display_name: username   // ← store username as display name
+                },
                 expiresIn: 60 * 60 * 24 * 7 // 1 week session
             }
-        });
+            });
 
         if (error) {
             status.style.color = "#d63031";
