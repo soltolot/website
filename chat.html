@@ -223,7 +223,9 @@ async function loadMessages() {
         data.forEach(item => {
             const div = document.createElement("div");
             div.className = "msg";
-            div.textContent = item.message || item.suggestion || "(empty)";
+            const name = item.username || "Unknown";
+            const text = item.message || item.suggestion || "(empty)";
+            div.textContent = `${name}: ${text}`;
             chat.appendChild(div);
         });
 
