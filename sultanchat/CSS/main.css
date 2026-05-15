@@ -1,1 +1,149 @@
+/* ===============================
+   SULTANCHAT UI STYLE CORE
+=============================== */
 
+:root {
+    --my-msg-color: #FF6200;
+}
+
+/* layout */
+body {
+    margin: 0;
+    font-family: Arial;
+    background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* container */
+.container {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
+}
+
+/* chat */
+#chat {
+    height: 380px;
+    overflow-y: auto;
+    background: #FFF9F0;
+    border-radius: 15px;
+    padding: 10px;
+}
+
+/* messages */
+.msg {
+    padding: 10px;
+    border-radius: 12px;
+    margin: 6px 0;
+    color: white;
+    word-break: break-word;
+}
+
+.my-msg {
+    background: var(--my-msg-color);
+}
+
+/* system error */
+.system-msg {
+    background: #B00020;
+    color: white;
+    font-style: italic;
+}
+
+/* status */
+#status {
+    text-align: center;
+    padding: 8px;
+    margin: 10px 0;
+    border-radius: 10px;
+    background: #FFEDD5;
+    color: #E85D04;
+    font-weight: bold;
+}
+
+/* input rows */
+.send-area {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #FFBB66;
+    outline: none;
+}
+
+/* buttons */
+button {
+    padding: 12px;
+    background: #E65100;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button:active {
+    transform: scale(0.96);
+}
+
+/* settings */
+#settings-btn {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background: white;
+    border-radius: 12px;
+    padding: 8px;
+}
+
+#settings-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0,0,0,0.5);
+}
+
+#settings-window {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 360px;
+}
+
+/* colors */
+#colorPicker {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.color-option {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.color-option:hover {
+    transform: scale(1.15);
+}
+
+/* mobile */
+@media (max-width: 500px) {
+    #chat {
+        height: 320px;
+    }
+}
