@@ -167,73 +167,63 @@ button {
 </div>
 
 <script>
-
-// ---------------- SUPABASE ----------------
-
 const SUPABASE_URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
-const SUPABASE_KEY = "YOUR_SUPABASE_KEY";
-
-if (!SUPABASE_KEY || SUPABASE_KEY === "YOUR_SUPABASE_KEY") {
-    console.error("Missing Supabase key");
-}
+const SUPABASE_KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
 
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ---------------- ERROR DISPLAY ----------------
-
-function showChatError(text) {
-
-    const chat = document.getElementById("chat");
-
-    const div = document.createElement("div");
-
-    div.className = "msg";
-    div.style.background = "#B00020";
-
-    div.textContent = "SYSTEM: " + text;
-
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-}
-
-// ---------------- USER ----------------
-
+// ===============================
+// STATE
+// ===============================
 let myColor = localStorage.getItem("myColor") || "#FF6200";
+let displayName = null;
 
+// apply default color immediately
 document.documentElement.style.setProperty("--my-msg-color", myColor);
 
-async function checkSession() {
+// ===============================
+// SAFE AUTH BOOT
+// ===============================
+async function getSafeSession() {
 
     const { data: { session } } = await client.auth.getSession();
 
-    if (!session) {
-        window.location.href = "login.html";
-    }
+    if (!session) return null;
+
+    // small delay helps Supabase finish hydration (fixes flicker bug)
+    await new Promise(r => setTimeout(r, 200));
+
+    const retry = await client.auth.getSession();
+
+    return retry.data.session || session;
 }
 
-async function loadUser() {
+// ===============================
+// USER LOAD
+// ===============================
+async function loadUserSafe() {
 
     const { data: { user } } = await client.auth.getUser();
 
-    if (!user) {
-        window.location.href = "login.html";
-        return;
-    }
+    if (!user) return null;
 
-    window.displayName =
+    displayName =
         user.user_metadata?.display_name || "Anonymous";
+
+    return user;
 }
 
-// ---------------- PROFILE ----------------
-
+// ===============================
+// PROFILE
+// ===============================
 async function ensureProfile() {
 
-    if (!window.displayName) return;
+    if (!displayName) return;
 
     const { data, error } = await client
         .from("profiles")
         .select("*")
-        .eq("username", window.displayName);
+        .eq("username", displayName);
 
     if (error) {
         showChatError("Profile load failed");
@@ -243,7 +233,7 @@ async function ensureProfile() {
     if (!data.length) {
 
         await client.from("profiles").insert({
-            username: window.displayName,
+            username: displayName,
             color: myColor
         });
 
@@ -253,65 +243,50 @@ async function ensureProfile() {
 
         if (dbColor) {
             myColor = dbColor;
+
             localStorage.setItem("myColor", dbColor);
-            document.documentElement.style.setProperty("--my-msg-color", dbColor);
+
+            document.documentElement.style.setProperty(
+                "--my-msg-color",
+                dbColor
+            );
         }
     }
 }
 
-// ---------------- COLOR UPDATE ----------------
+// ===============================
+// ERROR DISPLAY (SAFE)
+// ===============================
+function showChatError(text) {
 
-async function updateUserColor(newColor) {
+    const chat = document.getElementById("chat");
+    if (!chat) return;
 
-    myColor = newColor;
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.style.background = "#B00020";
+    div.textContent = "SYSTEM: " + text;
 
-    localStorage.setItem("myColor", newColor);
-    document.documentElement.style.setProperty("--my-msg-color", newColor);
-
-    const { error } = await client
-        .from("profiles")
-        .update({ color: newColor })
-        .eq("username", window.displayName);
-
-    if (error) {
-        showChatError("Color update failed");
-    }
-
-    loadMessages();
+    chat.appendChild(div);
 }
 
-// ---------------- SETTINGS UI ----------------
-
-document.getElementById("settings-btn").onclick =
-() => document.getElementById("settings-overlay").style.display = "flex";
-
-document.getElementById("close-settings").onclick =
-() => document.getElementById("settings-overlay").style.display = "none";
-
-document.getElementById("settings-overlay").onclick =
-(e) => {
-    if (e.target.id === "settings-overlay") {
-        e.target.style.display = "none";
-    }
-};
-
-document.querySelectorAll(".color-option").forEach(el => {
-    el.onclick = () => updateUserColor(el.dataset.color);
-});
-
-// ---------------- MESSAGES ----------------
-
+// ===============================
+// LOAD MESSAGES
+// ===============================
 async function loadMessages() {
 
     const chat = document.getElementById("chat");
     const status = document.getElementById("status");
 
+    if (!chat || !status || !displayName) return;
+
     try {
 
         const { data: messages, error: msgErr } =
-            await client.from("messages")
-            .select("*")
-            .order("id", { ascending: true });
+            await client
+                .from("messages")
+                .select("*")
+                .order("id", { ascending: true });
 
         if (msgErr) throw msgErr;
 
@@ -321,7 +296,9 @@ async function loadMessages() {
         if (profErr) throw profErr;
 
         const colors = {};
-        profiles.forEach(p => colors[p.username] = p.color);
+        profiles.forEach(p => {
+            colors[p.username] = p.color;
+        });
 
         status.textContent = `● ONLINE • ${messages.length}`;
 
@@ -337,14 +314,14 @@ async function loadMessages() {
             const div = document.createElement("div");
             div.className = "msg";
 
-            if (m.username === window.displayName) {
+            if (m.username === displayName) {
                 div.classList.add("my-msg");
             } else {
-                div.style.background = colors[m.username] || "#FF6200";
+                div.style.background =
+                    colors[m.username] || "#FF6200";
             }
 
             div.textContent = `${m.username}: ${m.message}`;
-
             chat.appendChild(div);
         });
 
@@ -352,42 +329,39 @@ async function loadMessages() {
 
     } catch (err) {
         status.textContent = "● ERROR";
-        showChatError("Failed to load chat");
+        showChatError("Failed to load messages");
     }
 }
 
-// ---------------- SEND ----------------
-
+// ===============================
+// SEND MESSAGE
+// ===============================
 async function sendMessage() {
 
     const input = document.getElementById("message-input");
-    const text = input.value.trim();
+    if (!input || !displayName) return;
 
+    const text = input.value.trim();
     if (!text) return;
 
-    const { error } = await client.from("messages").insert({
-        username: window.displayName,
-        message: text
-    });
+    const { error } = await client
+        .from("messages")
+        .insert({
+            username: displayName,
+            message: text
+        });
 
     if (error) {
-        showChatError("Message send failed");
+        showChatError("Message failed");
         return;
     }
 
     input.value = "";
 }
 
-// ---------------- EVENTS ----------------
-
-document.getElementById("send-btn").onclick = sendMessage;
-
-document.getElementById("message-input").addEventListener("keydown", e => {
-    if (e.key === "Enter") sendMessage();
-});
-
-// ---------------- REALTIME ----------------
-
+// ===============================
+// REALTIME
+// ===============================
 client.channel("messages-live")
 .on("postgres_changes", {
     event: "INSERT",
@@ -398,16 +372,53 @@ client.channel("messages-live")
 })
 .subscribe();
 
-// ---------------- START ----------------
+// ===============================
+// AUTH LISTENER (SAFE REDIRECT)
+// ===============================
+client.auth.onAuthStateChange((event, session) => {
 
-(async () => {
-    await checkSession();
-    await loadUser();
+    if (!session) {
+        window.location.href = "login.html";
+    }
+});
+
+// ===============================
+// INIT APP (FIXED ORDER)
+// ===============================
+async function initChatApp() {
+
+    // 1. HARD SESSION CHECK (prevents flash error)
+    const session = await getSafeSession();
+
+    if (!session) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    // 2. USER LOAD
+    const user = await loadUserSafe();
+
+    if (!user || !displayName) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    // 3. PROFILE + DATA
     await ensureProfile();
     await loadMessages();
+
+    // 4. UI (only if exists)
+    if (typeof setupUI === "function") {
+        setupUI();
+    }
+}
+
+// ===============================
+// START
+// ===============================
+(async () => {
+    await initChatApp();
 })();
-
 </script>
-
 </body>
 </html>
