@@ -1,87 +1,46 @@
 // ===============================
-// UI SYSTEM (SETTINGS + COLORS)
+// UI SYSTEM (INTERACTIONS ONLY)
 // ===============================
 
-// ---------- ELEMENTS ----------
-const settingsBtn = document.getElementById("settings-btn");
-const settingsOverlay = document.getElementById("settings-overlay");
-const closeSettingsBtn = document.getElementById("close-settings");
-const colorOptions = document.querySelectorAll(".color-option");
+function setupUI() {
 
-// ---------- OPEN SETTINGS ----------
-function openSettings() {
-    if (!settingsOverlay) return;
-    settingsOverlay.style.display = "flex";
-}
+    const settingsBtn = document.getElementById("settings-btn");
+    const overlay = document.getElementById("settings-overlay");
+    const closeBtn = document.getElementById("close-settings");
+    const colors = document.querySelectorAll(".color-option");
 
-// ---------- CLOSE SETTINGS ----------
-function closeSettings() {
-    if (!settingsOverlay) return;
-    settingsOverlay.style.display = "none";
-}
+    // open/close
+    settingsBtn?.addEventListener("click", () => {
+        overlay.style.display = "flex";
+    });
 
-// ---------- APPLY COLOR ----------
-function applyColor(color) {
+    closeBtn?.addEventListener("click", () => {
+        overlay.style.display = "none";
+    });
 
-    // save locally
-    localStorage.setItem("myColor", color);
+    overlay?.addEventListener("click", (e) => {
+        if (e.target === overlay) overlay.style.display = "none";
+    });
 
-    // apply instantly
-    document.documentElement.style.setProperty("--my-msg-color", color);
+    // color picker
+    colors.forEach(c => {
+        c.addEventListener("click", () => {
+            const color = c.dataset.color;
 
-    // update global state if chat.js exists
-    if (typeof myColor !== "undefined") {
-        myColor = color;
-    }
+            localStorage.setItem("myColor", color);
+            document.documentElement.style.setProperty("--my-msg-color", color);
 
-    // optional: sync to DB if user exists
-    if (window.displayName && typeof client !== "undefined") {
-        client
-            .from("profiles")
-            .update({ color })
-            .eq("username", window.displayName)
-            .then(() => {
-                // silently updated
-            });
-    }
-}
-
-// ---------- COLOR PICKER ----------
-function setupColorPicker() {
-
-    colorOptions.forEach(el => {
-
-        el.addEventListener("click", () => {
-            const color = el.getAttribute("data-color");
-            applyColor(color);
+            if (window.displayName && typeof client !== "undefined") {
+                client
+                    .from("profiles")
+                    .update({ color })
+                    .eq("username", window.displayName);
+            }
         });
-
     });
-}
 
-// ---------- BUTTON INTERACTIONS ----------
-function setupSettingsUI() {
-
-    settingsBtn?.addEventListener("click", openSettings);
-    closeSettingsBtn?.addEventListener("click", closeSettings);
-
-    // click outside window closes
-    settingsOverlay?.addEventListener("click", (e) => {
-        if (e.target === settingsOverlay) {
-            closeSettings();
-        }
-    });
-}
-
-// ---------- HOVER / ACTIVE FIXES ----------
-function setupButtonFX() {
-
-    const sendBtn = document.getElementById("send-btn");
-    const suggestBtn = document.getElementById("suggest-btn");
-
-    [sendBtn, suggestBtn].forEach(btn => {
-        if (!btn) return;
-
+    // button feel
+    document.querySelectorAll("button").forEach(btn => {
         btn.addEventListener("mousedown", () => {
             btn.style.transform = "scale(0.96)";
         });
@@ -89,17 +48,5 @@ function setupButtonFX() {
         btn.addEventListener("mouseup", () => {
             btn.style.transform = "scale(1)";
         });
-
-        btn.addEventListener("mouseleave", () => {
-            btn.style.transform = "scale(1)";
-        });
     });
-}
-
-// ---------- INIT UI ----------
-function setupUI() {
-
-    setupSettingsUI();
-    setupColorPicker();
-    setupButtonFX();
 }
