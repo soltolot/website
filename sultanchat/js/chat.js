@@ -26,7 +26,12 @@ async function loadMessages() {
                 .select("*")
                 .order("id", { ascending: true });
 
-        if (msgErr) throw msgErr;
+            if (error) {
+                chat.innerHTML =
+                    "SUPABASE ERROR: " + error.message;
+
+            return;
+        }
 
         const { data: profiles, error: profErr } =
             await client.from("profiles").select("*");
