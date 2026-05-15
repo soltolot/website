@@ -69,8 +69,10 @@ body {
     text-align: center;
     font-weight: bold;
     font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
 }
-
+    
 /* INPUT AREA */
 .send-area {
     display: flex;
@@ -254,77 +256,102 @@ async function loadMessages() {
     const chat = document.getElementById("chat");
     const status = document.getElementById("status");
 
-    const { data: messages } = await client
-        .from("messages")
-        .select("*")
-        .order("id", { ascending: true });
+    try {
 
-    const { data: profiles } = await client
-        .from("profiles")
-        .select("*");
+        const { data: messages, error: msgError } =
+            await client
+                .from("messages")
+                .select("*")
+                .order("id", { ascending: true });
 
-    const colors = {};
-    profiles.forEach(p => colors[p.username] = p.color);
+        if (msgError) throw msgError;
 
-    status.textContent = `● ONLINE • ${messages.length}`;
+        const { data: profiles, error: profileError } =
+            await client
+                .from("profiles")
+                .select("*");
 
-    const key = messages.map(m => m.id).join(",");
+        if (profileError) throw profileError;
 
-    if (key === lastRender) return;
-    lastRender = key;
+        const colors = {};
 
-    const scroll = chat.scrollTop;
+        profiles.forEach(p => {
+            colors[p.username] = p.color;
+        });
 
-    chat.replaceChildren();
+        status.textContent =
+            `● ONLINE • ${messages.length} messages`;
 
-    for (const m of messages) {
-        const div = document.createElement("div");
-        div.className = "msg";
+        const key =
+            JSON.stringify(messages);
 
-        if (m.username === displayName) {
-            div.classList.add("my-msg");
-        } else {
-            div.style.background = colors[m.username] || "#FF6200";
+        if (key === lastRender) return;
+
+        lastRender = key;
+
+        const scroll = chat.scrollTop;
+
+        chat.replaceChildren();
+
+        if (!messages.length) {
+
+            chat.innerHTML = `
+                <div style="
+                    color:#FF8A00;
+                    text-align:center;
+                    padding:80px 20px;
+                ">
+                    No messages yet 👋
+                </div>
+            `;
+
+            return;
         }
 
-        div.textContent = `${m.username}: ${m.message}`;
-        chat.appendChild(div);
+        messages.forEach(m => {
+
+            const div =
+                document.createElement("div");
+
+            div.className = "msg";
+
+            if (m.username === displayName) {
+
+                div.classList.add("my-msg");
+
+            } else {
+
+                div.style.background =
+                    colors[m.username] || "#FF6200";
+            }
+
+            div.textContent =
+                `${m.username}: ${m.message}`;
+
+            chat.appendChild(div);
+        });
+
+        chat.scrollTop = scroll;
+
+    } catch (err) {
+
+        console.error(err);
+
+        status.textContent = "● ERROR";
+
+        chat.innerHTML = `
+            <div style="
+                background:#B00020;
+                color:white;
+                padding:15px;
+                border-radius:12px;
+            ">
+                ${err.message}
+            </div>
+        `;
     }
-
-    chat.scrollTop = scroll;
 }
-
-/* SEND */
-async function sendMessage() {
-    const input = document.getElementById("message-input");
-    const text = input.value.trim();
-    if (!text) return;
-
-    await client.from("messages").insert({
-        username: displayName,
-        message: text
-    });
-
-    input.value = "";
-}
-
-/* COLOR PICKER */
-document.querySelectorAll(".color-option").forEach(el => {
-    el.onclick = async () => {
-
-        myColor = el.dataset.color;
-        localStorage.setItem("myColor", myColor);
-        document.documentElement.style.setProperty("--my-msg-color", myColor);
-
-        await client
-            .from("profiles")
-            .update({ color: myColor })
-            .eq("username", displayName);
-
-        loadMessages();
-    };
-});
-
+    
 /* SETTINGS UI */
 document.getElementById("settings-btn").onclick =
 () => document.getElementById("settings-overlay").style.display = "flex";
