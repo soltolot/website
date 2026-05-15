@@ -1,1 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SultanChat</title>
 
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="apple-touch-icon" href="logo.png">
+<link rel="manifest" href="manifest.json">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+:root {
+    --my-msg-color: #FF6200;
+}
+
+body {
+    font-family: sans-serif;
+    background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 420px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
+}
+
+#settings-btn {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    background: white;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+#settings-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+#settings-window {
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    width: 85%;
+    max-width: 380px;
+    text-align: center;
+}
+
+#chat {
+    height: 380px;
+    overflow-y: auto;
+    background: #FFF9F0;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+}
+
+.msg {
+    color: white;
+    padding: 10px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    word-break: break-word;
+}
+
+.my-msg {
+    background: var(--my-msg-color);
+}
+
+.status {
+    padding: 10px;
+    background: #FFEDD5;
+    color: #E85D04;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.send-area {
+    display: flex;
+    gap: 8px;
+}
+
+input {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 2px solid #FFBB66;
+}
+
+button {
+    padding: 12px;
+    background: #E65100;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.color-option {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<button id="settings-btn">⚙️</button>
+
+<div class="container">
+
+<h2>SultanChat</h2>
+
+<div id="chat">Loading messages...</div>
+
+<div id="status" class="status">● CONNECTING...</div>
+
+<div class="send-area">
+    <input id="message-input" placeholder="Type message...">
+    <button id="send-btn">Send</button>
+</div>
+
+</div>
+
+<!-- SETTINGS -->
+<div id="settings-overlay">
+    <div id="settings-window">
+
+        <h3>Choose Color</h3>
+
+        <div>
+            <div class="color-option" data-color="#C62828" style="background:#C62828;"></div>
+            <div class="color-option" data-color="#FF6200" style="background:#FF6200;"></div>
+            <div class="color-option" data-color="#3949AB" style="background:#3949AB;"></div>
+            <div class="color-option" data-color="#2E7D32" style="background:#2E7D32;"></div>
+        </div>
+
+        <button id="close-settings">Close</button>
+
+    </div>
+</div>
+
+<script>
+
+// ---------------- SUPABASE ----------------
+
+const SUPABASE_URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
+const SUPABASE_KEY = "YOUR_SUPABASE_KEY";
+
+if (!SUPABASE_KEY || SUPABASE_KEY === "YOUR_SUPABASE_KEY") {
+    console.error("Missing Supabase key");
+}
+
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ---------------- ERROR DISPLAY ----------------
+
+function showChatError(text) {
+
+    const chat = document.getElementById("chat");
+
+    const div = document.createElement("div");
+
+    div.className = "msg";
+    div.style.background = "#B00020";
+
+    div.textContent = "SYSTEM: " + text;
+
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+// ---------------- USER ----------------
+
+let myColor = localStorage.getItem("myColor") || "#FF6200";
+
+document.documentElement.style.setProperty("--my-msg-color", myColor);
+
+async function checkSession() {
+
+    const { data: { session } } = await client.auth.getSession();
+
+    if (!session) {
+        window.location.href = "login.html";
+    }
+}
+
+async function loadUser() {
+
+    const { data: { user } } = await client.auth.getUser();
+
+    if (!user) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    window.displayName =
+        user.user_metadata?.display_name || "Anonymous";
+}
+
+// ---------------- PROFILE ----------------
+
+async function ensureProfile() {
+
+    if (!window.displayName) return;
+
+    const { data, error } = await client
+        .from("profiles")
+        .select("*")
+        .eq("username", window.displayName);
+
+    if (error) {
+        showChatError("Profile load failed");
+        return;
+    }
+
+    if (!data.length) {
+
+        await client.from("profiles").insert({
+            username: window.displayName,
+            color: myColor
+        });
+
+    } else {
+
+        const dbColor = data[0]?.color;
+
+        if (dbColor) {
+            myColor = dbColor;
+            localStorage.setItem("myColor", dbColor);
+            document.documentElement.style.setProperty("--my-msg-color", dbColor);
+        }
+    }
+}
+
+// ---------------- COLOR UPDATE ----------------
+
+async function updateUserColor(newColor) {
+
+    myColor = newColor;
+
+    localStorage.setItem("myColor", newColor);
+    document.documentElement.style.setProperty("--my-msg-color", newColor);
+
+    const { error } = await client
+        .from("profiles")
+        .update({ color: newColor })
+        .eq("username", window.displayName);
+
+    if (error) {
+        showChatError("Color update failed");
+    }
+
+    loadMessages();
+}
+
+// ---------------- SETTINGS UI ----------------
+
+document.getElementById("settings-btn").onclick =
+() => document.getElementById("settings-overlay").style.display = "flex";
+
+document.getElementById("close-settings").onclick =
+() => document.getElementById("settings-overlay").style.display = "none";
+
+document.getElementById("settings-overlay").onclick =
+(e) => {
+    if (e.target.id === "settings-overlay") {
+        e.target.style.display = "none";
+    }
+};
+
+document.querySelectorAll(".color-option").forEach(el => {
+    el.onclick = () => updateUserColor(el.dataset.color);
+});
+
+// ---------------- MESSAGES ----------------
+
+async function loadMessages() {
+
+    const chat = document.getElementById("chat");
+    const status = document.getElementById("status");
+
+    try {
+
+        const { data: messages, error: msgErr } =
+            await client.from("messages")
+            .select("*")
+            .order("id", { ascending: true });
+
+        if (msgErr) throw msgErr;
+
+        const { data: profiles, error: profErr } =
+            await client.from("profiles").select("*");
+
+        if (profErr) throw profErr;
+
+        const colors = {};
+        profiles.forEach(p => colors[p.username] = p.color);
+
+        status.textContent = `● ONLINE • ${messages.length}`;
+
+        chat.innerHTML = "";
+
+        if (!messages.length) {
+            chat.innerHTML = "<div>No messages 👋</div>";
+            return;
+        }
+
+        messages.forEach(m => {
+
+            const div = document.createElement("div");
+            div.className = "msg";
+
+            if (m.username === window.displayName) {
+                div.classList.add("my-msg");
+            } else {
+                div.style.background = colors[m.username] || "#FF6200";
+            }
+
+            div.textContent = `${m.username}: ${m.message}`;
+
+            chat.appendChild(div);
+        });
+
+        chat.scrollTop = chat.scrollHeight;
+
+    } catch (err) {
+        status.textContent = "● ERROR";
+        showChatError("Failed to load chat");
+    }
+}
+
+// ---------------- SEND ----------------
+
+async function sendMessage() {
+
+    const input = document.getElementById("message-input");
+    const text = input.value.trim();
+
+    if (!text) return;
+
+    const { error } = await client.from("messages").insert({
+        username: window.displayName,
+        message: text
+    });
+
+    if (error) {
+        showChatError("Message send failed");
+        return;
+    }
+
+    input.value = "";
+}
+
+// ---------------- EVENTS ----------------
+
+document.getElementById("send-btn").onclick = sendMessage;
+
+document.getElementById("message-input").addEventListener("keydown", e => {
+    if (e.key === "Enter") sendMessage();
+});
+
+// ---------------- REALTIME ----------------
+
+client.channel("messages-live")
+.on("postgres_changes", {
+    event: "INSERT",
+    schema: "public",
+    table: "messages"
+}, () => {
+    loadMessages();
+})
+.subscribe();
+
+// ---------------- START ----------------
+
+(async () => {
+    await checkSession();
+    await loadUser();
+    await ensureProfile();
+    await loadMessages();
+})();
+
+</script>
+
+</body>
+</html>
