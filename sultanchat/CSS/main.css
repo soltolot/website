@@ -1,149 +1,161 @@
-/* ===============================
-   SULTANCHAT UI STYLE CORE
-=============================== */
+<style>
 
 :root {
     --my-msg-color: #FF6200;
 }
 
-/* layout */
 body {
-    margin: 0;
-    font-family: Arial;
+    font-family: sans-serif;
     background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin: 0;
+    padding: 20px;
     min-height: 100vh;
 }
 
-/* container */
+/* YOUR ORIGINAL CARD STYLE */
 .container {
-    width: 100%;
     max-width: 420px;
+    margin: auto;
     background: white;
-    padding: 20px;
+    padding: 25px;
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
+    border: 2px solid #FFBB66;
 }
 
-/* chat */
+/* CHAT */
 #chat {
     height: 380px;
     overflow-y: auto;
     background: #FFF9F0;
+    padding: 15px;
     border-radius: 15px;
-    padding: 10px;
+    border: 1px solid #FFDDAA;
+    margin-bottom: 10px;
 }
 
-/* messages */
 .msg {
-    padding: 10px;
-    border-radius: 12px;
-    margin: 6px 0;
     color: white;
+    padding: 10px 12px;
+    border-radius: 12px;
+    margin-bottom: 8px;
     word-break: break-word;
+    font-size: 15px;
 }
 
 .my-msg {
     background: var(--my-msg-color);
 }
 
-/* system error */
-.system-msg {
-    background: #B00020;
-    color: white;
-    font-style: italic;
-}
-
-/* status */
-#status {
-    text-align: center;
-    padding: 8px;
-    margin: 10px 0;
-    border-radius: 10px;
+/* STATUS */
+.status {
+    padding: 10px;
     background: #FFEDD5;
     color: #E85D04;
+    border-radius: 10px;
+    text-align: center;
     font-weight: bold;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
 }
-
-/* input rows */
+    
+/* INPUT AREA */
 .send-area {
     display: flex;
     gap: 8px;
-    margin-top: 8px;
+    margin-top: 10px;
 }
 
 input {
     flex: 1;
     padding: 12px;
-    border-radius: 10px;
+    background: #FFF4E0;
     border: 2px solid #FFBB66;
+    border-radius: 10px;
+    font-size: 15px;
     outline: none;
 }
 
-/* buttons */
 button {
-    padding: 12px;
-    background: #E65100;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: bold;
     color: white;
+    background: #E65100;
     border: none;
     border-radius: 10px;
     cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.12s ease,
+        box-shadow 0.2s ease;
+
+    box-shadow:
+        0 4px 12px rgba(230, 81, 0, 0.25);
+}
+
+button:hover {
+
+    background: #DC4D00;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 6px 16px rgba(230, 81, 0, 0.35);
 }
 
 button:active {
-    transform: scale(0.96);
-}
 
-/* settings */
+    transform: scale(0.95);
+
+    box-shadow:
+        0 2px 8px rgba(230, 81, 0, 0.2);
+}
+/* SETTINGS BUTTON */
 #settings-btn {
     position: fixed;
     top: 15px;
     right: 15px;
+    font-size: 22px;
     background: white;
+    border: none;
     border-radius: 12px;
-    padding: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
+/* SETTINGS MODAL */
 #settings-overlay {
     position: fixed;
     inset: 0;
+    background: rgba(0,0,0,0.55);
     display: none;
     justify-content: center;
     align-items: center;
-    background: rgba(0,0,0,0.5);
 }
 
 #settings-window {
     background: white;
     padding: 20px;
-    border-radius: 15px;
+    border-radius: 16px;
     width: 90%;
     max-width: 360px;
+    text-align: center;
 }
 
-/* colors */
-#colorPicker {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-}
-
+/* 15 COLOR PALETTE (RESTORED STYLE) */
 .color-option {
     width: 28px;
     height: 28px;
     border-radius: 8px;
+    display: inline-block;
+    margin: 4px;
     cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-.color-option:hover {
-    transform: scale(1.15);
-}
-
-/* mobile */
-@media (max-width: 500px) {
-    #chat {
-        height: 320px;
-    }
-}
+</style>
