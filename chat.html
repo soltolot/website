@@ -299,18 +299,6 @@ document.querySelectorAll("#settings-color-picker .color-option").forEach(option
     });
 });
 
-
-
-let myColor = localStorage.getItem("myColor") || "#FF6200";
-
-document.querySelectorAll("#settings-color-picker .color-option").forEach(option => {
-    option.style.background = option.dataset.color;
-
-    option.addEventListener("click", () => {
-        updateUserColor(option.dataset.color);
-    });
-});
-
 // Build a map of each user's latest color
 const userColors = {};
 data.forEach(row => {
