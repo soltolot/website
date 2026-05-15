@@ -269,9 +269,15 @@ button:active { transform: scale(0.96); }
 </div>
 
 <script>
+const settingsOverlay = document.getElementById("settings-overlay");
+const closeSettings = document.getElementById("close-settings");
 
 document.getElementById("settings-btn").addEventListener("click", () => {
     settingsOverlay.style.display = "flex";
+});
+
+closeSettings.addEventListener("click", () => {
+    settingsOverlay.style.display = "none";
 });
 
 async function updateUserColor(newColor) {
@@ -288,7 +294,6 @@ async function updateUserColor(newColor) {
         .eq("username", window.displayName);
 }
 
-
 let myColor = localStorage.getItem("myColor") || "#FF6200";
 
 document.querySelectorAll("#settings-color-picker .color-option").forEach(option => {
@@ -299,15 +304,6 @@ document.querySelectorAll("#settings-color-picker .color-option").forEach(option
     });
 });
 
-// Build a map of each user's latest color
-const userColors = {};
-data.forEach(row => {
-    if (row.color) {
-        userColors[row.username] = row.color;
-    }
-});
-
-    
 async function loadMessages() {
     const chat = document.getElementById("chat");
     const status = document.getElementById("status");
@@ -318,11 +314,11 @@ async function loadMessages() {
             .select("*")
             .order("id", { ascending: true });
 
-        if (error){
+        if (error) {
             status.textContent = `● OFFLINE - ERROR`;
             throw error;
         }
-        
+
         status.textContent = `● ONLINE - ${data.length} messages`;
         chat.innerHTML = "";
 
@@ -331,23 +327,31 @@ async function loadMessages() {
             return;
         }
 
-data.forEach(item => {
-    // Skip profile rows
-    if (item.message === null && item.suggestion === null) return;
+        // Build a map of each user's latest color
+        const userColors = {};
+        data.forEach(row => {
+            if (row.color) {
+                userColors[row.username] = row.color;
+            }
+        });
 
-    // Skip suggestions
-    if (item.suggestion) return;
+        data.forEach(item => {
+            // Skip profile rows
+            if (item.message === null && item.suggestion === null) return;
 
-    const div = document.createElement("div");
-    div.className = "msg";
+            // Skip suggestions
+            if (item.suggestion) return;
 
-    // Use the user's latest color
-    const color = userColors[item.username] || "#FF6200";
-    div.style.background = color;
+            const div = document.createElement("div");
+            div.className = "msg";
 
-    div.textContent = `${item.username}: ${item.message}`;
-    chat.appendChild(div);
-});
+            // Use the user's latest color
+            const color = userColors[item.username] || "#FF6200";
+            div.style.background = color;
+
+            div.textContent = `${item.username}: ${item.message}`;
+            chat.appendChild(div);
+        });
 
         chat.scrollTop = chat.scrollHeight;
 
@@ -439,19 +443,6 @@ client.channel("room1")
     .subscribe();
 
 loadMessages();
-
-const settingsOverlay = document.getElementById("settings-overlay");
-const closeSettings = document.getElementById("close-settings");
-
-document.getElementById("settings-btn").addEventListener("click", () => {
-    settingsOverlay.style.display = "flex";
-});
-
-closeSettings.addEventListener("click", () => {
-    settingsOverlay.style.display = "none";
-});
-
-    
 </script>
 
 </body>
