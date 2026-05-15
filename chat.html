@@ -356,14 +356,14 @@ async function loadMessages() {
 
             const div = document.createElement("div");
 
-            // ⭐ Add .my-msg to YOUR messages
+            // ⭐ Your messages use CSS variable
             if (item.username === window.displayName) {
                 div.className = "msg my-msg";
             } else {
                 div.className = "msg";
             }
 
-            // ⭐ Everyone else sees DB color
+            // ⭐ Other users use DB color
             const color = userColors[item.username] || "#FF6200";
             div.style.background = color;
 
