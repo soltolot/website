@@ -99,8 +99,33 @@ button {
     border: none;
     border-radius: 10px;
     cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.12s ease,
+        box-shadow 0.2s ease;
+
+    box-shadow:
+        0 4px 12px rgba(230, 81, 0, 0.25);
 }
 
+button:hover {
+
+    background: #DC4D00;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 6px 16px rgba(230, 81, 0, 0.35);
+}
+
+button:active {
+
+    transform: scale(0.95);
+
+    box-shadow:
+        0 2px 8px rgba(230, 81, 0, 0.2);
+}
 /* SETTINGS BUTTON */
 #settings-btn {
     position: fixed;
@@ -164,6 +189,21 @@ button {
 <div class="send-area">
     <input id="message-input" placeholder="Type your message...">
     <button id="send-btn">Send</button>
+
+    <div class="send-area">
+
+        <input
+            type="text"
+            id="suggest-input"
+            placeholder="Send suggestion..."
+        >
+
+        <button id="suggest-btn">
+            Suggest
+        </button>
+
+</div>
+    
 </div>
 
 </div>
@@ -250,6 +290,77 @@ async function ensureProfile() {
     }
 }
 
+document
+.getElementById("suggest-btn")
+.addEventListener(
+    "click",
+    sendSuggest
+);
+
+document
+.getElementById("suggest-input")
+.addEventListener(
+    "keydown",
+    (e) => {
+
+        if (e.key === "Enter") {
+            sendSuggest();
+        }
+    }
+);
+
+
+async function sendMessage() {
+
+    const input =
+        document.getElementById("message-input");
+
+    const text =
+        input.value.trim();
+
+    if (!text) return;
+
+    const { error } =
+        await client
+        .from("message")
+        .insert({
+            username: displayName,
+            message: text
+        });
+
+    if (error) {
+
+        showChatError(
+            "Message failed"
+        );
+
+        return;
+    }
+
+    input.value = "";
+}
+    
+
+document
+.getElementById("message-btn")
+.addEventListener(
+    "click",
+    sendMessage
+);
+
+document
+.getElementById("send-button")
+.addEventListener(
+    "keydown",
+    (e) => {
+
+        if (e.key === "Enter") {
+            sendMessage();
+        }
+    }
+);
+
+
 /* FIXED: NO FLICKER + STABLE RENDER */
 async function loadMessages() {
 
@@ -260,7 +371,7 @@ async function loadMessages() {
 
         const { data: messages, error: msgError } =
             await client
-                .from("messages")
+                .from("message")
                 .select("*")
                 .order("id", { ascending: true });
 
@@ -350,6 +461,38 @@ async function loadMessages() {
             </div>
         `;
     }
+}
+
+async function sendSuggest() {
+
+    const input =
+        document.getElementById("suggest-input");
+
+    const text =
+        input.value.trim();
+
+    if (!text) return;
+
+    const { error } =
+        await client
+        .from("suggestions")
+        .insert({
+            username: displayName,
+            suggestion: text
+        });
+
+    if (error) {
+
+        showChatError(
+            "Suggestion failed"
+        );
+
+        return;
+    }
+
+    input.value = "";
+
+    alert("Suggestion sent 🚀");
 }
     
 /* SETTINGS UI */
