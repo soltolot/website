@@ -271,7 +271,7 @@ button:active { transform: scale(0.96); }
 <script>
 
 document.getElementById("settings-btn").addEventListener("click", () => {
-    alert("Settings coming soon!");
+    settingsOverlay.style.display = "flex";
 });
 
 async function updateUserColor(newColor) {
@@ -300,6 +300,25 @@ document.querySelectorAll("#settings-color-picker .color-option").forEach(option
 });
 
 
+
+let myColor = localStorage.getItem("myColor") || "#FF6200";
+
+document.querySelectorAll("#settings-color-picker .color-option").forEach(option => {
+    option.style.background = option.dataset.color;
+
+    option.addEventListener("click", () => {
+        updateUserColor(option.dataset.color);
+    });
+});
+
+// Build a map of each user's latest color
+const userColors = {};
+data.forEach(row => {
+    if (row.color) {
+        userColors[row.username] = row.color;
+    }
+});
+
     
 async function loadMessages() {
     const chat = document.getElementById("chat");
@@ -325,16 +344,20 @@ async function loadMessages() {
         }
 
 data.forEach(item => {
-    // Skip profile rows (message=null AND suggestion=null)
-    if (!item.message && !item.suggestion) return;
+    // Skip profile rows
+    if (item.message === null && item.suggestion === null) return;
+
+    // Skip suggestions
+    if (item.suggestion) return;
 
     const div = document.createElement("div");
     div.className = "msg";
 
-    // Use the sender's color
-    div.style.background = item.color || "#FF6200";
+    // Use the user's latest color
+    const color = userColors[item.username] || "#FF6200";
+    div.style.background = color;
 
-    div.textContent = `${item.username}: ${item.message || item.suggestion}`;
+    div.textContent = `${item.username}: ${item.message}`;
     chat.appendChild(div);
 });
 
