@@ -1,1 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Sign Up</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-page: #f0fdf4;       /* Very light green background */
+            --container-bg: #ffffff;
+            --input-off: #e0eedd;     /* Polished Light Green (Off State) */
+            --input-focus: #28a745;   /* Polished Medium-Dark Green (Focus) */
+            --btn-main: #28a745;
+            --btn-hover: #218838;
+            --text-main: #2d3436;
+        }
 
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--bg-page);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .signup-container {
+            background: var(--container-bg);
+            padding: 40px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 350px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--text-main);
+            margin-bottom: 25px;
+        }
+
+        .signup-container input {
+            width: 100%;
+            padding: 12px 10px;
+            margin-bottom: 15px;
+            border: 2px solid var(--input-off);
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f9fff8; /* Clean green-white tint */
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .signup-container input:focus {
+            border: 2px solid var(--input-focus);
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.15);
+            background: #ffffff;
+        }
+
+        .signup-container button {
+            width: 100%;
+            padding: 12px;
+            background: var(--btn-main);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+        }
+
+        .signup-container button:hover {
+            background: var(--btn-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .signup-container button:active {
+            transform: translateY(0px);
+        }
+
+        .login-text {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #636e72;
+        }
+
+        .login-text a {
+            color: var(--btn-main);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .login-text a:hover {
+            text-decoration: underline;
+        }
+
+        .status { 
+            margin-top: 15px; 
+            color: #d63031; 
+            min-height: 20px; 
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="signup-container">
+        <h2>Create Account</h2>
+        <input id="username" placeholder="Username">
+        <input id="password" type="password" placeholder="Password">
+        <button onclick="processSignup()">Sign Up</button>
+        <p class="status" id="status"></p>
+        <p class="login-text">Already have an account? <a href="login.html">Login!</a></p>
+    </div>
+
+<script>
+    const SUPABASE_URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function processSignup() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+        const status = document.getElementById("status");
+
+        if (!username || !password) {
+            status.innerText = "Please fill in all fields.";
+            return;
+        }
+
+        status.style.color = "#2d3436";
+        status.innerText = "Creating account...";
+
+        const email = username + "@placeholder.com";
+
+        
+        // Create Supabase Auth user
+        const { data, error } = await client.auth.signUp({
+            email: email,      // username is treated as email
+            password: password,
+            options: {
+                data: {
+                    display_name: username   // ← store username as display name
+                },
+                expiresIn: 60 * 60 * 24 * 7 // 1 week session
+            }
+            });
+
+        if (error) {
+            status.style.color = "#d63031";
+            status.innerText = "Error: " + error.message;
+            return;
+        }
+
+        // User is automatically logged in (email confirmation OFF)
+        status.style.color = "#28a745";
+        status.innerText = "Account created! Redirecting...";
+
+        setTimeout(() => {
+            window.location.href = "sultanchat/chat.html";
+        }, 1000);
+    }
+</script>
+</body>
+</html>
