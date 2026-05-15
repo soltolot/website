@@ -44,6 +44,16 @@ if ("serviceWorker" in navigator) {
 </script>
 
 <style>
+
+:root {
+    --my-msg-color: #FF6200;
+}
+
+.my-msg {
+    background: var(--my-msg-color) !important;
+}
+
+    
 body {
     font-family: sans-serif;
     background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
@@ -156,9 +166,6 @@ body {
     font-size: 15px;
 }
 
-.my-msg {
-    background: #FF8A00;
-}
 
 .other-msg {
     background: #FF6200;
@@ -284,6 +291,10 @@ async function updateUserColor(newColor) {
     myColor = newColor;
     localStorage.setItem("myColor", newColor);
 
+    // ⭐ Instant recolor for YOU
+    document.documentElement.style.setProperty("--my-msg-color", newColor);
+
+    // ⭐ Update DB so others see it
     await client
         .from("message")
         .update({
@@ -327,10 +338,10 @@ async function loadMessages() {
             return;
         }
 
-        // ⭐ Build a map of each user's latest color
+        // ⭐ Build a map of each user's latest color (profile rows only)
         const userColors = {};
         data.forEach(row => {
-            if (row.color) {
+            if (row.message === null && row.suggestion === null && row.color) {
                 userColors[row.username] = row.color;
             }
         });
@@ -344,9 +355,15 @@ async function loadMessages() {
             if (item.suggestion) return;
 
             const div = document.createElement("div");
-            div.className = "msg";
 
-            // ⭐ Use the user's latest color
+            // ⭐ Add .my-msg to YOUR messages
+            if (item.username === window.displayName) {
+                div.className = "msg my-msg";
+            } else {
+                div.className = "msg";
+            }
+
+            // ⭐ Everyone else sees DB color
             const color = userColors[item.username] || "#FF6200";
             div.style.background = color;
 
