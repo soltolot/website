@@ -22,7 +22,7 @@ async function loadMessages() {
 
         const { data: messages, error: msgErr } =
             await client
-                .from("messages")
+                .from("message")
                 .select("*")
                 .order("id", { ascending: true });
 
