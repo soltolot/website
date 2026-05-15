@@ -6,14 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="icon" type="image/png" href="logo.png">
-<link rel="apple-touch-icon" href="logo.png">
-<link rel="manifest" href="manifest.json">
-
+<link rel="icon" href="logo.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-
 :root {
     --my-msg-color: #FF6200;
 }
@@ -23,84 +19,54 @@ body {
     background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
     margin: 0;
     padding: 20px;
-    min-height: 100vh;
 }
 
 .container {
-    max-width: 420px;
+    max-width: 440px;
     margin: auto;
     background: white;
-    padding: 25px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
-}
-
-#settings-btn {
-    position: fixed;
-    top: 15px;
-    right: 15px;
-    font-size: 24px;
-    background: white;
-    border: none;
-    border-radius: 12px;
-    padding: 8px 12px;
-    cursor: pointer;
-}
-
-#settings-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.55);
-    display: none;
-    justify-content: center;
-    align-items: center;
-}
-
-#settings-window {
-    background: white;
-    padding: 25px;
+    padding: 22px;
     border-radius: 18px;
-    width: 85%;
-    max-width: 380px;
-    text-align: center;
+    box-shadow: 0 10px 30px rgba(255,140,0,0.12);
 }
 
 #chat {
-    height: 380px;
+    height: 400px;
     overflow-y: auto;
     background: #FFF9F0;
-    padding: 15px;
-    border-radius: 15px;
-    margin-bottom: 15px;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid #FFD9A8;
 }
 
+/* SMOOTH MESSAGE APPEAR (REMOVES FLICKER FEEL) */
 .msg {
-    color: white;
     padding: 10px;
     border-radius: 12px;
     margin-bottom: 8px;
+    background: #F5F5F5;
     word-break: break-word;
+    opacity: 1;
 }
 
 .my-msg {
     background: var(--my-msg-color);
+    color: white;
 }
 
 .status {
+    margin-top: 10px;
     padding: 10px;
-    background: #FFEDD5;
-    color: #E85D04;
+    background: #FFE8CC;
     border-radius: 10px;
-    text-align: center;
     font-weight: bold;
+    text-align: center;
 }
 
 .send-area {
     display: flex;
     gap: 8px;
+    margin-top: 10px;
 }
 
 input {
@@ -108,6 +74,7 @@ input {
     padding: 12px;
     border-radius: 10px;
     border: 2px solid #FFBB66;
+    background: #FFF4E0;
 }
 
 button {
@@ -116,16 +83,46 @@ button {
     color: white;
     border: none;
     border-radius: 10px;
-    cursor: pointer;
+}
+
+/* SETTINGS */
+#settings-btn {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    background: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+#settings-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+#settings-window {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 360px;
+    text-align: center;
 }
 
 .color-option {
     width: 28px;
     height: 28px;
     border-radius: 8px;
+    display: inline-block;
+    margin: 4px;
     cursor: pointer;
 }
-
 </style>
 </head>
 
@@ -137,9 +134,9 @@ button {
 
 <h2>SultanChat</h2>
 
-<div id="chat">Loading messages...</div>
+<div id="chat">Loading...</div>
 
-<div id="status" class="status">● CONNECTING...</div>
+<div id="status">● CONNECTING...</div>
 
 <div class="send-area">
     <input id="message-input" placeholder="Type message...">
@@ -148,277 +145,189 @@ button {
 
 </div>
 
-<!-- SETTINGS -->
 <div id="settings-overlay">
     <div id="settings-window">
 
-        <h3>Choose Color</h3>
+        <h3>Colors</h3>
 
-        <div>
-            <div class="color-option" data-color="#C62828" style="background:#C62828;"></div>
-            <div class="color-option" data-color="#FF6200" style="background:#FF6200;"></div>
-            <div class="color-option" data-color="#3949AB" style="background:#3949AB;"></div>
-            <div class="color-option" data-color="#2E7D32" style="background:#2E7D32;"></div>
+        <div id="colorPicker">
+            <div class="color-option" data-color="#FF6200" style="background:#FF6200"></div>
+            <div class="color-option" data-color="#3949AB" style="background:#3949AB"></div>
+            <div class="color-option" data-color="#2E7D32" style="background:#2E7D32"></div>
+            <div class="color-option" data-color="#8E24AA" style="background:#8E24AA"></div>
+            <div class="color-option" data-color="#C62828" style="background:#C62828"></div>
         </div>
 
         <button id="close-settings">Close</button>
-
     </div>
 </div>
 
 <script>
 const SUPABASE_URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
-const SUPABASE_KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
-
+const SUPABASE_KEY = "YOUR_SUPABASE_KEY";
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ===============================
-// STATE
-// ===============================
-let myColor = localStorage.getItem("myColor") || "#FF6200";
 let displayName = null;
+let myColor = localStorage.getItem("myColor") || "#FF6200";
+let lastRenderKey = "";
 
-// apply default color immediately
 document.documentElement.style.setProperty("--my-msg-color", myColor);
 
-// ===============================
-// SAFE AUTH BOOT
-// ===============================
-async function getSafeSession() {
-
+// --------------------
+// SESSION
+// --------------------
+async function checkSession() {
     const { data: { session } } = await client.auth.getSession();
-
-    if (!session) return null;
-
-    // small delay helps Supabase finish hydration (fixes flicker bug)
-    await new Promise(r => setTimeout(r, 200));
-
-    const retry = await client.auth.getSession();
-
-    return retry.data.session || session;
+    if (!session) {
+        window.location.href = "login.html";
+        return false;
+    }
+    return true;
 }
 
-// ===============================
-// USER LOAD
-// ===============================
-async function loadUserSafe() {
-
+// --------------------
+// USER
+// --------------------
+async function loadUser() {
     const { data: { user } } = await client.auth.getUser();
+    if (!user) return false;
 
-    if (!user) return null;
-
-    displayName =
-        user.user_metadata?.display_name || "Anonymous";
-
-    return user;
+    displayName = user.user_metadata?.display_name || "Anonymous";
+    return true;
 }
 
-// ===============================
+// --------------------
 // PROFILE
-// ===============================
+// --------------------
 async function ensureProfile() {
-
-    if (!displayName) return;
-
-    const { data, error } = await client
+    const { data } = await client
         .from("profiles")
         .select("*")
         .eq("username", displayName);
 
-    if (error) {
-        showChatError("Profile load failed");
-        return;
-    }
-
     if (!data.length) {
-
         await client.from("profiles").insert({
             username: displayName,
             color: myColor
         });
-
-    } else {
-
-        const dbColor = data[0]?.color;
-
-        if (dbColor) {
-            myColor = dbColor;
-
-            localStorage.setItem("myColor", dbColor);
-
-            document.documentElement.style.setProperty(
-                "--my-msg-color",
-                dbColor
-            );
-        }
     }
 }
 
-// ===============================
-// ERROR DISPLAY (SAFE)
-// ===============================
-function showChatError(text) {
-
-    const chat = document.getElementById("chat");
-    if (!chat) return;
-
-    const div = document.createElement("div");
-    div.className = "msg";
-    div.style.background = "#B00020";
-    div.textContent = "SYSTEM: " + text;
-
-    chat.appendChild(div);
-}
-
-// ===============================
-// LOAD MESSAGES
-// ===============================
+// --------------------
+// NO-FLICKER LOAD
+// --------------------
 async function loadMessages() {
 
     const chat = document.getElementById("chat");
     const status = document.getElementById("status");
 
-    if (!chat || !status || !displayName) return;
+    const { data: messages } = await client
+        .from("messages")
+        .select("*")
+        .order("id", { ascending: true });
 
-    try {
+    const { data: profiles } = await client
+        .from("profiles")
+        .select("*");
 
-        const { data: messages, error: msgErr } =
-            await client
-                .from("messages")
-                .select("*")
-                .order("id", { ascending: true });
+    const colors = {};
+    profiles.forEach(p => colors[p.username] = p.color);
 
-        if (msgErr) throw msgErr;
+    status.textContent = `● ONLINE • ${messages.length}`;
 
-        const { data: profiles, error: profErr } =
-            await client.from("profiles").select("*");
+    // 🧠 KEY FIX: detect if UI actually changed
+    const renderKey = JSON.stringify(messages);
+    if (renderKey === lastRenderKey) return;
+    lastRenderKey = renderKey;
 
-        if (profErr) throw profErr;
+    // 🧠 preserve scroll
+    const scroll = chat.scrollTop;
 
-        const colors = {};
-        profiles.forEach(p => {
-            colors[p.username] = p.color;
-        });
+    // ONLY replace if needed
+    chat.replaceChildren();
 
-        status.textContent = `● ONLINE • ${messages.length}`;
+    for (const m of messages) {
+        const div = document.createElement("div");
+        div.className = "msg";
 
-        chat.innerHTML = "";
-
-        if (!messages.length) {
-            chat.innerHTML = "<div>No messages 👋</div>";
-            return;
+        if (m.username === displayName) {
+            div.classList.add("my-msg");
+        } else {
+            div.style.background = colors[m.username] || "#FF6200";
         }
 
-        messages.forEach(m => {
-
-            const div = document.createElement("div");
-            div.className = "msg";
-
-            if (m.username === displayName) {
-                div.classList.add("my-msg");
-            } else {
-                div.style.background =
-                    colors[m.username] || "#FF6200";
-            }
-
-            div.textContent = `${m.username}: ${m.message}`;
-            chat.appendChild(div);
-        });
-
-        chat.scrollTop = chat.scrollHeight;
-
-    } catch (err) {
-        status.textContent = "● ERROR";
-        showChatError("Failed to load messages");
+        div.textContent = `${m.username}: ${m.message}`;
+        chat.appendChild(div);
     }
+
+    chat.scrollTop = scroll;
 }
 
-// ===============================
-// SEND MESSAGE
-// ===============================
+// --------------------
+// SEND
+// --------------------
 async function sendMessage() {
-
     const input = document.getElementById("message-input");
-    if (!input || !displayName) return;
-
     const text = input.value.trim();
     if (!text) return;
 
-    const { error } = await client
-        .from("messages")
-        .insert({
-            username: displayName,
-            message: text
-        });
-
-    if (error) {
-        showChatError("Message failed");
-        return;
-    }
+    await client.from("messages").insert({
+        username: displayName,
+        message: text
+    });
 
     input.value = "";
 }
 
-// ===============================
-// REALTIME
-// ===============================
-client.channel("messages-live")
-.on("postgres_changes", {
-    event: "INSERT",
-    schema: "public",
-    table: "messages"
-}, () => {
-    loadMessages();
-})
-.subscribe();
+// --------------------
+// COLOR PICKER
+// --------------------
+document.querySelectorAll(".color-option").forEach(el => {
+    el.onclick = async () => {
+        myColor = el.dataset.color;
+        localStorage.setItem("myColor", myColor);
+        document.documentElement.style.setProperty("--my-msg-color", myColor);
 
-// ===============================
-// AUTH LISTENER (SAFE REDIRECT)
-// ===============================
-client.auth.onAuthStateChange((event, session) => {
+        await client
+            .from("profiles")
+            .update({ color: myColor })
+            .eq("username", displayName);
 
-    if (!session) {
-        window.location.href = "login.html";
-    }
+        loadMessages();
+    };
 });
 
-// ===============================
-// INIT APP (FIXED ORDER)
-// ===============================
-async function initChatApp() {
+// --------------------
+// SETTINGS UI
+// --------------------
+document.getElementById("settings-btn").onclick =
+() => document.getElementById("settings-overlay").style.display = "flex";
 
-    // 1. HARD SESSION CHECK (prevents flash error)
-    const session = await getSafeSession();
+document.getElementById("close-settings").onclick =
+() => document.getElementById("settings-overlay").style.display = "none";
 
-    if (!session) {
-        window.location.href = "login.html";
-        return;
-    }
+// --------------------
+// REALTIME
+// --------------------
+client.channel("chat")
+.on("postgres_changes", {
+    event: "*",
+    schema: "public",
+    table: "messages"
+}, () => loadMessages())
+.subscribe();
 
-    // 2. USER LOAD
-    const user = await loadUserSafe();
+// --------------------
+// START
+// --------------------
+(async () => {
+    if (!(await checkSession())) return;
+    if (!(await loadUser())) return;
 
-    if (!user || !displayName) {
-        window.location.href = "login.html";
-        return;
-    }
-
-    // 3. PROFILE + DATA
     await ensureProfile();
     await loadMessages();
-
-    // 4. UI (only if exists)
-    if (typeof setupUI === "function") {
-        setupUI();
-    }
-}
-
-// ===============================
-// START
-// ===============================
-(async () => {
-    await initChatApp();
 })();
 </script>
+
 </body>
 </html>
