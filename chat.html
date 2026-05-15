@@ -64,6 +64,31 @@ body {
     border: 2px solid #FFBB66;
 }
 
+
+#color-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 15px;
+    justify-content: center;
+}
+
+.color-option {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: transform 0.15s ease;
+}
+
+.color-option:hover {
+    transform: scale(1.15);
+}
+
+
+
 #chat {
     height: 380px;
     overflow-y: auto;
@@ -148,6 +173,28 @@ button:active { transform: scale(0.96); }
 <div class="container">
     <h2>SultanChat</h2>
 
+    <div id="color-picker">
+    <div class="color-option" data-color="#C62828"></div>
+    <div class="color-option" data-color="#D84315"></div>
+    <div class="color-option" data-color="#E65100"></div>
+    <div class="color-option" data-color="#FF6200"></div>
+    <div class="color-option" data-color="#FF8A00"></div>
+
+    <div class="color-option" data-color="#AD1457"></div>
+    <div class="color-option" data-color="#8E24AA"></div>
+    <div class="color-option" data-color="#5E35B1"></div>
+
+    <div class="color-option" data-color="#3949AB"></div>
+    <div class="color-option" data-color="#1E88E5"></div>
+    <div class="color-option" data-color="#00897B"></div>
+    <div class="color-option" data-color="#2E7D32"></div>
+    <div class="color-option" data-color="#558B2F"></div>
+
+    <div class="color-option" data-color="#6D4C41"></div>
+    <div class="color-option" data-color="#546E7A"></div>
+    </div>
+
+
     <button id="settings-btn" style="position:absolute; top:20px; right:20px; font-size:22px; background:none; border:none; cursor:pointer;">
     ⚙️
     </button>
@@ -173,9 +220,33 @@ document.getElementById("settings-btn").addEventListener("click", () => {
     alert("Settings coming soon!");
 });
 
-/* =========================
-   LOAD MESSAGES
-========================= */
+async function updateUserColor(newColor) {
+    myColor = newColor;
+    localStorage.setItem("myColor", newColor);
+
+    await client
+        .from("message")
+        .update({
+            message: null,
+            suggestion: null,
+            color: newColor
+        })
+        .eq("username", window.displayName);
+}
+
+
+let myColor = localStorage.getItem("myColor") || "#FF6200";
+
+document.querySelectorAll(".color-option").forEach(option => {
+    option.style.background = option.dataset.color;
+
+    option.addEventListener("click", () => {
+        updateUserColor(option.dataset.color);
+    });
+});
+
+
+    
 async function loadMessages() {
     const chat = document.getElementById("chat");
     const status = document.getElementById("status");
@@ -200,24 +271,18 @@ async function loadMessages() {
         }
 
 data.forEach(item => {
-
-    // Skip suggestions
-    if (item.suggestion) return;
+    // Skip profile rows (message=null AND suggestion=null)
+    if (!item.message && !item.suggestion) return;
 
     const div = document.createElement("div");
+    div.className = "msg";
 
-    // Check if message belongs to me
-    if (item.username === window.displayName) {
-        div.className = "msg my-msg";
-    } else {
-        div.className = "msg other-msg";
-    }
+    // Use the sender's color
+    div.style.background = item.color || "#FF6200";
 
-    const name = item.username || "Unknown";
-    const text = item.message || "(empty)";
-
-    div.textContent = `${name}: ${text}`;
+    div.textContent = `${item.username}: ${item.message || item.suggestion}`;
     chat.appendChild(div);
+});
 });
         chat.scrollTop = chat.scrollHeight;
 
