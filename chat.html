@@ -8,14 +8,10 @@
 
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="apple-touch-icon" href="logo.png">
-<link rel="manifest" href="/website/manifest.json">
-
-
+<link rel="manifest" href="manifest.json">
 
 <!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-
 
 <style>
 
@@ -23,11 +19,6 @@
     --my-msg-color: #FF6200;
 }
 
-.my-msg {
-    background: var(--my-msg-color) !important;
-}
-
-    
 body {
     font-family: sans-serif;
     background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
@@ -46,31 +37,22 @@ body {
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
     border: 2px solid #FFBB66;
+    position: relative;
 }
 
-
-#colorPicker {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 15px;
-    justify-content: center;
-}
-
-.color-option {
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
+#settings-btn {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    font-size: 24px;
+    background: white;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 12px;
     cursor: pointer;
-    border: 2px solid #fff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    transition: transform 0.15s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
-
-.color-option:hover {
-    transform: scale(1.15);
-}
-
 
 #settings-overlay {
     position: fixed;
@@ -97,8 +79,15 @@ body {
 }
 
 @keyframes pop {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 #settings-window h3 {
@@ -108,16 +97,29 @@ body {
 
 #close-settings {
     margin-top: 20px;
-    padding: 10px 18px;
-    background: #E65100;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    font-size: 15px;
-    cursor: pointer;
 }
 
-    
+#colorPicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+    justify-content: center;
+}
+
+.color-option {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: transform 0.15s ease;
+}
+
+.color-option:hover {
+    transform: scale(1.12);
+}
 
 #chat {
     height: 380px;
@@ -129,9 +131,7 @@ body {
     margin-bottom: 15px;
 }
 
-
 .msg {
-    background: #FF6200;
     color: white;
     padding: 10px 12px;
     border-radius: 12px;
@@ -140,9 +140,8 @@ body {
     font-size: 15px;
 }
 
-
-.other-msg {
-    background: #FF6200;
+.my-msg {
+    background: var(--my-msg-color);
 }
 
 .status {
@@ -156,14 +155,13 @@ body {
     font-size: 14px;
 }
 
-#send-area {
+.send-area {
     display: flex;
     gap: 8px;
     margin-top: 10px;
 }
 
-#message-input,
-#suggest-input {
+input {
     flex: 1;
     padding: 12px;
     background: #FFF4E0;
@@ -190,119 +188,165 @@ button:hover {
 
 button:active {
     transform: scale(0.96);
-}button:hover { background: #DC4D00; }
-button:active { transform: scale(0.96); }
-    
+}
+
 </style>
 </head>
 
 <body>
+
+<button id="settings-btn">⚙️</button>
+
 <div class="container">
+
     <h2>SultanChat</h2>
 
-<div id="settings-overlay">
-    <div id="settings-window">
-        <h3>Choose Your Color</h3>
-
-        <div id="colorPicker">
-            <div class="color-option" data-color="#C62828"></div>
-            <div class="color-option" data-color="#D84315"></div>
-            <div class="color-option" data-color="#E65100"></div>
-            <div class="color-option" data-color="#FF6200"></div>
-            <div class="color-option" data-color="#FF8A00"></div>
-
-            <div class="color-option" data-color="#AD1457"></div>
-            <div class="color-option" data-color="#8E24AA"></div>
-            <div class="color-option" data-color="#5E35B1"></div>
-
-            <div class="color-option" data-color="#3949AB"></div>
-            <div class="color-option" data-color="#1E88E5"></div>
-            <div class="color-option" data-color="#00897B"></div>
-            <div class="color-option" data-color="#2E7D32"></div>
-            <div class="color-option" data-color="#558B2F"></div>
-
-            <div class="color-option" data-color="#6D4C41"></div>
-            <div class="color-option" data-color="#546E7A"></div>
-        </div>
-
-        <button id="close-settings">Close</button>
+    <div id="chat">
+        Loading messages...
     </div>
-</div>
 
+    <div id="status" class="status">
+        ● CONNECTING...
+    </div>
 
-    <button id="settings-btn" style="position:absolute; top:20px; right:20px; font-size:22px; background:none; border:none; cursor:pointer;">
-    ⚙️
-    </button>
-
-
-    <div id="chat">Loading messages...</div>
-    <div id="status" class="status">● CONNECTING…</div>
-
-    <div id="send-area">
+    <div class="send-area">
         <input type="text" id="message-input" placeholder="Type your message...">
         <button id="send-btn">Send</button>
     </div>
 
-    <div id="send-area">
-        <input type="text" id="suggest-input" placeholder="Type a suggestion...">
-        <button id="suggest-btn">Suggest</button>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings-overlay">
+    <div id="settings-window">
+
+        <h3>Choose Your Color</h3>
+
+        <div id="colorPicker">
+
+            <div class="color-option" data-color="#C62828" style="background:#C62828;"></div>
+            <div class="color-option" data-color="#D84315" style="background:#D84315;"></div>
+            <div class="color-option" data-color="#E65100" style="background:#E65100;"></div>
+            <div class="color-option" data-color="#FF6200" style="background:#FF6200;"></div>
+            <div class="color-option" data-color="#FF8A00" style="background:#FF8A00;"></div>
+
+            <div class="color-option" data-color="#AD1457" style="background:#AD1457;"></div>
+            <div class="color-option" data-color="#8E24AA" style="background:#8E24AA;"></div>
+            <div class="color-option" data-color="#5E35B1" style="background:#5E35B1;"></div>
+
+            <div class="color-option" data-color="#3949AB" style="background:#3949AB;"></div>
+            <div class="color-option" data-color="#1E88E5" style="background:#1E88E5;"></div>
+
+            <div class="color-option" data-color="#00897B" style="background:#00897B;"></div>
+            <div class="color-option" data-color="#2E7D32" style="background:#2E7D32;"></div>
+
+            <div class="color-option" data-color="#558B2F" style="background:#558B2F;"></div>
+            <div class="color-option" data-color="#6D4C41" style="background:#6D4C41;"></div>
+            <div class="color-option" data-color="#546E7A" style="background:#546E7A;"></div>
+
+        </div>
+
+        <button id="close-settings">Close</button>
+
     </div>
 </div>
 
-
 <script>
-// ---------------------------------------------------------
-// YOUR AUTH + SETUP CODE (KEEP THIS)
-// ---------------------------------------------------------
+
+// --------------------------------------------------
+// SUPABASE
+// --------------------------------------------------
 
 const SUPABASE_URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
-const SUPABASE_KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
-const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_KEY = "YOUR_SUPABASE_KEY";
+
+const client = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+// --------------------------------------------------
+// SERVICE WORKER
+// --------------------------------------------------
+
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+}
+
+// --------------------------------------------------
+// USER
+// --------------------------------------------------
+
+let myColor = localStorage.getItem("myColor") || "#FF6200";
+
+document.documentElement.style.setProperty(
+    "--my-msg-color",
+    myColor
+);
 
 async function checkSession() {
-    const { data: { session } } = await client.auth.getSession();
-    if (!session) window.location.href = "login.html";
+
+    const {
+        data: { session }
+    } = await client.auth.getSession();
+
+    if (!session) {
+        window.location.href = "login.html";
+    }
 }
 
 async function loadUser() {
-    const { data: { user }, error } = await client.auth.getUser();
-    if (error || !user) window.location.href = "login.html";
 
-    window.displayName = user.user_metadata.display_name;
+    const {
+        data: { user },
+        error
+    } = await client.auth.getUser();
+
+    if (error || !user) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    window.displayName =
+        user.user_metadata.display_name || "Anonymous";
+
     console.log("Logged in as:", window.displayName);
 }
 
-// Register service worker globally
-if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/website/service-worker.js");
-}
+// --------------------------------------------------
+// SETTINGS WINDOW
+// --------------------------------------------------
 
-// ---------------------------------------------------------
-// NEW CHAT SYSTEM (PROFILES + MESSAGES)
-// ---------------------------------------------------------
+const settingsBtn =
+    document.getElementById("settings-btn");
 
-let myColor = localStorage.getItem("myColor") || "#FF6200";
-document.documentElement.style.setProperty("--my-msg-color", myColor);
+const settingsOverlay =
+    document.getElementById("settings-overlay");
 
-const colorPicker = document.getElementById("colorPicker");
+const closeSettings =
+    document.getElementById("close-settings");
 
-// --- COLOR OPTION CLICKS (settings window) ---
-document.querySelectorAll(".color-option").forEach(option => {
-    option.addEventListener("click", () => {
-        const newColor = option.dataset.color;
-        updateUserColor(newColor);
-    });
+settingsBtn.addEventListener("click", () => {
+    settingsOverlay.style.display = "flex";
 });
 
-    
-colorPicker.value = myColor;
-
-colorPicker.addEventListener("input", (e) => {
-    updateUserColor(e.target.value);
+closeSettings.addEventListener("click", () => {
+    settingsOverlay.style.display = "none";
 });
 
-// --- ENSURE PROFILE EXISTS ---
+settingsOverlay.addEventListener("click", (e) => {
+
+    if (e.target === settingsOverlay) {
+        settingsOverlay.style.display = "none";
+    }
+});
+
+// --------------------------------------------------
+// PROFILE SYSTEM
+// --------------------------------------------------
+
 async function ensureProfile() {
+
     const { data, error } = await client
         .from("profiles")
         .select("*")
@@ -310,136 +354,267 @@ async function ensureProfile() {
         .limit(1);
 
     if (error) {
-        console.error("Error checking profile:", error);
+        console.error(error);
         return;
     }
 
     if (!data.length) {
-        const { error: insertErr } = await client.from("profiles").insert({
-            username: window.displayName,
-            color: myColor
-        });
-        if (insertErr) console.error("Error creating profile:", insertErr);
+
+        const { error: insertErr } =
+            await client
+            .from("profiles")
+            .insert({
+                username: window.displayName,
+                color: myColor
+            });
+
+        if (insertErr) {
+            console.error(insertErr);
+        }
+
     } else {
+
         if (data[0].color) {
+
             myColor = data[0].color;
-            localStorage.setItem("myColor", myColor);
-            document.documentElement.style.setProperty("--my-msg-color", myColor);
-            colorPicker.value = myColor;
+
+            localStorage.setItem(
+                "myColor",
+                myColor
+            );
+
+            document.documentElement.style.setProperty(
+                "--my-msg-color",
+                myColor
+            );
         }
     }
 }
 
-// --- UPDATE USER COLOR ---
-async function updateUserColor(newColor) {
-    myColor = newColor;
-    localStorage.setItem("myColor", newColor);
+// --------------------------------------------------
+// UPDATE COLOR
+// --------------------------------------------------
 
-    document.documentElement.style.setProperty("--my-msg-color", newColor);
+async function updateUserColor(newColor) {
+
+    myColor = newColor;
+
+    localStorage.setItem(
+        "myColor",
+        newColor
+    );
+
+    document.documentElement.style.setProperty(
+        "--my-msg-color",
+        newColor
+    );
 
     const { error } = await client
         .from("profiles")
-        .update({ color: newColor })
+        .update({
+            color: newColor
+        })
         .eq("username", window.displayName);
 
     if (error) {
-        console.error("Error updating color:", error);
+        console.error(error);
     }
+
+    loadMessages();
 }
 
-// --- LOAD MESSAGES ---
+// COLOR PICKER
+
+document.querySelectorAll(".color-option")
+.forEach(option => {
+
+    option.addEventListener("click", () => {
+
+        const newColor =
+            option.dataset.color;
+
+        updateUserColor(newColor);
+    });
+});
+
+// --------------------------------------------------
+// LOAD MESSAGES
+// --------------------------------------------------
+
 async function loadMessages() {
-    const chat = document.getElementById("chat");
-    const status = document.getElementById("status");
+
+    const chat =
+        document.getElementById("chat");
+
+    const status =
+        document.getElementById("status");
 
     try {
-        const { data: messages, error: msgErr } = await client
+
+        const {
+            data: messages,
+            error: msgErr
+        } = await client
             .from("messages")
             .select("*")
-            .order("id", { ascending: true });
+            .order("id", {
+                ascending: true
+            });
 
         if (msgErr) throw msgErr;
 
-        const { data: profiles, error: profErr } = await client
+        const {
+            data: profiles,
+            error: profErr
+        } = await client
             .from("profiles")
             .select("*");
 
         if (profErr) throw profErr;
 
         const userColors = {};
-        profiles.forEach(p => {
-            userColors[p.username] = p.color || "#FF6200";
+
+        profiles.forEach(profile => {
+
+            userColors[profile.username] =
+                profile.color || "#FF6200";
         });
 
-        status.textContent = `● ONLINE - ${messages.length} messages`;
+        status.textContent =
+            `● ONLINE • ${messages.length} messages`;
+
         chat.innerHTML = "";
 
         if (!messages.length) {
-            chat.innerHTML = `<div style="color:#FF8A00; text-align:center; padding:80px 20px;">No messages yet. Be the first to type something 👋</div>`;
+
+            chat.innerHTML = `
+                <div style="
+                    color:#FF8A00;
+                    text-align:center;
+                    padding:80px 20px;
+                ">
+                    No messages yet 👋
+                </div>
+            `;
+
             return;
         }
 
         messages.forEach(item => {
-            const div = document.createElement("div");
+
+            const div =
+                document.createElement("div");
+
+            div.classList.add("msg");
 
             if (item.username === window.displayName) {
-                div.className = "msg my-msg";
+
+                div.classList.add("my-msg");
+
             } else {
-                div.className = "msg";
-                div.style.background = userColors[item.username] || "#FF6200";
+
+                div.style.background =
+                    userColors[item.username]
+                    || "#FF6200";
             }
 
-            div.textContent = `${item.username}: ${item.message}`;
+            div.textContent =
+                `${item.username}: ${item.message}`;
+
             chat.appendChild(div);
         });
 
-        chat.scrollTop = chat.scrollHeight;
+        chat.scrollTop =
+            chat.scrollHeight;
 
     } catch (err) {
+
         console.error(err);
-        status.textContent = "● OFFLINE - ERROR";
+
+        status.textContent =
+            "● OFFLINE - ERROR";
     }
 }
 
-// --- SEND MESSAGE ---
+// --------------------------------------------------
+// SEND MESSAGE
+// --------------------------------------------------
+
 async function sendMessage() {
-    const input = document.getElementById("messageInput");
-    const text = input.value.trim();
+
+    const input =
+        document.getElementById("message-input");
+
+    const text =
+        input.value.trim();
+
     if (!text) return;
 
-    const { error } = await client.from("messages").insert({
-        username: window.displayName,
-        message: text
-    });
+    const { error } =
+        await client
+        .from("messages")
+        .insert({
+            username: window.displayName,
+            message: text
+        });
 
     if (error) {
-        console.error("Error sending message:", error);
+
+        console.error(error);
         return;
     }
 
     input.value = "";
 }
 
-document.getElementById("sendBtn").addEventListener("click", sendMessage);
-document.getElementById("messageInput").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") sendMessage();
+document
+.getElementById("send-btn")
+.addEventListener("click", sendMessage);
+
+document
+.getElementById("message-input")
+.addEventListener("keydown", (e) => {
+
+    if (e.key === "Enter") {
+        sendMessage();
+    }
 });
 
-// --- REALTIME SUBSCRIPTION ---
-client
-    .channel("messages")
-    .on("postgres_changes", { event: "*", schema: "public", table: "messages" }, loadMessages)
-    .subscribe();
+// --------------------------------------------------
+// REALTIME
+// --------------------------------------------------
 
-// --- INIT ---
+client
+.channel("messages-live")
+.on(
+    "postgres_changes",
+    {
+        event: "*",
+        schema: "public",
+        table: "messages"
+    },
+    () => {
+        loadMessages();
+    }
+)
+.subscribe();
+
+// --------------------------------------------------
+// START
+// --------------------------------------------------
+
 (async () => {
+
     await checkSession();
+
     await loadUser();
+
     await ensureProfile();
+
     await loadMessages();
+
 })();
 
 </script>
-
 </body>
 </html>
