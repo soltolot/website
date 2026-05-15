@@ -6,10 +6,13 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="icon" href="logo.png">
+<link rel="icon" type="image/png" href="logo.png">
+<link rel="manifest" href="manifest.json">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 :root {
     --my-msg-color: #FF6200;
 }
@@ -19,50 +22,56 @@ body {
     background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
     margin: 0;
     padding: 20px;
+    min-height: 100vh;
 }
 
+/* YOUR ORIGINAL CARD STYLE */
 .container {
-    max-width: 440px;
+    max-width: 420px;
     margin: auto;
     background: white;
-    padding: 22px;
-    border-radius: 18px;
-    box-shadow: 0 10px 30px rgba(255,140,0,0.12);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
+    border: 2px solid #FFBB66;
 }
 
+/* CHAT */
 #chat {
-    height: 400px;
+    height: 380px;
     overflow-y: auto;
     background: #FFF9F0;
-    padding: 14px;
-    border-radius: 14px;
-    border: 1px solid #FFD9A8;
+    padding: 15px;
+    border-radius: 15px;
+    border: 1px solid #FFDDAA;
+    margin-bottom: 10px;
 }
 
-/* SMOOTH MESSAGE APPEAR (REMOVES FLICKER FEEL) */
 .msg {
-    padding: 10px;
+    color: white;
+    padding: 10px 12px;
     border-radius: 12px;
     margin-bottom: 8px;
-    background: #F5F5F5;
     word-break: break-word;
-    opacity: 1;
+    font-size: 15px;
 }
 
 .my-msg {
     background: var(--my-msg-color);
-    color: white;
 }
 
+/* STATUS */
 .status {
-    margin-top: 10px;
     padding: 10px;
-    background: #FFE8CC;
+    background: #FFEDD5;
+    color: #E85D04;
     border-radius: 10px;
-    font-weight: bold;
     text-align: center;
+    font-weight: bold;
+    font-size: 14px;
 }
 
+/* INPUT AREA */
 .send-area {
     display: flex;
     gap: 8px;
@@ -72,31 +81,39 @@ body {
 input {
     flex: 1;
     padding: 12px;
-    border-radius: 10px;
-    border: 2px solid #FFBB66;
     background: #FFF4E0;
+    border: 2px solid #FFBB66;
+    border-radius: 10px;
+    font-size: 15px;
+    outline: none;
 }
 
 button {
-    padding: 12px;
-    background: #E65100;
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: bold;
     color: white;
+    background: #E65100;
     border: none;
     border-radius: 10px;
+    cursor: pointer;
 }
 
-/* SETTINGS */
+/* SETTINGS BUTTON */
 #settings-btn {
     position: fixed;
-    top: 14px;
-    right: 14px;
+    top: 15px;
+    right: 15px;
+    font-size: 22px;
     background: white;
     border: none;
-    border-radius: 10px;
-    padding: 10px;
+    border-radius: 12px;
+    padding: 8px 12px;
+    cursor: pointer;
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
+/* SETTINGS MODAL */
 #settings-overlay {
     position: fixed;
     inset: 0;
@@ -115,6 +132,7 @@ button {
     text-align: center;
 }
 
+/* 15 COLOR PALETTE (RESTORED STYLE) */
 .color-option {
     width: 28px;
     height: 28px;
@@ -122,7 +140,10 @@ button {
     display: inline-block;
     margin: 4px;
     cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
+
 </style>
 </head>
 
@@ -134,48 +155,66 @@ button {
 
 <h2>SultanChat</h2>
 
-<div id="chat">Loading...</div>
+<div id="chat">Loading messages...</div>
 
 <div id="status">● CONNECTING...</div>
 
 <div class="send-area">
-    <input id="message-input" placeholder="Type message...">
+    <input id="message-input" placeholder="Type your message...">
     <button id="send-btn">Send</button>
 </div>
 
 </div>
 
+<!-- SETTINGS -->
 <div id="settings-overlay">
     <div id="settings-window">
 
-        <h3>Colors</h3>
+        <h3>Choose Your Color</h3>
 
         <div id="colorPicker">
-            <div class="color-option" data-color="#FF6200" style="background:#FF6200"></div>
-            <div class="color-option" data-color="#3949AB" style="background:#3949AB"></div>
-            <div class="color-option" data-color="#2E7D32" style="background:#2E7D32"></div>
-            <div class="color-option" data-color="#8E24AA" style="background:#8E24AA"></div>
+
+            <!-- FULL 15 COLORS RESTORED -->
             <div class="color-option" data-color="#C62828" style="background:#C62828"></div>
+            <div class="color-option" data-color="#D84315" style="background:#D84315"></div>
+            <div class="color-option" data-color="#E65100" style="background:#E65100"></div>
+            <div class="color-option" data-color="#FF6200" style="background:#FF6200"></div>
+            <div class="color-option" data-color="#FF8A00" style="background:#FF8A00"></div>
+
+            <div class="color-option" data-color="#AD1457" style="background:#AD1457"></div>
+            <div class="color-option" data-color="#8E24AA" style="background:#8E24AA"></div>
+            <div class="color-option" data-color="#5E35B1" style="background:#5E35B1"></div>
+
+            <div class="color-option" data-color="#3949AB" style="background:#3949AB"></div>
+            <div class="color-option" data-color="#1E88E5" style="background:#1E88E5"></div>
+
+            <div class="color-option" data-color="#00897B" style="background:#00897B"></div>
+            <div class="color-option" data-color="#2E7D32" style="background:#2E7D32"></div>
+
+            <div class="color-option" data-color="#558B2F" style="background:#558B2F"></div>
+            <div class="color-option" data-color="#6D4C41" style="background:#6D4C41"></div>
+            <div class="color-option" data-color="#546E7A" style="background:#546E7A"></div>
+
         </div>
 
         <button id="close-settings">Close</button>
+
     </div>
 </div>
 
 <script>
+
 const SUPABASE_URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
 const SUPABASE_KEY = "YOUR_SUPABASE_KEY";
 const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let displayName = null;
 let myColor = localStorage.getItem("myColor") || "#FF6200";
-let lastRenderKey = "";
+let lastRender = "";
 
 document.documentElement.style.setProperty("--my-msg-color", myColor);
 
-// --------------------
-// SESSION
-// --------------------
+/* SAFE SESSION */
 async function checkSession() {
     const { data: { session } } = await client.auth.getSession();
     if (!session) {
@@ -185,9 +224,7 @@ async function checkSession() {
     return true;
 }
 
-// --------------------
-// USER
-// --------------------
+/* USER */
 async function loadUser() {
     const { data: { user } } = await client.auth.getUser();
     if (!user) return false;
@@ -196,9 +233,7 @@ async function loadUser() {
     return true;
 }
 
-// --------------------
-// PROFILE
-// --------------------
+/* PROFILE */
 async function ensureProfile() {
     const { data } = await client
         .from("profiles")
@@ -213,9 +248,7 @@ async function ensureProfile() {
     }
 }
 
-// --------------------
-// NO-FLICKER LOAD
-// --------------------
+/* FIXED: NO FLICKER + STABLE RENDER */
 async function loadMessages() {
 
     const chat = document.getElementById("chat");
@@ -235,15 +268,13 @@ async function loadMessages() {
 
     status.textContent = `● ONLINE • ${messages.length}`;
 
-    // 🧠 KEY FIX: detect if UI actually changed
-    const renderKey = JSON.stringify(messages);
-    if (renderKey === lastRenderKey) return;
-    lastRenderKey = renderKey;
+    const key = messages.map(m => m.id).join(",");
 
-    // 🧠 preserve scroll
+    if (key === lastRender) return;
+    lastRender = key;
+
     const scroll = chat.scrollTop;
 
-    // ONLY replace if needed
     chat.replaceChildren();
 
     for (const m of messages) {
@@ -263,9 +294,7 @@ async function loadMessages() {
     chat.scrollTop = scroll;
 }
 
-// --------------------
-// SEND
-// --------------------
+/* SEND */
 async function sendMessage() {
     const input = document.getElementById("message-input");
     const text = input.value.trim();
@@ -279,11 +308,10 @@ async function sendMessage() {
     input.value = "";
 }
 
-// --------------------
-// COLOR PICKER
-// --------------------
+/* COLOR PICKER */
 document.querySelectorAll(".color-option").forEach(el => {
     el.onclick = async () => {
+
         myColor = el.dataset.color;
         localStorage.setItem("myColor", myColor);
         document.documentElement.style.setProperty("--my-msg-color", myColor);
@@ -297,18 +325,14 @@ document.querySelectorAll(".color-option").forEach(el => {
     };
 });
 
-// --------------------
-// SETTINGS UI
-// --------------------
+/* SETTINGS UI */
 document.getElementById("settings-btn").onclick =
 () => document.getElementById("settings-overlay").style.display = "flex";
 
 document.getElementById("close-settings").onclick =
 () => document.getElementById("settings-overlay").style.display = "none";
 
-// --------------------
-// REALTIME
-// --------------------
+/* REALTIME */
 client.channel("chat")
 .on("postgres_changes", {
     event: "*",
@@ -317,9 +341,7 @@ client.channel("chat")
 }, () => loadMessages())
 .subscribe();
 
-// --------------------
-// START
-// --------------------
+/* START */
 (async () => {
     if (!(await checkSession())) return;
     if (!(await loadUser())) return;
@@ -327,6 +349,7 @@ client.channel("chat")
     await ensureProfile();
     await loadMessages();
 })();
+
 </script>
 
 </body>
