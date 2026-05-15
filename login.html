@@ -75,287 +75,83 @@
     </div>
 
 <script>
-    const SUPABASE_URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const SUPABASE_URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
+const SUPABASE_KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
 
-// ===============================
-// STATE
-// ===============================
-let sessionChecked = false;
+const client = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
-// ===============================
-// WAIT FOR SUPABASE AUTH INIT
-// ===============================
-function waitForAuthInit() {
-    return new Promise((resolve) => {
+let loggingIn = false;
 
-        const { data: listener } = client.auth.onAuthStateChange(() => {
-            listener.subscription.unsubscribe();
-            resolve();
-        });
+async function processLogin() {
 
-        // fallback (important for slow loads on GitHub Pages)
-        setTimeout(resolve, 300);
-    });
-}
+    if (loggingIn) return;
 
-// ===============================
-// SAFE SESSION CHECK
-// ===============================
-async function checkSessionSafe() {
+    loggingIn = true;
 
-    const { data: { session } } = await client.auth.getSession();
+    const username =
+        document.getElementById("username")
+        .value
+        .trim()
+        .toLowerCase();
 
-    if (session) return true;
+    const password =
+        document.getElementById("password")
+        .value
+        .trim();
 
-    await new Promise(r => setTimeout(r, 400));
+    const status =
+        document.getElementById("status");
 
-    const retry = await client.auth.getSession();
+    if (!username || !password) {
 
-    if (retry.data.session) return true;
+        status.style.color = "#d63031";
+        status.innerText = "Fill all fields.";
 
-    window.location.href = "login.html";
-    return false;
-}
-
-// ===============================
-// AUTH LISTENER (LIVE GUARD)
-// ===============================
-function setupAuthListener() {
-
-    client.auth.onAuthStateChange((event, session) => {
-
-        if (!session) {
-            window.location.href = "login.html";
-        }
-    });
-}
-
-// ===============================
-// USER LOADER
-// ===============================
-async function loadUserSafe() {
-
-    const { data: { user } } = await client.auth.getUser();
-
-    if (!user) {
-        window.location.href = "login.html";
+        loggingIn = false;
         return;
     }
 
-    window.displayName =
-        user.user_metadata?.display_name || "Anonymous";
-}
+    const email =
+        username + "@placeholder.com";
 
-// ===============================
-// PROFILE SYSTEM
-// (you already had this elsewhere, but required here)
-// ===============================
-let myColor = localStorage.getItem("myColor") || "#FF6200";
+    status.style.color = "#2d3436";
+    status.innerText = "Logging in...";
 
-document.documentElement.style.setProperty("--my-msg-color", myColor);
-
-async function ensureProfile() {
-
-    if (!window.displayName) return;
-
-    const { data, error } = await client
-        .from("profiles")
-        .select("*")
-        .eq("username", window.displayName);
-
-    if (error) return;
-
-    if (!data.length) {
-
-        await client.from("profiles").insert({
-            username: window.displayName,
-            color: myColor
-        });
-
-    } else {
-
-        const dbColor = data[0]?.color;
-
-        if (dbColor) {
-            myColor = dbColor;
-
-            localStorage.setItem("myColor", dbColor);
-
-            document.documentElement.style.setProperty(
-                "--my-msg-color",
-                dbColor
-            );
-        }
-    }
-}
-
-// ===============================
-// UPDATE COLOR
-// ===============================
-async function updateUserColor(newColor) {
-
-    myColor = newColor;
-
-    localStorage.setItem("myColor", newColor);
-
-    document.documentElement.style.setProperty(
-        "--my-msg-color",
-        newColor
-    );
-
-    await client
-        .from("profiles")
-        .update({ color: newColor })
-        .eq("username", window.displayName);
-
-    loadMessages();
-}
-
-// ===============================
-// CHAT ERROR DISPLAY
-// ===============================
-function showChatError(text) {
-
-    const chat = document.getElementById("chat");
-
-    const div = document.createElement("div");
-
-    div.className = "msg";
-    div.style.background = "#B00020";
-    div.textContent = "SYSTEM: " + text;
-
-    chat.appendChild(div);
-
-    chat.scrollTop = chat.scrollHeight;
-}
-
-// ===============================
-// LOAD MESSAGES
-// ===============================
-async function loadMessages() {
-
-    const chat = document.getElementById("chat");
-    const status = document.getElementById("status");
-
-    try {
-
-        const { data: messages, error: msgErr } =
-            await client
-                .from("messages")
-                .select("*")
-                .order("id", { ascending: true });
-
-        if (msgErr) throw msgErr;
-
-        const { data: profiles, error: profErr } =
-            await client.from("profiles").select("*");
-
-        if (profErr) throw profErr;
-
-        const colors = {};
-        profiles.forEach(p => {
-            colors[p.username] = p.color;
-        });
-
-        status.textContent = `● ONLINE • ${messages.length}`;
-
-        chat.innerHTML = "";
-
-        if (!messages.length) {
-            chat.innerHTML = "<div>No messages 👋</div>";
-            return;
-        }
-
-        messages.forEach(m => {
-
-            const div = document.createElement("div");
-            div.className = "msg";
-
-            if (m.username === window.displayName) {
-                div.classList.add("my-msg");
-            } else {
-                div.style.background =
-                    colors[m.username] || "#FF6200";
-            }
-
-            div.textContent = `${m.username}: ${m.message}`;
-            chat.appendChild(div);
-        });
-
-        chat.scrollTop = chat.scrollHeight;
-
-    } catch (err) {
-        status.textContent = "● ERROR";
-        showChatError("Failed to load messages");
-    }
-}
-
-// ===============================
-// SEND MESSAGE
-// ===============================
-async function sendMessage() {
-
-    const input = document.getElementById("message-input");
-    const text = input.value.trim();
-
-    if (!text) return;
-
-    const { error } = await client
-        .from("messages")
-        .insert({
-            username: window.displayName,
-            message: text
+    const { error } =
+        await client.auth.signInWithPassword({
+            email,
+            password
         });
 
     if (error) {
-        showChatError("Message failed to send");
+
+        status.style.color = "#d63031";
+        status.innerText = error.message;
+
+        loggingIn = false;
         return;
     }
 
-    input.value = "";
+    status.style.color = "#28a745";
+    status.innerText = "Success! Redirecting...";
+
+    // small delay helps session persist
+    setTimeout(() => {
+        window.location.href = "chat.html";
+    }, 500);
 }
 
-// ===============================
-// REALTIME
-// ===============================
-client.channel("messages-live")
-.on("postgres_changes", {
-    event: "INSERT",
-    schema: "public",
-    table: "messages"
-}, () => {
-    loadMessages();
-})
-.subscribe();
+// ENTER KEY SUPPORT
+document.addEventListener("keydown", (e) => {
 
-// ===============================
-// AUTH BOOTSTRAP (FIXED FLOW)
-// ===============================
-async function initChatApp() {
-
-    await waitForAuthInit();
-
-    const ok = await checkSessionSafe();
-    if (!ok) return;
-
-    await loadUserSafe();
-
-    await ensureProfile();
-    await loadMessages();
-
-    setupAuthListener();
-    setupUI();
-}
-
-// ===============================
-// START APP
-// ===============================
-(async () => {
-    await initChatApp();
-})();
+    if (e.key === "Enter") {
+        processLogin();
+    }
+});
 </script>
 </body>
 </html>
