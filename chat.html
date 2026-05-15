@@ -88,6 +88,52 @@ body {
 }
 
 
+#settings-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+#settings-window {
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    width: 85%;
+    max-width: 380px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    animation: pop 0.25s ease;
+}
+
+@keyframes pop {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+#settings-window h3 {
+    margin-top: 0;
+    color: #FF6200;
+}
+
+#close-settings {
+    margin-top: 20px;
+    padding: 10px 18px;
+    background: #E65100;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+    
 
 #chat {
     height: 380px;
@@ -173,26 +219,34 @@ button:active { transform: scale(0.96); }
 <div class="container">
     <h2>SultanChat</h2>
 
-    <div id="color-picker">
-    <div class="color-option" data-color="#C62828"></div>
-    <div class="color-option" data-color="#D84315"></div>
-    <div class="color-option" data-color="#E65100"></div>
-    <div class="color-option" data-color="#FF6200"></div>
-    <div class="color-option" data-color="#FF8A00"></div>
+<div id="settings-overlay">
+    <div id="settings-window">
+        <h3>Choose Your Color</h3>
 
-    <div class="color-option" data-color="#AD1457"></div>
-    <div class="color-option" data-color="#8E24AA"></div>
-    <div class="color-option" data-color="#5E35B1"></div>
+        <div id="settings-color-picker">
+            <div class="color-option" data-color="#C62828"></div>
+            <div class="color-option" data-color="#D84315"></div>
+            <div class="color-option" data-color="#E65100"></div>
+            <div class="color-option" data-color="#FF6200"></div>
+            <div class="color-option" data-color="#FF8A00"></div>
 
-    <div class="color-option" data-color="#3949AB"></div>
-    <div class="color-option" data-color="#1E88E5"></div>
-    <div class="color-option" data-color="#00897B"></div>
-    <div class="color-option" data-color="#2E7D32"></div>
-    <div class="color-option" data-color="#558B2F"></div>
+            <div class="color-option" data-color="#AD1457"></div>
+            <div class="color-option" data-color="#8E24AA"></div>
+            <div class="color-option" data-color="#5E35B1"></div>
 
-    <div class="color-option" data-color="#6D4C41"></div>
-    <div class="color-option" data-color="#546E7A"></div>
+            <div class="color-option" data-color="#3949AB"></div>
+            <div class="color-option" data-color="#1E88E5"></div>
+            <div class="color-option" data-color="#00897B"></div>
+            <div class="color-option" data-color="#2E7D32"></div>
+            <div class="color-option" data-color="#558B2F"></div>
+
+            <div class="color-option" data-color="#6D4C41"></div>
+            <div class="color-option" data-color="#546E7A"></div>
+        </div>
+
+        <button id="close-settings">Close</button>
     </div>
+</div>
 
 
     <button id="settings-btn" style="position:absolute; top:20px; right:20px; font-size:22px; background:none; border:none; cursor:pointer;">
@@ -237,7 +291,7 @@ async function updateUserColor(newColor) {
 
 let myColor = localStorage.getItem("myColor") || "#FF6200";
 
-document.querySelectorAll(".color-option").forEach(option => {
+document.querySelectorAll("#settings-color-picker .color-option").forEach(option => {
     option.style.background = option.dataset.color;
 
     option.addEventListener("click", () => {
@@ -374,6 +428,19 @@ client.channel("room1")
     .subscribe();
 
 loadMessages();
+
+const settingsOverlay = document.getElementById("settings-overlay");
+const closeSettings = document.getElementById("close-settings");
+
+document.getElementById("settings-btn").addEventListener("click", () => {
+    settingsOverlay.style.display = "flex";
+});
+
+closeSettings.addEventListener("click", () => {
+    settingsOverlay.style.display = "none";
+});
+
+    
 </script>
 
 </body>
