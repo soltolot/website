@@ -144,6 +144,30 @@ function setupRealtime() {
     .subscribe();
 }
 
+
+window.sendMessage = async function () {
+
+    const input = document.getElementById("message-input");
+    const text = input?.value?.trim();
+
+    if (!text) return;
+
+    const { error } = await client
+        .from("message")
+        .insert({
+            username: window.displayName || "Anonymous",
+            message: text
+        });
+
+    if (error) {
+        showError(error, "SEND_MESSAGE");
+        return;
+    }
+
+    input.value = "";
+};
+
+
 // ===============================
 // BUTTON WIRING (IMPORTANT)
 // ===============================
@@ -152,7 +176,7 @@ function setupChatUI() {
     const sendBtn = document.getElementById("send-btn");
     const suggestBtn = document.getElementById("suggest-btn");
 
-    sendBtn?.addEventListener("click", sendMessage);
+    sendBtn?.addEventListener("click", () => sendMessage());
     suggestBtn?.addEventListener("click", sendSuggest);
 
     // Enter key support
