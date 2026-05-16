@@ -35,9 +35,7 @@ async function loadMessages() {
                 .order("id", { ascending: true });
 
         if (msgErr) {
-            chat.innerHTML =
-                "❌ SUPABASE ERROR:\n\n" +
-                JSON.stringify(msgErr, null, 2);
+            showError(msgErr, "LOAD_MESSAGES");
             return;
         }
 
