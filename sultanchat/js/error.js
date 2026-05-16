@@ -15,20 +15,13 @@ function showError(error, context = "UNKNOWN") {
     const div = document.createElement("div");
     div.className = "msg system-msg";
 
-    let output = "🚨 SYSTEM ERROR\n\n";
-    output += "Context: " + context + "\n\n";
+    let output = "🚨 " + context + "\n\n";
 
-    // Handle different error types
     if (error instanceof Error) {
-        output += "Message: " + error.message + "\n";
-        output += "Name: " + error.name + "\n\n";
-        output += error.stack || "";
-    }
-    else if (typeof error === "object") {
-        output += JSON.stringify(error, null, 2);
-    }
+        output += error.message + "\n\n" + (error.stack || "");
+    } 
     else {
-        output += String(error);
+        output += JSON.stringify(error, null, 2);
     }
 
     div.textContent = output;
