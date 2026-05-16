@@ -14,66 +14,32 @@ document.documentElement.style.setProperty("--my-msg-color", myColor);
 async function loadMessages() {
 
     const chat = document.getElementById("chat");
-    const status = document.getElementById("status");
 
-    if (!chat || !status || !window.displayName) return;
+    chat.innerHTML = "⏳ contacting Supabase...";
 
-    try {
+    const res = await client
+        .from("message")
+        .select("*");
 
-        const { data: message, error: msgErr } =
-            await client
-                .from("message")
-                .select("*")
-                .order("id", { ascending: true });
+    console.log(res); // ignore console — just temporary
 
-            if (error) {
-                chat.innerHTML =
-                    "SUPABASE ERROR: " + error.message;
+    const { data, error } = res;
 
-            return;
-        }
-
-        const { data: profiles, error: profErr } =
-            await client.from("profiles").select("*");
-
-        if (profErr) throw profErr;
-
-        // map colors
-        const colors = {};
-        profiles.forEach(p => {
-            colors[p.username] = p.color;
-        });
-
-        status.textContent = `● ONLINE • ${message.length}`;
-
-        // render
-        chat.innerHTML = "";
-
-        for (const m of message) {
-
-            const div = document.createElement("div");
-            div.className = "msg";
-
-            if (m.username === window.displayName) {
-                div.classList.add("my-msg");
-            } else {
-                div.style.background =
-                    colors[m.username] || "#FF6200";
-            }
-
-            div.textContent = `${m.username}: ${m.message}`;
-            chat.appendChild(div);
-        }
-
-        chat.scrollTop = chat.scrollHeight;
-
-    } catch (err) {
-        status.textContent = "● ERROR";
-        console.error(err);
+    if (error) {
+        chat.innerHTML =
+            "❌ ERROR:\n" +
+            JSON.stringify(error, null, 2);
+        return;
     }
-}
 
-// ===============================
+    if (!data || data.length === 0) {
+        chat.innerHTML = "⚠️ No messages found (table is empty)";
+        return;
+    }
+
+    chat.innerHTML =
+        "✅ Loaded " + data.length + " messages";
+}// ===============================
 // SEND MESSAGE
 // ===============================
 async function sendMessage() {
