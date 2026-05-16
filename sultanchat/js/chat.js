@@ -11,16 +11,26 @@ document.documentElement.style.setProperty("--my-msg-color", myColor);
 // WAIT FOR USER
 // ===============================
 async function waitForUser() {
+    const start = Date.now();
+
     return new Promise((resolve) => {
         const check = setInterval(() => {
+
             if (window.displayName) {
                 clearInterval(check);
                 resolve(window.displayName);
             }
+
+            // safety timeout (IMPORTANT)
+            if (Date.now() - start > 5000) {
+                clearInterval(check);
+                console.warn("User not ready, continuing anyway");
+                resolve("Anonymous");
+            }
+
         }, 200);
     });
 }
-
 // ===============================
 // LOAD PROFILES (colors)
 // ===============================
