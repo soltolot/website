@@ -18,10 +18,14 @@ async function loadMessages() {
 
     if (!chat || !status) return;
 
-    // NEVER block loading just because displayName is missing
+    // safe fallback
     if (!window.displayName) {
         window.displayName = "Anonymous";
     }
+
+    // SHOW LOADING STATE (IMPORTANT)
+    status.textContent = "⏳ Loading messages...";
+    chat.innerHTML = "⏳ Loading messages...";
 
     try {
 
@@ -36,11 +40,12 @@ async function loadMessages() {
 
         if (msgErr) {
             showError(msgErr, "LOAD_MESSAGES");
+            status.textContent = "● ERROR";
             return;
         }
 
         // -------------------------
-        // LOAD PROFILES (colors)
+        // LOAD PROFILES
         // -------------------------
         const { data: profiles, error: profErr } =
             await client
@@ -48,9 +53,8 @@ async function loadMessages() {
                 .select("*");
 
         if (profErr) {
-            chat.innerHTML =
-                "❌ PROFILE ERROR:\n\n" +
-                JSON.stringify(profErr, null, 2);
+            showError(profErr, "LOAD_PROFILES");
+            status.textContent = "● ERROR";
             return;
         }
 
@@ -96,11 +100,10 @@ async function loadMessages() {
 
         status.textContent = "● ERROR";
 
-        chat.innerHTML =
-            "🔥 FATAL ERROR:\n\n" +
-            JSON.stringify(err, null, 2);
+        showError(err, "FATAL_LOAD_MESSAGES");
     }
-}// ===============================
+}
+// ===============================
 // SEND SUGGESTION (RESTORED)
 // ===============================
 async function sendSuggest() {
