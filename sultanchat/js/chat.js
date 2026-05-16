@@ -1,13 +1,14 @@
-// ===============================
-// CHAT CORE SYSTEM (FIXED)
-// ===============================
 
-// ---------- STATE ----------
+// ===============================
+// STATE
+// ===============================
 let myColor = localStorage.getItem("myColor") || "#FF6200";
+let userColors = {}; // username -> color map
+
 document.documentElement.style.setProperty("--my-msg-color", myColor);
 
 // ===============================
-// WAIT FOR USER (FIX FOR FREEZE)
+// WAIT FOR USER
 // ===============================
 async function waitForUser() {
     return new Promise((resolve) => {
@@ -21,7 +22,47 @@ async function waitForUser() {
 }
 
 // ===============================
-// LOAD MESSAGES
+// LOAD PROFILES (colors)
+// ===============================
+async function loadProfiles() {
+
+    const { data, error } = await client
+        .from("profiles")
+        .select("*");
+
+    if (error) {
+        showError(error, "LOAD_PROFILES");
+        return;
+    }
+
+    userColors = {};
+
+    data?.forEach(p => {
+        userColors[p.username] = p.color;
+    });
+
+    refreshMessageColors();
+}
+
+// ===============================
+// REFRESH COLORS ON EXISTING MESSAGES
+// ===============================
+function refreshMessageColors() {
+
+    const messages = document.querySelectorAll(".msg");
+
+    messages.forEach(el => {
+
+        const text = el.getAttribute("data-user");
+
+        if (!text) return;
+
+        el.style.background = userColors[text] || "#FF6200";
+    });
+}
+
+// ===============================
+// LOAD MESSAGES (FULL RENDER)
 // ===============================
 async function loadMessages() {
 
@@ -30,48 +71,26 @@ async function loadMessages() {
 
     if (!chat || !status) return;
 
-    // loading UI
     status.textContent = "⏳ Loading messages...";
     chat.innerHTML = "⏳ Loading messages...";
 
     try {
 
-        const [msgRes, profRes] = await Promise.all([
-            client
-                .from("message")
-                .select("*")
-                .order("id", { ascending: true }),
+        const { data, error } = await client
+            .from("message")
+            .select("*")
+            .order("id", { ascending: true });
 
-            client
-                .from("profiles")
-                .select("*")
-        ]);
-
-        const messages = msgRes.data || [];
-        const profiles = profRes.data || [];
-
-        if (msgRes.error) {
-            showError(msgRes.error, "LOAD_MESSAGES");
+        if (error) {
+            showError(error, "LOAD_MESSAGES");
             status.textContent = "● ERROR";
             return;
         }
 
-        if (profRes.error) {
-            showError(profRes.error, "LOAD_PROFILES");
-            status.textContent = "● ERROR";
-            return;
-        }
+        const messages = data || [];
 
-        // map colors
-        const colors = {};
-        profiles.forEach(p => {
-            colors[p.username] = p.color;
-        });
-
-        // status
         status.textContent = `● ONLINE • ${messages.length}`;
 
-        // render
         chat.innerHTML = "";
 
         for (const m of messages) {
@@ -79,13 +98,16 @@ async function loadMessages() {
             const div = document.createElement("div");
             div.className = "msg";
 
+            div.setAttribute("data-user", m.username);
+
             if (m.username === window.displayName) {
                 div.classList.add("my-msg");
             } else {
-                div.style.background = colors[m.username] || "#FF6200";
+                div.style.background = userColors[m.username] || "#FF6200";
             }
 
             div.textContent = `${m.username}: ${m.message}`;
+
             chat.appendChild(div);
         }
 
@@ -140,7 +162,7 @@ async function sendSuggest() {
         });
 
     if (error) {
-        showError(error, "SEND_SUGGESTION");
+        showError(error, "SEND_SUGGEST");
         return;
     }
 
@@ -148,7 +170,7 @@ async function sendSuggest() {
 }
 
 // ===============================
-// REALTIME
+// REALTIME (FAST APPEND ONLY)
 // ===============================
 function setupRealtime() {
 
@@ -157,8 +179,35 @@ function setupRealtime() {
             event: "INSERT",
             schema: "public",
             table: "message"
-        }, () => {
-            loadMessages();
+        }, (payload) => {
+
+            const m = payload.new;
+
+            const chat = document.getElementById("chat");
+            const status = document.getElementById("status");
+
+            if (!chat) return;
+
+            // update status count (cheap update)
+            if (status) {
+                const current = parseInt(status.textContent.match(/\d+/)) || 0;
+                status.textContent = `● ONLINE • ${current + 1}`;
+            }
+
+            const div = document.createElement("div");
+            div.className = "msg";
+            div.setAttribute("data-user", m.username);
+
+            if (m.username === window.displayName) {
+                div.classList.add("my-msg");
+            } else {
+                div.style.background = userColors[m.username] || "#FF6200";
+            }
+
+            div.textContent = `${m.username}: ${m.message}`;
+
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
         })
         .subscribe();
 }
@@ -190,13 +239,16 @@ function setupChatUI() {
 // ===============================
 async function initChat() {
 
-    // wait for auth safely
     await waitForUser();
 
-    await loadMessages();
+    await loadProfiles();   // load colors first
+    await loadMessages();   // then messages
+
     setupRealtime();
     setupChatUI();
+
+    // optional: refresh colors every 10s in case user changes them
+    setInterval(loadProfiles, 10000);
 }
 
-// auto start
 initChat();
