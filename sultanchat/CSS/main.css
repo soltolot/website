@@ -156,6 +156,20 @@ button:active {
     cursor: pointer;
     border: 2px solid white;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    
 }
+
+
+.system-msg {
+    background: #B00020;
+    color: white;
+    font-family: monospace;
+    border-left: 5px solid #ff4d6d;
+    padding: 10px;
+    border-radius: 10px;
+    white-space: pre-wrap;
+    overflow-x: auto;
+}
+
 
 </style>
