@@ -20,7 +20,7 @@ async function loadMessages() {
 
     try {
 
-        const { data: messages, error: msgErr } =
+        const { data: message, error: msgErr } =
             await client
                 .from("message")
                 .select("*")
@@ -44,12 +44,12 @@ async function loadMessages() {
             colors[p.username] = p.color;
         });
 
-        status.textContent = `● ONLINE • ${messages.length}`;
+        status.textContent = `● ONLINE • ${message.length}`;
 
         // render
         chat.innerHTML = "";
 
-        for (const m of messages) {
+        for (const m of message) {
 
             const div = document.createElement("div");
             div.className = "msg";
@@ -84,7 +84,7 @@ async function sendMessage() {
     if (!text || !window.displayName) return;
 
     const { error } = await client
-        .from("messages")
+        .from("message")
         .insert({
             username: window.displayName,
             message: text
@@ -109,7 +109,7 @@ async function sendSuggest() {
     if (!text || !window.displayName) return;
 
     const { error } = await client
-        .from("messages")
+        .from("message")
         .insert({
             username: window.displayName,
             message: `[SUGGESTION] ${text}`
@@ -128,11 +128,11 @@ async function sendSuggest() {
 // ===============================
 function setupRealtime() {
 
-    client.channel("messages-live")
+    client.channel("message-live")
     .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
-        table: "messages"
+        table: "message"
     }, () => {
         loadMessages();
     })
