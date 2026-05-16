@@ -5,7 +5,7 @@
 // ---------- STATE ----------
 let myColor = localStorage.getItem("myColor") || "#FF6200";
 
-// ---------- APPLY COLOR ----------
+// ---------- APPLY  COLOR ----------
 document.documentElement.style.setProperty("--my-msg-color", myColor);
 
 // ===============================
