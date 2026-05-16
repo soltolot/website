@@ -93,3 +93,21 @@ async function safeAsync(fn, context = "ASYNC_FUNCTION") {
         return null;
     }
 }
+
+
+// ===============================
+// FLUSH EARLY ERRORS
+// ===============================
+window.addEventListener("DOMContentLoaded", () => {
+
+    if (window.__earlyErrorQueue?.length) {
+
+        window.__earlyErrorQueue.forEach(err => {
+            showError(err, "EARLY_ERROR");
+        });
+
+        window.__earlyErrorQueue = [];
+    }
+
+});
+
