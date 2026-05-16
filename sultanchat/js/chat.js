@@ -20,9 +20,10 @@ async function loadMessages() {
 
     // safe fallback
     if (!window.displayName) {
-        window.displayName = "Anonymous";
+        status.textContent = "⏳ Waiting for user...";
+        return;
     }
-
+    
     // SHOW LOADING STATE (IMPORTANT)
     status.textContent = "⏳ Loading messages...";
     chat.innerHTML = "⏳ Loading messages...";
@@ -32,33 +33,34 @@ async function loadMessages() {
         // -------------------------
         // LOAD MESSAGES
         // -------------------------
-        const { data: messages, error: msgErr } =
-            await client
-                .from("message")
-                .select("*")
-                .order("id", { ascending: true });
+const [msgRes, profRes] = await Promise.all([
+    client
+        .from("message")
+        .select("*")
+        .order("id", { ascending: true }),
 
-        if (msgErr) {
-            showError(msgErr, "LOAD_MESSAGES");
-            status.textContent = "● ERROR";
-            return;
-        }
+    client
+        .from("profiles")
+        .select("*")
+]);
 
-        // -------------------------
-        // LOAD PROFILES
-        // -------------------------
-        const { data: profiles, error: profErr } =
-            await client
-                .from("profiles")
-                .select("*");
+const messages = msgRes.data;
+const msgErr = msgRes.error;
 
-        if (profErr) {
-            showError(profErr, "LOAD_PROFILES");
-            status.textContent = "● ERROR";
-            return;
-        }
+const profiles = profRes.data;
+const profErr = profRes.error;
 
-        // -------------------------
+if (msgErr) {
+    showError(msgErr, "LOAD_MESSAGES");
+    status.textContent = "● ERROR";
+    return;
+}
+
+if (profErr) {
+    showError(profErr, "LOAD_PROFILES");
+    status.textContent = "● ERROR";
+    return;
+}        // -------------------------
         // MAP COLORS
         // -------------------------
         const colors = {};
