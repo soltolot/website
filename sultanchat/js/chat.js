@@ -14,57 +14,95 @@ document.documentElement.style.setProperty("--my-msg-color", myColor);
 async function loadMessages() {
 
     const chat = document.getElementById("chat");
+    const status = document.getElementById("status");
 
-    chat.innerHTML = "⏳ contacting Supabase...";
+    if (!chat || !status) return;
 
-    const res = await client
-        .from("message")
-        .select("*");
-
-    console.log(res); // ignore console — just temporary
-
-    const { data, error } = res;
-
-    if (error) {
-        chat.innerHTML =
-            "❌ ERROR:\n" +
-            JSON.stringify(error, null, 2);
-        return;
+    // NEVER block loading just because displayName is missing
+    if (!window.displayName) {
+        window.displayName = "Anonymous";
     }
 
-    if (!data || data.length === 0) {
-        chat.innerHTML = "⚠️ No messages found (table is empty)";
-        return;
-    }
+    try {
 
-    chat.innerHTML =
-        "✅ Loaded " + data.length + " messages";
-}// ===============================
-// SEND MESSAGE
-// ===============================
-async function sendMessage() {
+        // -------------------------
+        // LOAD MESSAGES
+        // -------------------------
+        const { data: messages, error: msgErr } =
+            await client
+                .from("message")
+                .select("*")
+                .order("id", { ascending: true });
 
-    const input = document.getElementById("message-input");
-    const text = input?.value.trim();
+        if (msgErr) {
+            chat.innerHTML =
+                "❌ SUPABASE ERROR:\n\n" +
+                JSON.stringify(msgErr, null, 2);
+            return;
+        }
 
-    if (!text || !window.displayName) return;
+        // -------------------------
+        // LOAD PROFILES (colors)
+        // -------------------------
+        const { data: profiles, error: profErr } =
+            await client
+                .from("profiles")
+                .select("*");
 
-    const { error } = await client
-        .from("message")
-        .insert({
-            username: window.displayName,
-            message: text
+        if (profErr) {
+            chat.innerHTML =
+                "❌ PROFILE ERROR:\n\n" +
+                JSON.stringify(profErr, null, 2);
+            return;
+        }
+
+        // -------------------------
+        // MAP COLORS
+        // -------------------------
+        const colors = {};
+        profiles?.forEach(p => {
+            colors[p.username] = p.color;
         });
 
-    if (error) {
-        console.error(error);
-        return;
+        // -------------------------
+        // STATUS UPDATE
+        // -------------------------
+        status.textContent = `● ONLINE • ${messages?.length || 0}`;
+
+        // -------------------------
+        // RENDER CHAT
+        // -------------------------
+        chat.innerHTML = "";
+
+        for (const m of messages || []) {
+
+            const div = document.createElement("div");
+            div.className = "msg";
+
+            if (m.username === window.displayName) {
+                div.classList.add("my-msg");
+            } else {
+                div.style.background =
+                    colors[m.username] || "#FF6200";
+            }
+
+            div.textContent =
+                `${m.username}: ${m.message}`;
+
+            chat.appendChild(div);
+        }
+
+        chat.scrollTop = chat.scrollHeight;
+
+    } catch (err) {
+
+        status.textContent = "● ERROR";
+
+        chat.innerHTML =
+            "🔥 FATAL ERROR:\n\n" +
+            JSON.stringify(err, null, 2);
     }
-
-    input.value = "";
-}
-
-// ===============================
+}// ===============================
 // SEND SUGGESTION (RESTORED)
 // ===============================
 async function sendSuggest() {
