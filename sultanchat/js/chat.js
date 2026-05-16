@@ -1,15 +1,27 @@
 // ===============================
-// CHAT CORE SYSTEM
+// CHAT CORE SYSTEM (FIXED)
 // ===============================
 
 // ---------- STATE ----------
 let myColor = localStorage.getItem("myColor") || "#FF6200";
-
-// ---------- APPLY  COLOR ----------
 document.documentElement.style.setProperty("--my-msg-color", myColor);
 
 // ===============================
-// LOAD MESSAGES (NO FLICKER VERSION)
+// WAIT FOR USER (FIX FOR FREEZE)
+// ===============================
+async function waitForUser() {
+    return new Promise((resolve) => {
+        const check = setInterval(() => {
+            if (window.displayName) {
+                clearInterval(check);
+                resolve(window.displayName);
+            }
+        }, 200);
+    });
+}
+
+// ===============================
+// LOAD MESSAGES
 // ===============================
 async function loadMessages() {
 
@@ -18,67 +30,51 @@ async function loadMessages() {
 
     if (!chat || !status) return;
 
-    // safe fallback
-    if (!window.displayName) {
-        status.textContent = "⏳ Waiting for user...";
-        return;
-    }
-    
-    // SHOW LOADING STATE (IMPORTANT)
+    // loading UI
     status.textContent = "⏳ Loading messages...";
     chat.innerHTML = "⏳ Loading messages...";
 
     try {
 
-        // -------------------------
-        // LOAD MESSAGES
-        // -------------------------
-const [msgRes, profRes] = await Promise.all([
-    client
-        .from("message")
-        .select("*")
-        .order("id", { ascending: true }),
+        const [msgRes, profRes] = await Promise.all([
+            client
+                .from("message")
+                .select("*")
+                .order("id", { ascending: true }),
 
-    client
-        .from("profiles")
-        .select("*")
-]);
+            client
+                .from("profiles")
+                .select("*")
+        ]);
 
-const messages = msgRes.data;
-const msgErr = msgRes.error;
+        const messages = msgRes.data || [];
+        const profiles = profRes.data || [];
 
-const profiles = profRes.data;
-const profErr = profRes.error;
+        if (msgRes.error) {
+            showError(msgRes.error, "LOAD_MESSAGES");
+            status.textContent = "● ERROR";
+            return;
+        }
 
-if (msgErr) {
-    showError(msgErr, "LOAD_MESSAGES");
-    status.textContent = "● ERROR";
-    return;
-}
+        if (profRes.error) {
+            showError(profRes.error, "LOAD_PROFILES");
+            status.textContent = "● ERROR";
+            return;
+        }
 
-if (profErr) {
-    showError(profErr, "LOAD_PROFILES");
-    status.textContent = "● ERROR";
-    return;
-}        // -------------------------
-        // MAP COLORS
-        // -------------------------
+        // map colors
         const colors = {};
-        profiles?.forEach(p => {
+        profiles.forEach(p => {
             colors[p.username] = p.color;
         });
 
-        // -------------------------
-        // STATUS UPDATE
-        // -------------------------
-        status.textContent = `● ONLINE • ${messages?.length || 0}`;
+        // status
+        status.textContent = `● ONLINE • ${messages.length}`;
 
-        // -------------------------
-        // RENDER CHAT
-        // -------------------------
+        // render
         chat.innerHTML = "";
 
-        for (const m of messages || []) {
+        for (const m of messages) {
 
             const div = document.createElement("div");
             div.className = "msg";
@@ -86,32 +82,28 @@ if (profErr) {
             if (m.username === window.displayName) {
                 div.classList.add("my-msg");
             } else {
-                div.style.background =
-                    colors[m.username] || "#FF6200";
+                div.style.background = colors[m.username] || "#FF6200";
             }
 
-            div.textContent =
-                `${m.username}: ${m.message}`;
-
+            div.textContent = `${m.username}: ${m.message}`;
             chat.appendChild(div);
         }
 
         chat.scrollTop = chat.scrollHeight;
 
     } catch (err) {
-
         status.textContent = "● ERROR";
-
         showError(err, "FATAL_LOAD_MESSAGES");
     }
 }
-// ===============================
-// SEND SUGGESTION (RESTORED)
-// ===============================
-async function sendSuggest() {
 
-    const input = document.getElementById("suggest-input");
-    const text = input?.value.trim();
+// ===============================
+// SEND MESSAGE
+// ===============================
+window.sendMessage = async function () {
+
+    const input = document.getElementById("message-input");
+    const text = input?.value?.trim();
 
     if (!text || !window.displayName) return;
 
@@ -119,45 +111,6 @@ async function sendSuggest() {
         .from("message")
         .insert({
             username: window.displayName,
-            message: `[SUGGESTION] ${text}`
-        });
-
-    if (error) {
-        console.error(error);
-        return;
-    }
-
-    input.value = "";
-}
-
-// ===============================
-// REALTIME UPDATES
-// ===============================
-function setupRealtime() {
-
-    client.channel("message-live")
-    .on("postgres_changes", {
-        event: "INSERT",
-        schema: "public",
-        table: "message"
-    }, () => {
-        loadMessages();
-    })
-    .subscribe();
-}
-
-
-window.sendMessage = async function () {
-
-    const input = document.getElementById("message-input");
-    const text = input?.value?.trim();
-
-    if (!text) return;
-
-    const { error } = await client
-        .from("message")
-        .insert({
-            username: window.displayName || "Anonymous",
             message: text
         });
 
@@ -169,19 +122,58 @@ window.sendMessage = async function () {
     input.value = "";
 };
 
+// ===============================
+// SEND SUGGESTION
+// ===============================
+async function sendSuggest() {
+
+    const input = document.getElementById("suggest-input");
+    const text = input?.value?.trim();
+
+    if (!text || !window.displayName) return;
+
+    const { error } = await client
+        .from("message")
+        .insert({
+            username: window.displayName,
+            message: `[SUGGESTION] ${text}`
+        });
+
+    if (error) {
+        showError(error, "SEND_SUGGESTION");
+        return;
+    }
+
+    input.value = "";
+}
 
 // ===============================
-// BUTTON WIRING (IMPORTANT)
+// REALTIME
+// ===============================
+function setupRealtime() {
+
+    client.channel("message-live")
+        .on("postgres_changes", {
+            event: "INSERT",
+            schema: "public",
+            table: "message"
+        }, () => {
+            loadMessages();
+        })
+        .subscribe();
+}
+
+// ===============================
+// UI SETUP
 // ===============================
 function setupChatUI() {
 
-    const sendBtn = document.getElementById("send-btn");
-    const suggestBtn = document.getElementById("suggest-btn");
+    document.getElementById("send-btn")
+        ?.addEventListener("click", sendMessage);
 
-    sendBtn?.addEventListener("click", () => sendMessage());
-    suggestBtn?.addEventListener("click", sendSuggest);
+    document.getElementById("suggest-btn")
+        ?.addEventListener("click", sendSuggest);
 
-    // Enter key support
     document.getElementById("message-input")
         ?.addEventListener("keydown", (e) => {
             if (e.key === "Enter") sendMessage();
@@ -194,16 +186,17 @@ function setupChatUI() {
 }
 
 // ===============================
-// INIT CHAT MODULE
+// INIT
 // ===============================
 async function initChat() {
 
-    // wait for auth system
-    if (!window.displayName) {
-        console.warn("Chat waiting for auth...");
-    }
+    // wait for auth safely
+    await waitForUser();
 
     await loadMessages();
     setupRealtime();
     setupChatUI();
 }
+
+// auto start
+initChat();
