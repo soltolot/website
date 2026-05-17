@@ -1,3 +1,4 @@
+alert("APP JS LOADED");
 window.DEV_MODE = JSON.parse(localStorage.getItem("DEV_MODE") || "false");
 
 // safe logger call (prevents crash if log() not loaded yet)
@@ -24,6 +25,10 @@ function setupDevToggle() {
         setDevMode(!!e.target.checked);
     });
 }
+
+
+log('app.js working')
+
 
 // ===============================
 // APP STARTUP CONTROLLER (CLEAN)
