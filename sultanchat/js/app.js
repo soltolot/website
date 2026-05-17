@@ -41,51 +41,31 @@ let appStarted = false;
 // -------------------------------
 async function startApp() {
 
-    if (appStarted) return;
-    appStarted = true;
-
-    console.log("🚀 Starting SultanChat...");
+    log("BOOT", "startApp entered");
 
     try {
 
-        // -------------------------
-        // AUTH (non-blocking safe check)
-        // -------------------------
+        log("AUTH", "calling requireAuth...");
         const ok = await requireAuth();
+        log("AUTH", ok);
 
         if (!ok) {
-            console.warn("⚠️ Auth not confirmed, continuing anyway");
+            log("AUTH", "blocked");
+            return;
         }
 
-        // -------------------------
-        // OPTIONAL UI SETUP
-        // -------------------------
-        if (typeof setupUI === "function") {
-            setupUI();
-        }
+        log("UI", "setupUI...");
+        setupUI?.();
 
-        if (typeof setupDevToggle === "function") {
-            setupDevToggle();
-        }
-        
-        // -------------------------
-        // CHAT INIT (ONLY ONCE)
-        // -------------------------
-        if (typeof initChat === "function") {
-            await initChat();
-        }
+        log("CHAT", "initChat...");
+        await initChat?.();
 
-        console.log("✅ SultanChat fully started");
+        log("DONE", "app finished successfully");
 
     } catch (err) {
-        console.error("❌ App startup failed:", err);
-
-        if (window.showError) {
-            showError(err, "APP_STARTUP_ERROR");
-        }
+        log("FATAL", err);
     }
 }
-
 // -------------------------------
 // GLOBAL AUTH WATCH
 // -------------------------------
@@ -109,7 +89,7 @@ function setupGlobalAuthWatch() {
 // -------------------------------
 // BOOTSTRAP SEQUENCE
 // -------------------------------
-(function boot() {
+function boot() {
 
     console.log("🧠 Boot sequence started");
 
