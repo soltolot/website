@@ -36,3 +36,9 @@ window.addEventListener("unhandledrejection", (event) => {
 
     window.showError(error, "PROMISE_ERROR");
 });
+
+window.addEventListener("load", () => {
+    if (window.__earlyErrorQueue.length > 0) {
+        console.log("Early errors:", window.__earlyErrorQueue);
+    }
+});
