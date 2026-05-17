@@ -1,38 +1,14 @@
+// ===============================
+// CHAT CORE SYSTEM
+// ===============================
 
-// ===============================
-// STATE
-// ===============================
 let myColor = localStorage.getItem("myColor") || "#FF6200";
-let userColors = {}; // username -> color map
+let userColors = {};
 
 document.documentElement.style.setProperty("--my-msg-color", myColor);
 
 // ===============================
-// WAIT FOR USER
-// ===============================
-async function waitForUser() {
-    const start = Date.now();
-
-    return new Promise((resolve) => {
-        const check = setInterval(() => {
-
-            if (window.displayName) {
-                clearInterval(check);
-                resolve(window.displayName);
-            }
-
-            // safety timeout (IMPORTANT)
-            if (Date.now() - start > 5000) {
-                clearInterval(check);
-                console.warn("User not ready, continuing anyway");
-                resolve("Anonymous");
-            }
-
-        }, 200);
-    });
-}
-// ===============================
-// LOAD PROFILES (colors)
+// LOAD PROFILES
 // ===============================
 async function loadProfiles() {
 
@@ -50,29 +26,10 @@ async function loadProfiles() {
     data?.forEach(p => {
         userColors[p.username] = p.color;
     });
-
-    refreshMessageColors();
 }
 
 // ===============================
-// REFRESH COLORS ON EXISTING MESSAGES
-// ===============================
-function refreshMessageColors() {
-
-    const messages = document.querySelectorAll(".msg");
-
-    messages.forEach(el => {
-
-        const text = el.getAttribute("data-user");
-
-        if (!text) return;
-
-        el.style.background = userColors[text] || "#FF6200";
-    });
-}
-
-// ===============================
-// LOAD MESSAGES (FULL RENDER)
+// LOAD MESSAGES (FIXED)
 // ===============================
 async function loadMessages() {
 
@@ -93,7 +50,6 @@ async function loadMessages() {
 
         if (error) {
             showError(error, "LOAD_MESSAGES");
-            status.textContent = "● ERROR";
             return;
         }
 
@@ -105,9 +61,11 @@ async function loadMessages() {
 
         for (const m of messages) {
 
+            // 🚨 IMPORTANT FIX (your request)
+            if (!m.message || m.message.trim() === "") continue;
+
             const div = document.createElement("div");
             div.className = "msg";
-
             div.setAttribute("data-user", m.username);
 
             if (m.username === window.displayName) {
@@ -124,7 +82,6 @@ async function loadMessages() {
         chat.scrollTop = chat.scrollHeight;
 
     } catch (err) {
-        status.textContent = "● ERROR";
         showError(err, "FATAL_LOAD_MESSAGES");
     }
 }
@@ -137,7 +94,7 @@ window.sendMessage = async function () {
     const input = document.getElementById("message-input");
     const text = input?.value?.trim();
 
-    if (!text || !window.displayName) return;
+    if (!text) return;
 
     const { error } = await client
         .from("message")
@@ -155,36 +112,17 @@ window.sendMessage = async function () {
 };
 
 // ===============================
-// SEND SUGGESTION
+// REALTIME (SAFE)
 // ===============================
-async function sendSuggest() {
+let realtimeChannel = null;
 
-    const input = document.getElementById("suggest-input");
-    const text = input?.value?.trim();
-
-    if (!text || !window.displayName) return;
-
-    const { error } = await client
-        .from("message")
-        .insert({
-            username: window.displayName,
-            message: `[SUGGESTION] ${text}`
-        });
-
-    if (error) {
-        showError(error, "SEND_SUGGEST");
-        return;
-    }
-
-    input.value = "";
-}
-
-// ===============================
-// REALTIME (FAST APPEND ONLY)
-// ===============================
 function setupRealtime() {
 
-    client.channel("message-live")
+    if (realtimeChannel) return;
+
+    realtimeChannel = client.channel("message-live");
+
+    realtimeChannel
         .on("postgres_changes", {
             event: "INSERT",
             schema: "public",
@@ -193,12 +131,13 @@ function setupRealtime() {
 
             const m = payload.new;
 
+            if (!m.message) return;
+
             const chat = document.getElementById("chat");
             const status = document.getElementById("status");
 
             if (!chat) return;
 
-            // update status count (cheap update)
             if (status) {
                 const current = parseInt(status.textContent.match(/\d+/)) || 0;
                 status.textContent = `● ONLINE • ${current + 1}`;
@@ -206,12 +145,9 @@ function setupRealtime() {
 
             const div = document.createElement("div");
             div.className = "msg";
-            div.setAttribute("data-user", m.username);
 
             if (m.username === window.displayName) {
                 div.classList.add("my-msg");
-            } else {
-                div.style.background = userColors[m.username] || "#FF6200";
             }
 
             div.textContent = `${m.username}: ${m.message}`;
@@ -223,42 +159,12 @@ function setupRealtime() {
 }
 
 // ===============================
-// UI SETUP
-// ===============================
-function setupChatUI() {
-
-    document.getElementById("send-btn")
-        ?.addEventListener("click", sendMessage);
-
-    document.getElementById("suggest-btn")
-        ?.addEventListener("click", sendSuggest);
-
-    document.getElementById("message-input")
-        ?.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") sendMessage();
-        });
-
-    document.getElementById("suggest-input")
-        ?.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") sendSuggest();
-        });
-}
-
-// ===============================
-// INIT
+// INIT CHAT
 // ===============================
 async function initChat() {
 
-    await waitForUser();
-
-    await loadProfiles();   // load colors first
-    await loadMessages();   // then messages
+    await loadProfiles();
+    await loadMessages();
 
     setupRealtime();
-    setupChatUI();
-
-    // optional: refresh colors every 10s in case user changes them
-    setInterval(loadProfiles, 10000);
 }
-
-initChat();
