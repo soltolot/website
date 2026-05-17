@@ -1,10 +1,10 @@
 <script>
-
 const client = supabase.createClient(
   "https://vldkmlbfjzdrfzpeyver.supabase.co",
   "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
 );
 
+async function testInsert() {
 
   const { data, error } = await client
     .from("message")
@@ -14,7 +14,15 @@ const client = supabase.createClient(
     })
     .select();
 
-  alert("DATA:", data.message);
-  alert("ERROR:", error.message);
-}    
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
+
+  alert(
+    error
+      ? "ERROR: " + error.message
+      : "SUCCESS: message sent"
+  );
+}
+
+testInsert();
 </script>
