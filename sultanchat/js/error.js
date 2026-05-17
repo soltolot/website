@@ -81,13 +81,15 @@ window.addEventListener("unhandledrejection", (event) => {
 
 function log(title, data = "") {
 
+    if (!window.DEV_MODE) return; // 🚨 IMPORTANT FILTER
+
     const chat = document.getElementById("chat");
     if (!chat) return;
 
     const div = document.createElement("div");
     div.className = "msg";
 
-    div.style.background = "#777"; // gray log
+    div.style.background = "#777";
     div.style.color = "white";
 
     let output = `🪵 LOG: ${title}\n`;
@@ -104,5 +106,3 @@ function log(title, data = "") {
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
 }
-
-
