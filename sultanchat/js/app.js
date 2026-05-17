@@ -1,3 +1,14 @@
+window.DEV_MODE = JSON.parse(localStorage.getItem("DEV_MODE") || "false");
+
+function setDevMode(value) {
+
+    window.DEV_MODE = value;
+    localStorage.setItem("DEV_MODE", JSON.stringify(value));
+
+    log("DEV_MODE", value ? "ON 🧠" : "OFF 👤");
+}
+
+
 // ===============================
 // APP STARTUP CONTROLLER (CLEAN)
 // ===============================
