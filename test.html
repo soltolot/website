@@ -11,61 +11,10 @@ const client = supabase.createClient(
   "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
 );
 
-let displayName = null;
+let displayName = "Anonymous";
 
 // --------------------
-// AUTH CHECK
-// --------------------
-async function checkSession() {
-  const { data } = await client.auth.getSession();
-  return !!data.session;
-}
-
-// --------------------
-// LOAD USER NAME
-// --------------------
-async function loadUser() {
-  const { data } = await client.auth.getUser();
-  if (!data.user) return false;
-
-  displayName =
-    data.user.user_metadata?.display_name || "Anonymous";
-
-  return true;
-}
-
-// --------------------
-// LOAD MESSAGES
-// --------------------
-async function loadMessages() {
-  const chat = document.getElementById("chat");
-  const status = document.getElementById("status");
-
-  status.textContent = "Loading...";
-
-  const { data, error } = await client
-    .from("message")
-    .select("*")
-    .order("id", { ascending: true });
-
-  if (error) {
-    chat.textContent = "ERROR: " + error.message;
-    return;
-  }
-
-  chat.innerHTML = "";
-
-  data.forEach(m => {
-    const div = document.createElement("div");
-    div.textContent = `${m.username}: ${m.message}`;
-    chat.appendChild(div);
-  });
-
-  status.textContent = `● ONLINE • ${data.length}`;
-}
-
-// --------------------
-// SEND MESSAGE
+// SEND MESSAGE ONLY
 // --------------------
 async function sendMessage() {
   const input = document.getElementById("message-input");
@@ -80,28 +29,24 @@ async function sendMessage() {
       message: text
     });
 
-  if (!error) {
-    input.value = "";
-    loadMessages();
+  if (error) {
+    alert("SEND ERROR:", error.message);
+    return;
   }
+
+  input.value = "";
 }
 
 // --------------------
 // BOOT
 // --------------------
 async function boot() {
-  const ok = await checkSession();
-  if (!ok) {
-    window.location.href = "login.html";
-    return;
-  }
-
-  await loadUser();
-  await loadMessages();
 
   document
     .getElementById("send-btn")
     .addEventListener("click", sendMessage);
+
+   alert("SEND-ONLY CHAT READY");
 }
 
 boot();
