@@ -27,8 +27,11 @@ function setupDevToggle() {
 }
 
 
-log('app.js working')
-
+if (typeof log === "function") {
+    log("APP", "app.js working");
+} else {
+    console.log("APP JS WORKING (fallback)");
+}
 
 // ===============================
 // APP STARTUP CONTROLLER (CLEAN)
