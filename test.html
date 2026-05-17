@@ -1,9 +1,3 @@
-<div id="chat"></div>
-
-<div id="status"></div>
-
-<input id="message-input">
-<button id="send-btn">Send</button>
 <script>
 
 const client = supabase.createClient(
@@ -11,44 +5,16 @@ const client = supabase.createClient(
   "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
 );
 
-let displayName = "Anonymous";
 
-// --------------------
-// SEND MESSAGE ONLY
-// --------------------
-async function sendMessage() {
-  const input = document.getElementById("message-input");
-  const text = input.value.trim();
-
-  if (!text) return;
-
-  const { error } = await client
+  const { data, error } = await client
     .from("message")
     .insert({
-      username: displayName,
-      message: text
-    });
+      username: "TEST",
+      message: "HELLO"
+    })
+    .select();
 
-  if (error) {
-    alert("SEND ERROR:", error.message);
-    return;
-  }
-
-  input.value = "";
-}
-
-// --------------------
-// BOOT
-// --------------------
-async function boot() {
-
-  document
-    .getElementById("send-btn")
-    .addEventListener("click", sendMessage);
-
-   alert("SEND-ONLY CHAT READY");
-}
-
-boot();
-    
+  alert("DATA:", data.message);
+  alert("ERROR:", error.message);
+}    
 </script>
