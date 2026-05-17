@@ -1,167 +1,109 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>SultanChat</title>
+<div id="chat"></div>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div id="status"></div>
 
+<input id="message-input">
+<button id="send-btn">Send</button>
+<script>
 
+const client = supabase.createClient(
+  "https://vldkmlbfjzdrfzpeyver.supabase.co",
+  "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
+);
 
+let displayName = null;
 
-<!-- Supabase -->
-
-<style>
-body {
-    font-family: sans-serif;
-    background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
-    color: #2C2C2C;
-    margin: 0;
-    padding: 20px;
-    min-height: 100vh;
+// --------------------
+// AUTH CHECK
+// --------------------
+async function checkSession() {
+  const { data } = await client.auth.getSession();
+  return !!data.session;
 }
 
-.container {
-    max-width: 420px;
-    width: 100%;
-    margin: auto;
-    background: white;
-    padding: 25px;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
-    border: 2px solid #FFBB66;
+// --------------------
+// LOAD USER NAME
+// --------------------
+async function loadUser() {
+  const { data } = await client.auth.getUser();
+  if (!data.user) return false;
+
+  displayName =
+    data.user.user_metadata?.display_name || "Anonymous";
+
+  return true;
 }
 
-#chat {
-    height: 380px;
-    overflow-y: auto;
-    background: #FFF9F0;
-    padding: 15px;
-    border-radius: 15px;
-    border: 1px solid #FFDDAA;
-    margin-bottom: 15px;
+// --------------------
+// LOAD MESSAGES
+// --------------------
+async function loadMessages() {
+  const chat = document.getElementById("chat");
+  const status = document.getElementById("status");
+
+  status.textContent = "Loading...";
+
+  const { data, error } = await client
+    .from("message")
+    .select("*")
+    .order("id", { ascending: true });
+
+  if (error) {
+    chat.textContent = "ERROR: " + error.message;
+    return;
+  }
+
+  chat.innerHTML = "";
+
+  data.forEach(m => {
+    const div = document.createElement("div");
+    div.textContent = `${m.username}: ${m.message}`;
+    chat.appendChild(div);
+  });
+
+  status.textContent = `● ONLINE • ${data.length}`;
 }
 
+// --------------------
+// SEND MESSAGE
+// --------------------
+async function sendMessage() {
+  const input = document.getElementById("message-input");
+  const text = input.value.trim();
 
-.msg {
-    background: #FF6200;
-    color: white;
-    padding: 10px 12px;
-    border-radius: 12px;
-    margin-bottom: 8px;
-    word-break: break-word;
-    font-size: 15px;
+  if (!text) return;
+
+  const { error } = await client
+    .from("message")
+    .insert({
+      username: displayName,
+      message: text
+    });
+
+  if (!error) {
+    input.value = "";
+    loadMessages();
+  }
 }
 
-.my-msg {
-    background: #FF8A00;
+// --------------------
+// BOOT
+// --------------------
+async function boot() {
+  const ok = await checkSession();
+  if (!ok) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  await loadUser();
+  await loadMessages();
+
+  document
+    .getElementById("send-btn")
+    .addEventListener("click", sendMessage);
 }
 
-.other-msg {
-    background: #FF6200;
-}
-
-.status {
-    padding: 10px;
-    background: #FFEDD5;
-    color: #E85D04;
-    border-radius: 10px;
-    text-align: center;
-    font-family: monospace;
-    font-weight: bold;
-    font-size: 14px;
-}
-
-#send-area {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-#message-input,
-#suggest-input {
-    flex: 1;
-    padding: 12px;
-    background: #FFF4E0;
-    border: 2px solid #FFBB66;
-    border-radius: 10px;
-    font-size: 15px;
-    outline: none;
-}
-
-button {
-    padding: 12px 14px;
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
-    background: #E65100;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #DC4D00;
-}
-
-button:active {
-    transform: scale(0.96);
-}button:hover { background: #DC4D00; }
-button:active { transform: scale(0.96); }
+boot();
     
-</style>
-</head>
-
-<body>
-<div class="container">
-    <h2>SultanChat</h2>
-
-<div id="chat">
-
-  <div class="msg" style="background:#FF6200;">Sultan orange</div>
-
-  <div class="msg" style="background:#FF8A00;">Amber orange</div>
-
-  <div class="msg" style="background:#E65100;">Deep orange</div>
-
-  <div class="msg" style="background:#D84315;">Burnt orange-red</div>
-
-  <div class="msg" style="background:#C62828;">Warm crimson</div>
-
-  <div class="msg" style="background:#AD1457;">Raspberry</div>
-
-  <div class="msg" style="background:#8E24AA;">Royal purple</div>
-
-  <div class="msg" style="background:#5E35B1;">Indigo</div>
-
-  <div class="msg" style="background:#3949AB;">Soft royal blue</div>
-
-  <div class="msg" style="background:#1E88E5;">Calm blue</div>
-
-  <div class="msg" style="background:#00897B;">Teal</div>
-
-  <div class="msg" style="background:#2E7D32;">Emerald green</div>
-
-  <div class="msg" style="background:#558B2F;">Olive green</div>
-
-  <div class="msg" style="background:#6D4C41;">Cocoa brown</div>
-
-  <div class="msg" style="background:#546E7A;">Blue-grey</div>
-
-</div>
-  <div id="status" class="status">● CONNECTING…</div>
-
-    <div id="send-area">
-        <input type="text" id="message-input" placeholder="Type your message...">
-        <button id="send-btn">Send</button>
-    </div>
-
-    <div id="send-area">
-        <input type="text" id="suggest-input" placeholder="Type a suggestion...">
-        <button id="suggest-btn">Suggest</button>
-    </div>
-</div>
-
-</body>
-</html>
-
+</script>
