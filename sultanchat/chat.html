@@ -9,6 +9,10 @@
 <link rel="icon" type="image/png" href="logo.png">
 <link rel="manifest" href="manifest.json">
 
+<!-- CSS (CHECK PATH!) -->
+<link rel="stylesheet" href="CSS/main.css">
+
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
@@ -25,17 +29,13 @@
     <div id="status">● CONNECTING...</div>
 
     <div class="send-area">
-
         <input id="message-input" placeholder="Type your message...">
         <button id="send-btn">Send</button>
-
     </div>
 
     <div class="send-area">
-
         <input id="suggest-input" placeholder="Send suggestion...">
         <button id="suggest-btn">Suggest</button>
-
     </div>
 
 </div>
@@ -48,7 +48,6 @@
 
         <div id="colorPicker">
 
-            <!-- 15 COLORS -->
             <div class="color-option" data-color="#C62828" style="background:#C62828"></div>
             <div class="color-option" data-color="#D84315" style="background:#D84315"></div>
             <div class="color-option" data-color="#E65100" style="background:#E65100"></div>
@@ -76,14 +75,25 @@
     </div>
 </div>
 
-<link rel="stylesheet" href="CSS/main.css">
-<!-- JS SYSTEM -->
-<script src="js/bootstrap.js"></script>   <!-- FIRST -->
+<!-- ========================= -->
+<!-- SCRIPTS (SAFE ORDER)     -->
+<!-- ========================= -->
+
+<!-- 1. EARLY ERROR SYSTEM -->
+<script src="js/bootstrap.js"></script>
+
+<!-- 2. CORE SYSTEMS -->
 <script src="js/supabase.js"></script>
 <script src="js/auth.js"></script>
+
+<!-- 3. APP LOGIC -->
 <script src="js/chat.js"></script>
-<script src="js/error.js"></script>       <!-- UI system -->
+
+<!-- 4. ERROR UI -->
+<script src="js/error.js"></script>
+
+<!-- 5. START APP (IMPORTANT: SAFE INIT INSIDE THIS FILE) -->
 <script src="js/app.js"></script>
-    
+
 </body>
 </html>
