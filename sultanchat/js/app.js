@@ -59,6 +59,10 @@ async function startApp() {
             setupUI();
         }
 
+        if (typeof setupDevToggle === "function") {
+            setupDevToggle();
+        }
+        
         // -------------------------
         // CHAT INIT (ONLY ONCE)
         // -------------------------
