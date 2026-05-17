@@ -1,13 +1,29 @@
 window.DEV_MODE = JSON.parse(localStorage.getItem("DEV_MODE") || "false");
 
+// safe logger call (prevents crash if log() not loaded yet)
 function setDevMode(value) {
 
     window.DEV_MODE = value;
     localStorage.setItem("DEV_MODE", JSON.stringify(value));
 
-    log("DEV_MODE", value ? "ON 🧠" : "OFF 👤");
+    if (typeof log === "function") {
+        log("DEV_MODE", value ? "ON 🧠" : "OFF 👤");
+    }
 }
 
+function setupDevToggle() {
+
+    const toggle = document.getElementById("dev-toggle");
+
+    if (!toggle) return;
+
+    // ensure state is valid boolean
+    toggle.checked = !!window.DEV_MODE;
+
+    toggle.addEventListener("change", (e) => {
+        setDevMode(!!e.target.checked);
+    });
+}
 
 // ===============================
 // APP STARTUP CONTROLLER (CLEAN)
