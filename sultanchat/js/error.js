@@ -1,27 +1,33 @@
 // =====================================
-// SULTANCHAT GLOBAL ERROR SYSTEM
-// Catches: JS errors, promises, Supabase
-// Shows everything inside chat UI
+// SULTANCHAT ERROR SYSTEM (MAIN)
+// Handles display + Supabase + flush
 // =====================================
 
 // -------------------------------
-// 1. CORE DISPLAY FUNCTION
+// CORE ERROR DISPLAY
 // -------------------------------
 function showError(error, context = "UNKNOWN") {
 
     const chat = document.getElementById("chat");
-    if (!chat) return;
+
+    // if UI not ready yet → queue it
+    if (!chat) {
+        window.__earlyErrorQueue = window.__earlyErrorQueue || [];
+        window.__earlyErrorQueue.push({ error, context });
+        return;
+    }
 
     const div = document.createElement("div");
     div.className = "msg system-msg";
 
-    let output = "🚨 " + context + "\n\n";
+    let output = `🚨 ${context}\n\n`;
 
     if (error instanceof Error) {
-        output += error.message + "\n\n" + (error.stack || "");
-    } 
-    else {
+        output += `${error.message}\n\n${error.stack || ""}`;
+    } else if (typeof error === "object") {
         output += JSON.stringify(error, null, 2);
+    } else {
+        output += String(error);
     }
 
     div.textContent = output;
@@ -32,9 +38,11 @@ function showError(error, context = "UNKNOWN") {
 }
 
 // -------------------------------
-// 2. SUPABASE ERROR WRAPPER
+// SUPABASE WRAPPER
 // -------------------------------
-function handleSupabase({ data, error }, context = "SUPABASE") {
+function handleSupabase(result, context = "SUPABASE") {
+
+    const { data, error } = result;
 
     if (error) {
         showError(error, context);
@@ -45,62 +53,27 @@ function handleSupabase({ data, error }, context = "SUPABASE") {
 }
 
 // -------------------------------
-// 3. GLOBAL JS ERROR CATCHER
-// -------------------------------
-window.onerror = function (message, source, line, col, error) {
-
-    showError(
-        {
-            message,
-            source,
-            line,
-            col,
-            error
-        },
-        "JS_RUNTIME_ERROR"
-    );
-
-    return false;
-};
-
-// -------------------------------
-// 4. PROMISE REJECTION CATCHER
-// -------------------------------
-window.addEventListener("unhandledrejection", function (event) {
-
-    showError(
-        event.reason,
-        "PROMISE_REJECTION"
-    );
-});
-
-// -------------------------------
-// 5. OPTIONAL: SAFE EXECUTOR
-// -------------------------------
-async function safeAsync(fn, context = "ASYNC_FUNCTION") {
-
-    try {
-        return await fn();
-    } catch (err) {
-        showError(err, context);
-        return null;
-    }
-}
-
-
-// ===============================
 // FLUSH EARLY ERRORS
-// ===============================
+// -------------------------------
 window.addEventListener("DOMContentLoaded", () => {
 
     if (window.__earlyErrorQueue?.length) {
 
-        window.__earlyErrorQueue.forEach(err => {
-            showError(err, "EARLY_ERROR");
+        window.__earlyErrorQueue.forEach(item => {
+            showError(item.error || item, "EARLY_ERROR");
         });
 
         window.__earlyErrorQueue = [];
     }
-
 });
 
+// -------------------------------
+// GLOBAL ERROR HOOKS (ONLY HERE NOW)
+// -------------------------------
+window.addEventListener("error", (event) => {
+    showError(event.error || event.message, "JS_RUNTIME_ERROR");
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+    showError(event.reason, "PROMISE_REJECTION");
+});
