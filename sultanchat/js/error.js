@@ -77,3 +77,32 @@ window.addEventListener("error", (event) => {
 window.addEventListener("unhandledrejection", (event) => {
     showError(event.reason, "PROMISE_REJECTION");
 });
+
+
+function log(title, data = "") {
+
+    const chat = document.getElementById("chat");
+    if (!chat) return;
+
+    const div = document.createElement("div");
+    div.className = "msg";
+
+    div.style.background = "#777"; // gray log
+    div.style.color = "white";
+
+    let output = `🪵 LOG: ${title}\n`;
+
+    if (typeof data === "object") {
+        output += JSON.stringify(data, null, 2);
+    } else {
+        output += String(data);
+    }
+
+    div.textContent = output;
+    div.style.whiteSpace = "pre-wrap";
+
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+
