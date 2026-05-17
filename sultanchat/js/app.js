@@ -98,4 +98,4 @@ function boot() {
     // IMPORTANT: no artificial delays
     startApp();
 
-})();
+};
