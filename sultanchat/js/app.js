@@ -1,67 +1,69 @@
 // ===============================
-// APP STARTUP CONTROLLER
+// APP STARTUP CONTROLLER (CLEAN)
 // ===============================
 
 let appStarted = false;
 
 // -------------------------------
-// WAIT FOR EVERYTHING TO EXIST
-// -------------------------------
-function wait(ms) {
-    return new Promise(r => setTimeout(r, ms));
-}
-
-// -------------------------------
-// SAFE INIT FLOW
+// SAFE START
 // -------------------------------
 async function startApp() {
 
     if (appStarted) return;
     appStarted = true;
 
-    // 1. Wait for Supabase hydration
-    await wait(200);
+    console.log("🚀 Starting SultanChat...");
 
-    // 2. AUTH CHECK (from auth.js)
-    const ok = await requireAuth();
-    if (!ok) return;
+    try {
 
-    // 3. Ensure UI exists before anything touches DOM
-    if (typeof setupUI === "function") {
-        setupUI();
+        // -------------------------
+        // AUTH (non-blocking safe check)
+        // -------------------------
+        const ok = await requireAuth();
+
+        if (!ok) {
+            console.warn("⚠️ Auth not confirmed, continuing anyway");
+        }
+
+        // -------------------------
+        // OPTIONAL UI SETUP
+        // -------------------------
+        if (typeof setupUI === "function") {
+            setupUI();
+        }
+
+        // -------------------------
+        // CHAT INIT (ONLY ONCE)
+        // -------------------------
+        if (typeof initChat === "function") {
+            await initChat();
+        }
+
+        console.log("✅ SultanChat fully started");
+
+    } catch (err) {
+        console.error("❌ App startup failed:", err);
+
+        if (window.showError) {
+            showError(err, "APP_STARTUP_ERROR");
+        }
     }
-
-    // 4. Wait a tiny bit for DOM stability (kills flicker bug)
-    await wait(100);
-
-    // 5. CHAT INIT (from chat.js)
-    if (typeof initChat === "function") {
-        await initChat();
-    }
-
-    // 6. FINAL LOAD: force first render
-    if (typeof loadMessages === "function") {
-        await loadMessages();
-    }
-
-    console.log("✅ SultanChat fully started");
 }
 
 // -------------------------------
-// HANDLE AUTH STATE CHANGES
-// (prevents bounce between login/chat)
+// GLOBAL AUTH WATCH
 // -------------------------------
 function setupGlobalAuthWatch() {
 
     client.auth.onAuthStateChange((event, session) => {
 
-        // if user logs out → send to login
+        // Logged out → go login
         if (!session) {
             window.location.href = "login.html";
             return;
         }
 
-        // if user logs in while on login page → go chat
+        // Logged in on login page → go chat
         if (session && window.location.pathname.includes("login")) {
             window.location.href = "chat.html";
         }
@@ -69,15 +71,15 @@ function setupGlobalAuthWatch() {
 }
 
 // -------------------------------
-// BOOT SEQUENCE
+// BOOTSTRAP SEQUENCE
 // -------------------------------
-(async function boot() {
+(function boot() {
+
+    console.log("🧠 Boot sequence started");
 
     setupGlobalAuthWatch();
 
-    // small delay to avoid Supabase race conditions
-    await wait(150);
-
+    // IMPORTANT: no artificial delays
     startApp();
 
 })();
