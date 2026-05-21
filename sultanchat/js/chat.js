@@ -114,6 +114,33 @@ window.sendMessage = async function () {
     input.value = "";
 };
 
+
+
+window.sendSuggest = async function () {
+
+    const input = document.getElementById("suggest-input");
+    const text = input?.value?.trim();
+
+    if (!text) return;
+
+    const { error } = await client
+        .from("message")
+        .insert({
+            username: window.displayName,
+            text: text
+        });
+
+    if (error) {
+        showError(error, "SEND_SUGGEST");
+        return;
+    }
+
+    input.value = "";
+};
+
+
+
+
 // ===============================
 // REALTIME (FIXED)
 // ===============================
