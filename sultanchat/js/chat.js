@@ -10,13 +10,13 @@ client.auth.getSession().then(({ data }) => {
     const session = data.session;
 
     if (!session) {
-        console.log("No session found — redirecting to login.");
+        log("No session found — redirecting to login.");
         window.location.href = "login.html";
         return;
     }
 
     window.displayName = session.user.user_metadata.username;
-    console.log("USERNAME LOADED:", window.displayName);
+    log("USERNAME LOADED:", window.displayName);
 
     loadMessages();
 });
