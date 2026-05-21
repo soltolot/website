@@ -1,4 +1,6 @@
 log("DEBUG", "APP JS LOADED");
+log("DISPLAY NAME", window.displayName);
+
 
 window.DEV_MODE = JSON.parse(localStorage.getItem("DEV_MODE") || "false");
 
