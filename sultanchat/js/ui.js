@@ -49,4 +49,19 @@ function setupUI() {
             btn.style.transform = "scale(1)";
         });
     });
+
+    // ===============================
+    // DEV MODE TOGGLE
+    // ===============================
+    const devToggle = document.getElementById("dev-toggle");
+
+    if (devToggle) {
+        // Load saved state
+        devToggle.checked = window.DEV_MODE;
+
+        // Save new state
+        devToggle.addEventListener("change", (e) => {
+            setDevMode(e.target.checked);
+        });
+    }
 }
