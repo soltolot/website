@@ -1,14 +1,12 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-
-src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-
 const client = supabase.createClient(
   "https://vldkmlbfjzdrfzpeyver.supabase.co",
-  "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
+  "sb-publishable-3e7UaMtOS1nZawcvFHYGhA_-RSInVmg"
 );
 
 async function testInsert() {
-
   const { data, error } = await client
     .from("message")
     .insert({
@@ -20,11 +18,7 @@ async function testInsert() {
   console.log("DATA:", data);
   console.log("ERROR:", error);
 
-  alert(
-    error
-      ? "ERROR: " + error.message
-      : "SUCCESS: message sent"
-  );
+  alert(error ? "ERROR: " + error.message : "SUCCESS: message sent");
 }
 
 testInsert();
