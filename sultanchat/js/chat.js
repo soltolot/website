@@ -1,203 +1,63 @@
-// ===============================
-// CHAT CORE SYSTEM
-// ===============================
+//<script>
+const SUPABASE_URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
+const SUPABASE_KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let myColor = localStorage.getItem("myColor") || "#FF6200";
-let userColors = {};
+window.displayName = null;
 
-document.documentElement.style.setProperty("--my-msg-color", myColor);
+// ⭐ Load username from session
+client.auth.getSession().then(({ data }) => {
+    const session = data.session;
 
-// ===============================
-// LOAD PROFILES
-// ===============================
-async function loadProfiles() {
-
-    const { data, error } = await client
-        .from("profiles")
-        .select("*");
-
-    if (error) {
-        showError(error, "LOAD_PROFILES");
+    if (!session) {
+        console.log("No session found — redirecting to login.");
+        window.location.href = "login.html";
         return;
     }
 
-    userColors = {};
+    window.displayName = session.user.user_metadata.username;
+    console.log("USERNAME LOADED:", window.displayName);
 
-    data?.forEach(p => {
-        userColors[p.username] = p.color;
+    loadMessages();
+});
+
+// ⭐ Load messages
+async function loadMessages() {
+    const { data, error } = await client
+        .from("messages")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    const box = document.getElementById("messages");
+    box.innerHTML = "";
+
+    data.forEach(msg => {
+        const div = document.createElement("div");
+        div.textContent = msg.username + ": " + msg.text;
+        box.appendChild(div);
     });
 }
 
-// ===============================
-// LOAD MESSAGES (FIXED)
-// ===============================
-async function loadMessages() {
-
-    const chat = document.getElementById("chat");
-    const status = document.getElementById("status");
-
-    if (!chat || !status) return;
-
-    // Add a loading bubble (non-destructive)
-    const loading = document.createElement("div");
-    loading.className = "msg system-msg loading-msg";
-    loading.textContent = "⏳ Loading messages...";
-    chat.appendChild(loading);
-
-    try {
-
-        const { data, error } = await client
-            .from("message")
-            .select("*")
-            .order("id", { ascending: true });
-
-        if (error) {
-            showError(error, "LOAD_MESSAGES");
-            return;
-        }
-
-        const messages = data || [];
-
-        status.textContent = `● ONLINE • ${messages.length}`;
-
-        // Remove ONLY the loading bubble
-        chat.querySelectorAll(".loading-msg").forEach(el => el.remove());
-
-        for (const m of messages) {
-
-            if (!m.text || m.text.trim() === "") continue;
-
-            const div = document.createElement("div");
-            div.className = "msg";
-            div.setAttribute("data-user", m.username);
-
-            if (m.username === window.displayName) {
-                div.classList.add("my-msg");
-            } else {
-                div.style.background = userColors[m.username] || "#FF6200";
-            }
-
-            div.textContent = `${m.username}: ${m.text}`;
-
-            chat.appendChild(div);
-        }
-
-        chat.scrollTop = chat.scrollHeight;
-
-    } catch (err) {
-        showError(err, "FATAL_LOAD_MESSAGES");
-    }
-}
-
-// ===============================
-// SEND MESSAGE (FIXED)
-// ===============================
-window.sendMessage = async function () {
-
-    const input = document.getElementById("message-input");
-    const text = input?.value?.trim();
-
+// ⭐ Send message
+async function sendMessage() {
+    const text = document.getElementById("messageInput").value.trim();
     if (!text) return;
 
-    const { error } = await client
-        .from("message")
-        .insert({
-            username: window.displayName,
-            text: text   // FIXED
-        });
-
-    if (error) {
-        showError(error, "SEND_MESSAGE");
+    if (!window.displayName) {
+        console.error("Username not loaded yet.");
         return;
     }
 
-    input.value = "";
-};
+    await client.from("messages").insert({
+        username: window.displayName,
+        text: text
+    });
 
-
-
-window.sendSuggest = async function () {
-
-    const input = document.getElementById("suggest-input");
-    const text = input?.value?.trim();
-
-    if (!text) return;
-
-    const { error } = await client
-        .from("message")
-        .insert({
-            username: window.displayName,
-            text: text
-        });
-
-    if (error) {
-        showError(error, "SEND_SUGGEST");
-        return;
-    }
-
-    input.value = "";
-};
-
-
-
-
-// ===============================
-// REALTIME (FIXED)
-// ===============================
-let realtimeChannel = null;
-
-function setupRealtime() {
-
-    if (realtimeChannel) return;
-
-    realtimeChannel = client.channel("message-live");
-
-    realtimeChannel
-        .on("postgres_changes", {
-            event: "INSERT",
-            schema: "public",
-            table: "message"
-        }, (payload) => {
-
-            const m = payload.new;
-
-            // FIXED
-            if (!m.text) return;
-
-            const chat = document.getElementById("chat");
-            const status = document.getElementById("status");
-
-            if (!chat) return;
-
-            if (status) {
-                const current = parseInt(status.textContent.match(/\d+/)) || 0;
-                status.textContent = `● ONLINE • ${current + 1}`;
-            }
-
-            const div = document.createElement("div");
-            div.className = "msg";
-
-            if (m.username === window.displayName) {
-                div.classList.add("my-msg");
-            } else {
-                div.style.background = userColors[m.username] || "#FF6200";
-            }
-
-            div.textContent = `${m.username}: ${m.text}`;
-
-            chat.appendChild(div);
-            chat.scrollTop = chat.scrollHeight;
-        })
-        .subscribe();
-}
-
-// ===============================
-// INIT CHAT
-// ===============================
-async function initChat() {
-
-    await loadProfiles();
-    await loadMessages();
-
-    setupRealtime();
+    document.getElementById("messageInput").value = "";
+    loadMessages();
 }
