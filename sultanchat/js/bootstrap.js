@@ -1,49 +1,40 @@
 // ===============================
-// BOOTSTRAP / DEV + LOG SYSTEM
-// MUST LOAD VERY EARLY (AFTER bootloader.js)
+// BOOTLOADER (EARLY ERRORS + DEV MODE + LOG)
+// MUST LOAD FIRST
 // ===============================
 
-// -------------------------------
+// --------------------------------
+// EARLY ERROR QUEUE
+// --------------------------------
+window.__earlyErrorQueue = [];
+
+// --------------------------------
 // DEV MODE PERSISTENCE
-// -------------------------------
+// --------------------------------
 (function () {
 
-    // Read DEV_MODE from localStorage (persist across refresh)
     const saved = localStorage.getItem("DEV_MODE");
-
-    // If nothing saved yet → default to false
     window.DEV_MODE = saved === "true";
 
-    // Helper to toggle + persist DEV_MODE
     window.setDevMode = function (enabled) {
         const value = !!enabled;
         window.DEV_MODE = value;
         localStorage.setItem("DEV_MODE", value ? "true" : "false");
 
-        if (typeof window.log === "function") {
-            window.log("DEV_MODE", value ? "ON 🧠" : "OFF 👤");
-        }
+        window.log && window.log("DEV_MODE", value ? "ON 🧠" : "OFF 👤");
     };
 
 })();
 
-// -------------------------------
+// --------------------------------
 // GLOBAL LOGGER
-// -------------------------------
+// --------------------------------
 window.log = function (title, data = "") {
 
-    // Always log to console (even if DEV_MODE is off)
-    try {
-        if (typeof data === "undefined" || data === "") {
-            console.log("🪵", title);
-        } else {
-            console.log("🪵", title, data);
-        }
-    } catch (e) {
-        // ignore console errors
-    }
+    // Always log to console
+    console.log("🪵", title, data);
 
-    // Only mirror logs into chat UI when DEV_MODE is ON
+    // Only mirror logs into chat when DEV_MODE is ON
     if (!window.DEV_MODE) return;
 
     const chat = document.getElementById("chat");
@@ -51,7 +42,6 @@ window.log = function (title, data = "") {
 
     const div = document.createElement("div");
     div.className = "msg";
-
     div.style.background = "#777";
     div.style.color = "white";
 
@@ -59,7 +49,7 @@ window.log = function (title, data = "") {
 
     if (typeof data === "object") {
         output += JSON.stringify(data, null, 2);
-    } else if (data !== "") {
+    } else {
         output += String(data);
     }
 
@@ -68,4 +58,37 @@ window.log = function (title, data = "") {
 
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
+};
+
+// --------------------------------
+// GLOBAL ERROR HOOKS (EARLY)
+// --------------------------------
+window.addEventListener("error", (event) => {
+    window.__earlyErrorQueue.push({
+        error: event.error || event.message,
+        context: "JS_RUNTIME_ERROR"
+    });
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+    window.__earlyErrorQueue.push({
+        error: event.reason,
+        context: "PROMISE_REJECTION"
+    });
+});
+
+// --------------------------------
+// FLUSH EARLY ERRORS (CALLED BY error.js)
+// --------------------------------
+window.flushEarlyErrors = function () {
+
+    if (!window.__earlyErrorQueue?.length) return;
+
+    if (typeof window.showError !== "function") return;
+
+    window.__earlyErrorQueue.forEach(item => {
+        window.showError(item.error, item.context);
+    });
+
+    window.__earlyErrorQueue = [];
 };
