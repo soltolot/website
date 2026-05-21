@@ -1,6 +1,5 @@
 // =====================================
-// SULTANCHAT ERROR SYSTEM (MAIN)
-// Handles display + Supabase + flush
+// ERROR SYSTEM (UI + SUPABASE)
 // =====================================
 
 // -------------------------------
@@ -10,9 +9,8 @@ function showError(error, context = "UNKNOWN") {
 
     const chat = document.getElementById("chat");
 
-    // if UI not ready yet → queue it
+    // If UI not ready → queue it
     if (!chat) {
-        window.__earlyErrorQueue = window.__earlyErrorQueue || [];
         window.__earlyErrorQueue.push({ error, context });
         return;
     }
@@ -36,53 +34,24 @@ function showError(error, context = "UNKNOWN") {
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
 
-    // Optional: also mirror to console via log()
-    if (typeof window.log === "function") {
-        window.log(`ERROR:${context}`, error);
-    } else {
-        console.error("ERROR:", context, error);
-    }
+    window.log && window.log(`ERROR:${context}`, error);
 }
 
 // -------------------------------
 // SUPABASE WRAPPER
 // -------------------------------
 function handleSupabase(result, context = "SUPABASE") {
-
     const { data, error } = result;
-
     if (error) {
         showError(error, context);
         return null;
     }
-
     return data;
 }
 
 // -------------------------------
-// FLUSH EARLY ERRORS
+// FLUSH EARLY ERRORS NOW THAT showError EXISTS
 // -------------------------------
 window.addEventListener("DOMContentLoaded", () => {
-
-    if (window.__earlyErrorQueue?.length) {
-
-        window.__earlyErrorQueue.forEach(item => {
-            showError(item.error || item, item.context || "EARLY_ERROR");
-        });
-
-        window.__earlyErrorQueue = [];
-    }
-});
-
-// -------------------------------
-// GLOBAL ERROR HOOKS
-// (these complement bootloader.js;
-// if bootloader already listens, you can keep only one set)
-// -------------------------------
-window.addEventListener("error", (event) => {
-    showError(event.error || event.message, "JS_RUNTIME_ERROR");
-});
-
-window.addEventListener("unhandledrejection", (event) => {
-    showError(event.reason, "PROMISE_REJECTION");
+    window.flushEarlyErrors && window.flushEarlyErrors();
 });
