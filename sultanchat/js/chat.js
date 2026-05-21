@@ -41,6 +41,7 @@ async function loadMessages() {
     // Add a loading bubble (non-destructive)
     const loading = document.createElement("div");
     loading.className = "msg system-msg loading-msg";
+    loading.textContent = "⏳ Loading messages...";
     chat.appendChild(loading);
 
     try {
