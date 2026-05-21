@@ -1,5 +1,3 @@
-<style>
-
 :root {
     --my-msg-color: #FF6200;
 }
@@ -170,6 +168,3 @@ button:active {
     white-space: pre-wrap;
     overflow-x: auto;
 }
-
-
-</style>
