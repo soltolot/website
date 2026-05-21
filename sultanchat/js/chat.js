@@ -56,13 +56,12 @@ async function loadMessages() {
         const messages = data || [];
 
         status.textContent = `● ONLINE • ${messages.length}`;
-
         chat.innerHTML = "";
 
         for (const m of messages) {
 
-            // 🚨 IMPORTANT FIX (your request)
-            if (!m.message || m.message.trim() === "") continue;
+            // FIXED: use correct column name
+            if (!m.text || m.text.trim() === "") continue;
 
             const div = document.createElement("div");
             div.className = "msg";
@@ -74,7 +73,7 @@ async function loadMessages() {
                 div.style.background = userColors[m.username] || "#FF6200";
             }
 
-            div.textContent = `${m.username}: ${m.message}`;
+            div.textContent = `${m.username}: ${m.text}`;
 
             chat.appendChild(div);
         }
@@ -87,7 +86,7 @@ async function loadMessages() {
 }
 
 // ===============================
-// SEND MESSAGE
+// SEND MESSAGE (FIXED)
 // ===============================
 window.sendMessage = async function () {
 
@@ -100,7 +99,7 @@ window.sendMessage = async function () {
         .from("message")
         .insert({
             username: window.displayName,
-            message: text
+            text: text   // FIXED
         });
 
     if (error) {
@@ -112,7 +111,7 @@ window.sendMessage = async function () {
 };
 
 // ===============================
-// REALTIME (SAFE)
+// REALTIME (FIXED)
 // ===============================
 let realtimeChannel = null;
 
@@ -131,7 +130,8 @@ function setupRealtime() {
 
             const m = payload.new;
 
-            if (!m.message) return;
+            // FIXED
+            if (!m.text) return;
 
             const chat = document.getElementById("chat");
             const status = document.getElementById("status");
@@ -148,9 +148,11 @@ function setupRealtime() {
 
             if (m.username === window.displayName) {
                 div.classList.add("my-msg");
+            } else {
+                div.style.background = userColors[m.username] || "#FF6200";
             }
 
-            div.textContent = `${m.username}: ${m.message}`;
+            div.textContent = `${m.username}: ${m.text}`;
 
             chat.appendChild(div);
             chat.scrollTop = chat.scrollHeight;
