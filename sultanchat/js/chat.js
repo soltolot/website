@@ -96,7 +96,7 @@ window.sendMessage = async function () {
     if (!text) return;
 
     const { error } = await client
-        .from("message")
+        .from("text")
         .insert({
             username: window.displayName,
             text: text   // FIXED
