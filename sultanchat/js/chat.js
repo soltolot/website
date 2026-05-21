@@ -38,6 +38,11 @@ async function loadMessages() {
 
     if (!chat || !status) return;
 
+    // Add a loading bubble (non-destructive)
+    const loading = document.createElement("div");
+    loading.className = "msg system-msg loading-msg";
+    chat.appendChild(loading);
+
     try {
 
         const { data, error } = await client
@@ -54,9 +59,11 @@ async function loadMessages() {
 
         status.textContent = `● ONLINE • ${messages.length}`;
 
+        // Remove ONLY the loading bubble
+        chat.querySelectorAll(".loading-msg").forEach(el => el.remove());
+
         for (const m of messages) {
 
-            // FIXED: use correct column name
             if (!m.text || m.text.trim() === "") continue;
 
             const div = document.createElement("div");
