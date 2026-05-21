@@ -119,52 +119,45 @@
     </div>
 
 <script>
-    const SUPABASE_URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
-    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
+const SUPABASE_KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    async function processSignup() {
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value.trim();
-        const status = document.getElementById("status");
+async function processSignup() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const status = document.getElementById("status");
 
-        if (!username || !password) {
-            status.innerText = "Please fill in all fields.";
-            return;
-        }
-
-        status.style.color = "#2d3436";
-        status.innerText = "Creating account...";
-
-        const email = username + "@placeholder.com";
-
-        
-        // Create Supabase Auth user
-        const { data, error } = await client.auth.signUp({
-            email: email,      // username is treated as email
-            password: password,
-            options: {
-                data: {
-                    username: username   // ← store username as display name
-                },
-                expiresIn: 60 * 60 * 24 * 7 // 1 week session
-            }
-            });
-
-        if (error) {
-            status.style.color = "#d63031";
-            status.innerText = "Error: " + error.message;
-            return;
-        }
-
-        // User is automatically logged in (email confirmation OFF)
-        status.style.color = "#28a745";
-        status.innerText = "Account created! Redirecting...";
-
-        setTimeout(() => {
-            window.location.href = "chat.html";
-        }, 1000);
+    if (!username || !password) {
+        status.innerText = "Please fill in all fields.";
+        return;
     }
+
+    status.innerText = "Creating account...";
+
+    const email = username.toLowerCase() + "@placeholder.com";
+
+    const { data, error } = await client.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+            data: {
+                username: username   // ✔ store username in metadata
+            }
+        }
+    });
+
+    if (error) {
+        status.innerText = "Error: " + error.message;
+        return;
+    }
+
+    status.innerText = "Account created! Redirecting...";
+
+    setTimeout(() => {
+        window.location.href = "chat.html";
+    }, 800);
+}
 </script>
 </body>
 </html>
