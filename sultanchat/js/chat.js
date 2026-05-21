@@ -19,6 +19,11 @@ client.auth.getSession().then(({ data }) => {
     log("USERNAME LOADED:", window.displayName);
 
     loadMessages();
+
+    log(session);
+    log(session?.user?.user_metadata);
+
+    
 });
 
 // ⭐ Load messages
