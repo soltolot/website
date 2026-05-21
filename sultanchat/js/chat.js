@@ -1,8 +1,28 @@
+// --------------------------------------------------
+// Supabase Init (ONLY ONCE)
+// --------------------------------------------------
+const SUPABASE_URL = "https://vldkmlbfjzdrfzpeyver.supabase.co";
+const SUPABASE_KEY = "sb_publishable_3e7UaMtOS1nZawcvFHYGhA_-RSInVmg";
+const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// --------------------------------------------------
+// Better log() function (supports multiple arguments)
+// --------------------------------------------------
+function log(...args) {
+    const logBox = document.getElementById("logBox");
+    logBox.innerHTML += args.map(a => JSON.stringify(a)).join(" ") + "<br>";
+}
+
+// --------------------------------------------------
+// Load session + username
+// --------------------------------------------------
 window.displayName = null;
 
-// ⭐ Load username from session
 client.auth.getSession().then(({ data }) => {
     const session = data.session;
+
+    log("FULL SESSION:", session);
+    log("METADATA:", session?.user?.user_metadata);
 
     if (!session) {
         log("No session found — redirecting to login.");
@@ -10,18 +30,16 @@ client.auth.getSession().then(({ data }) => {
         return;
     }
 
+    // ⭐ This is correct — your metadata key is "username"
     window.displayName = session.user.user_metadata.username;
     log("USERNAME LOADED:", window.displayName);
 
     loadMessages();
-
-    log(session);
-    log(session?.user?.user_metadata);
-
-    
 });
 
-// ⭐ Load messages
+// --------------------------------------------------
+// Load messages
+// --------------------------------------------------
 async function loadMessages() {
     const { data, error } = await client
         .from("messages")
@@ -29,7 +47,7 @@ async function loadMessages() {
         .order("created_at", { ascending: true });
 
     if (error) {
-        console.error(error);
+        log("Error loading messages:", error.message);
         return;
     }
 
@@ -43,13 +61,15 @@ async function loadMessages() {
     });
 }
 
-// ⭐ Send message
+// --------------------------------------------------
+// Send message
+// --------------------------------------------------
 async function sendMessage() {
     const text = document.getElementById("messageInput").value.trim();
     if (!text) return;
 
     if (!window.displayName) {
-        console.error("Username not loaded yet.");
+        log("ERROR: Username not loaded yet.");
         return;
     }
 
