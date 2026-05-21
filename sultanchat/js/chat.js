@@ -38,9 +38,6 @@ async function loadMessages() {
 
     if (!chat || !status) return;
 
-    status.textContent = "⏳ Loading messages...";
-    chat.innerHTML = "⏳ Loading messages...";
-
     try {
 
         const { data, error } = await client
@@ -56,7 +53,6 @@ async function loadMessages() {
         const messages = data || [];
 
         status.textContent = `● ONLINE • ${messages.length}`;
-        chat.innerHTML = "";
 
         for (const m of messages) {
 
