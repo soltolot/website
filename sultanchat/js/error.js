@@ -35,6 +35,13 @@ function showError(error, context = "UNKNOWN") {
 
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
+
+    // Optional: also mirror to console via log()
+    if (typeof window.log === "function") {
+        window.log(`ERROR:${context}`, error);
+    } else {
+        console.error("ERROR:", context, error);
+    }
 }
 
 // -------------------------------
@@ -60,7 +67,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (window.__earlyErrorQueue?.length) {
 
         window.__earlyErrorQueue.forEach(item => {
-            showError(item.error || item, "EARLY_ERROR");
+            showError(item.error || item, item.context || "EARLY_ERROR");
         });
 
         window.__earlyErrorQueue = [];
@@ -68,7 +75,9 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 // -------------------------------
-// GLOBAL ERROR HOOKS (ONLY HERE NOW)
+// GLOBAL ERROR HOOKS
+// (these complement bootloader.js;
+// if bootloader already listens, you can keep only one set)
 // -------------------------------
 window.addEventListener("error", (event) => {
     showError(event.error || event.message, "JS_RUNTIME_ERROR");
@@ -77,32 +86,3 @@ window.addEventListener("error", (event) => {
 window.addEventListener("unhandledrejection", (event) => {
     showError(event.reason, "PROMISE_REJECTION");
 });
-
-
-function log(title, data = "") {
-
-    if (!window.DEV_MODE) return; // 🚨 IMPORTANT FILTER
-
-    const chat = document.getElementById("chat");
-    if (!chat) return;
-
-    const div = document.createElement("div");
-    div.className = "msg";
-
-    div.style.background = "#777";
-    div.style.color = "white";
-
-    let output = `🪵 LOG: ${title}\n`;
-
-    if (typeof data === "object") {
-        output += JSON.stringify(data, null, 2);
-    } else {
-        output += String(data);
-    }
-
-    div.textContent = output;
-    div.style.whiteSpace = "pre-wrap";
-
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-}
