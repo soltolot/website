@@ -1,36 +1,49 @@
-alert("APP JS LOADED");
+alert("APP JS LOADED — TOP OF FILE");
+
+// Load DEV_MODE
+alert("Loading DEV_MODE from localStorage");
 window.DEV_MODE = JSON.parse(localStorage.getItem("DEV_MODE") || "false");
+alert("DEV_MODE = " + window.DEV_MODE);
 
 // safe logger call (prevents crash if log() not loaded yet)
 function setDevMode(value) {
+    alert("setDevMode CALLED with " + value);
 
     window.DEV_MODE = value;
     localStorage.setItem("DEV_MODE", JSON.stringify(value));
 
     if (typeof log === "function") {
+        alert("setDevMode: log() exists, logging now");
         log("DEV_MODE", value ? "ON 🧠" : "OFF 👤");
+    } else {
+        alert("setDevMode: log() DOES NOT EXIST");
     }
 }
 
 function setupDevToggle() {
+    alert("setupDevToggle() ENTERED");
 
     const toggle = document.getElementById("dev-toggle");
 
-    if (!toggle) return;
+    if (!toggle) {
+        alert("setupDevToggle: toggle NOT FOUND");
+        return;
+    }
 
-    // ensure state is valid boolean
+    alert("setupDevToggle: toggle FOUND");
+
     toggle.checked = !!window.DEV_MODE;
 
     toggle.addEventListener("change", (e) => {
+        alert("setupDevToggle: toggle CHANGED");
         setDevMode(!!e.target.checked);
     });
 }
 
-
 if (typeof log === "function") {
-    log("APP", "app.js working");
+    alert("log() EXISTS — calling requireAuth soon");
 } else {
-    console.log("APP JS WORKING (fallback)");
+    alert("log() DOES NOT EXIST — fallback mode");
 }
 
 // ===============================
@@ -43,47 +56,48 @@ let appStarted = false;
 // SAFE START
 // -------------------------------
 async function startApp() {
-
-    log("BOOT", "startApp entered");
+    alert("startApp() ENTERED");
 
     try {
-
-        log("AUTH", "calling requireAuth...");
+        alert("startApp: calling requireAuth()");
         const ok = await requireAuth();
-        log("AUTH", ok);
+        alert("startApp: requireAuth() returned: " + ok);
 
         if (!ok) {
-            log("AUTH", "blocked");
+            alert("startApp: AUTH BLOCKED — STOPPING");
             return;
         }
 
-        log("UI", "setupUI...");
+        alert("startApp: calling setupUI()");
         setupUI?.();
 
-        log("CHAT", "initChat...");
+        alert("startApp: calling initChat()");
         await initChat?.();
 
-        log("DONE", "app finished successfully");
+        alert("startApp: FINISHED SUCCESSFULLY");
 
     } catch (err) {
-        log("FATAL", err);
+        alert("startApp: FATAL ERROR — " + err);
     }
 }
+
 // -------------------------------
 // GLOBAL AUTH WATCH
 // -------------------------------
 function setupGlobalAuthWatch() {
+    alert("setupGlobalAuthWatch() ENTERED");
 
     client.auth.onAuthStateChange((event, session) => {
+        alert("AUTH STATE CHANGE: " + event);
 
-        // Logged out → go login
         if (!session) {
+            alert("AUTH: No session — redirecting to login.html");
             window.location.href = "login.html";
             return;
         }
 
-        // Logged in on login page → go chat
         if (session && window.location.pathname.includes("login")) {
+            alert("AUTH: Logged in on login page — redirecting to chat.html");
             window.location.href = "chat.html";
         }
     });
@@ -93,12 +107,15 @@ function setupGlobalAuthWatch() {
 // BOOTSTRAP SEQUENCE
 // -------------------------------
 function boot() {
-
-    console.log("🧠 Boot sequence started");
+    alert("boot() ENTERED — BOOT SEQUENCE STARTED");
 
     setupGlobalAuthWatch();
 
-    // IMPORTANT: no artificial delays
+    alert("boot(): calling startApp()");
     startApp();
+}
 
-};
+// FIRE BOOT IMMEDIATELY
+alert("CALLING boot()");
+boot();
+alert("boot() FINISHED EXECUTING");
