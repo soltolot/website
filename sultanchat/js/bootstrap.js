@@ -1,42 +1,71 @@
 // ===============================
-// ULTRA EARLY ERROR QUEUE
-// MUST LOAD FIRST
+// BOOTSTRAP / DEV + LOG SYSTEM
+// MUST LOAD VERY EARLY (AFTER bootloader.js)
 // ===============================
 
-window.__earlyErrorQueue = [];
+// -------------------------------
+// DEV MODE PERSISTENCE
+// -------------------------------
+(function () {
 
-// Catch JS runtime errors BEFORE error.js loads
-window.addEventListener("error", (event) => {
+    // Read DEV_MODE from localStorage (persist across refresh)
+    const saved = localStorage.getItem("DEV_MODE");
 
-    const error = {
-        message: event.message,
-        source: event.filename,
-        line: event.lineno,
-        col: event.colno,
-        stack: event.error?.stack || null
+    // If nothing saved yet → default to false
+    window.DEV_MODE = saved === "true";
+
+    // Helper to toggle + persist DEV_MODE
+    window.setDevMode = function (enabled) {
+        const value = !!enabled;
+        window.DEV_MODE = value;
+        localStorage.setItem("DEV_MODE", value ? "true" : "false");
+
+        if (typeof window.log === "function") {
+            window.log("DEV_MODE", value ? "ON 🧠" : "OFF 👤");
+        }
     };
 
-    // If error system not ready → queue it
-    if (!window.showError) {
-        window.__earlyErrorQueue.push(error);
-        return;
+})();
+
+// -------------------------------
+// GLOBAL LOGGER
+// -------------------------------
+window.log = function (title, data = "") {
+
+    // Always log to console (even if DEV_MODE is off)
+    try {
+        if (typeof data === "undefined" || data === "") {
+            console.log("🪵", title);
+        } else {
+            console.log("🪵", title, data);
+        }
+    } catch (e) {
+        // ignore console errors
     }
 
-    window.showError(error, "JS_ERROR");
-});
+    // Only mirror logs into chat UI when DEV_MODE is ON
+    if (!window.DEV_MODE) return;
 
-// Catch promise rejections BEFORE error.js loads
-window.addEventListener("unhandledrejection", (event) => {
+    const chat = document.getElementById("chat");
+    if (!chat) return;
 
-    const error = {
-        message: event.reason?.message || String(event.reason),
-        stack: event.reason?.stack || null
-    };
+    const div = document.createElement("div");
+    div.className = "msg";
 
-    if (!window.showError) {
-        window.__earlyErrorQueue.push(error);
-        return;
+    div.style.background = "#777";
+    div.style.color = "white";
+
+    let output = `🪵 LOG: ${title}\n`;
+
+    if (typeof data === "object") {
+        output += JSON.stringify(data, null, 2);
+    } else if (data !== "") {
+        output += String(data);
     }
 
-    window.showError(error, "PROMISE_ERROR");
-});
+    div.textContent = output;
+    div.style.whiteSpace = "pre-wrap";
+
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+};
