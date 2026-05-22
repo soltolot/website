@@ -11,6 +11,38 @@ function log(...args) {
     chatBox.appendChild(logDiv);
 }
 
+
+
+// --------------------------------------------------
+// initChat() — REQUIRED BY app.js
+// --------------------------------------------------
+async function initChat() {
+    log("CHAT", "initChat ENTERED");
+
+    // Get session again (safe)
+    const { data } = await client.auth.getSession();
+    const session = data.session;
+
+    if (!session) {
+        log("CHAT", "NO SESSION — redirecting");
+        window.location.href = "login.html";
+        return;
+    }
+
+    // Load username
+    window.displayName = session.user.user_metadata.username;
+    log("CHAT", "USERNAME LOADED:", window.displayName);
+
+    // Load messages
+    await loadMessages();
+
+    log("CHAT", "initChat COMPLETE");
+}
+
+
+
+
+
 // --------------------------------------------------
 // Load session + username
 // --------------------------------------------------
@@ -40,7 +72,7 @@ client.auth.getSession().then(({ data }) => {
 // --------------------------------------------------
 async function loadMessages() {
     const { data, error } = await client
-        .from("messages")
+        .from("message")
         .select("*")
         .order("created_at", { ascending: true });
 
@@ -71,7 +103,7 @@ async function sendMessage() {
         return;
     }
 
-    await client.from("messages").insert({
+    await client.from("message").insert({
         username: window.displayName,
         text: text
     });
