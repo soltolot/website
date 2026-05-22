@@ -2,8 +2,13 @@
 // Better log() function (supports multiple arguments)
 // --------------------------------------------------
 function log(...args) {
-    const logBox = document.getElementById("logBox");
-    logBox.innerHTML += args.map(a => JSON.stringify(a)).join(" ") + "<br>";
+    const chatBox = document.getElementById("chat");
+    const logDiv = document.createElement("div");
+    logDiv.style.color = "#999";
+    logDiv.style.fontSize = "0.9em";
+    logDiv.style.fontStyle = "italic";
+    logDiv.textContent = "[LOG] " + args.map(a => JSON.stringify(a)).join(" ");
+    chatBox.appendChild(logDiv);
 }
 
 // --------------------------------------------------
@@ -44,7 +49,7 @@ async function loadMessages() {
         return;
     }
 
-    const box = document.getElementById("messages");
+    const box = document.getElementById("chat");
     box.innerHTML = "";
 
     data.forEach(msg => {
@@ -58,7 +63,7 @@ async function loadMessages() {
 // Send message
 // --------------------------------------------------
 async function sendMessage() {
-    const text = document.getElementById("messageInput").value.trim();
+    const text = document.getElementById("message-input").value.trim();
     if (!text) return;
 
     if (!window.displayName) {
@@ -71,6 +76,6 @@ async function sendMessage() {
         text: text
     });
 
-    document.getElementById("messageInput").value = "";
+    document.getElementById("message-input").value = "";
     loadMessages();
 }
