@@ -1,15 +1,23 @@
 // ==================================================
-// ui.js — INTERFACE & INTERACTIVE THEMES
+// ui.js — INTERFACE, THEMES, & DEVELOPER TOGGLE
 // ==================================================
 
 function setupUI() {
     log("UI", "setupUI ENTERED");
 
-    // 1. Instantly pull and apply saved theme color from cache
+    // 1. Recover saved theme color from cache instantly
     const savedColor = localStorage.getItem("myColor");
     if (savedColor) {
         document.documentElement.style.setProperty("--my-msg-color", savedColor);
         log("UI", "Recovered theme color from local storage:", savedColor);
+    }
+
+    // 2. ⭐ RECOVER AND VISUALLY INITIALIZE DEVELOPER MODE STATE
+    const devToggle = document.getElementById("dev-toggle");
+    if (devToggle) {
+        // Sync the checkbox UI state with the global Boolean from bootstrap.js
+        devToggle.checked = !!window.DEV_MODE;
+        log("UI", "Initialized developer mode toggle state to:", window.DEV_MODE);
     }
 
     const settingsBtn = document.getElementById("settings-btn");
@@ -30,18 +38,22 @@ function setupUI() {
         if (e.target === overlay) overlay.style.display = "none";
     });
 
+    // ⭐ LISTEN FOR DEVELOPER MODE CHANGES
+    devToggle?.addEventListener("change", (e) => {
+        // Pass the checkbox's true/false state straight to the master utility
+        window.setDevMode(e.target.checked);
+    });
+
     // Theme Customizer Selectors
     colors.forEach(c => {
         c.addEventListener("click", async () => {
             const color = c.dataset.color;
             if (!color) return;
 
-            // Apply locally instantly
             localStorage.setItem("myColor", color);
             document.documentElement.style.setProperty("--my-msg-color", color);
             log("UI", "Local style color altered to:", color);
 
-            // Sync choice to Supabase backend safely with error auditing
             if (window.displayName && typeof client !== "undefined") {
                 log("UI", "Syncing theme color choices to the cloud...");
                 const { error } = await client
@@ -58,7 +70,7 @@ function setupUI() {
         });
     });
 
-    // Tactical Button Click Animations
+    // Button Click Animations
     document.querySelectorAll("button").forEach(btn => {
         btn.addEventListener("mousedown", () => {
             btn.style.transform = "scale(0.96)";
