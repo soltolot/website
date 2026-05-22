@@ -1,44 +1,29 @@
 // ==================================================
-// chat.js — CHAT INTERACTION & DOM INTERFACE
+// chat.js — MESSAGING & DATA FEED RENDERS
 // ==================================================
 
 // --------------------------------------------------
-// Logger tool supporting strings and objects safely
-// --------------------------------------------------
-function log(...args) {
-    const chatBox = document.getElementById("chat");
-    if (!chatBox) return; 
-    
-    const logDiv = document.createElement("div");
-    logDiv.style.color = "#999";
-    logDiv.style.fontSize = "0.9em";
-    logDiv.style.fontStyle = "italic";
-    logDiv.textContent = "[LOG] " + args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(" ");
-    chatBox.appendChild(logDiv);
-}
-
-// --------------------------------------------------
-// initChat() — REQUIRED & CALLED BY app.js
+// initChat() — ORCHESTRATION PIPELINE INTERACTION
 // --------------------------------------------------
 async function initChat() {
     log("CHAT", "initChat ENTERED");
 
-    // Rely entirely on global state populated by auth.js
+    // Validates that auth.js finished compiling user metrics first
     if (!window.displayName) {
-        log("CHAT", "ERROR: window.displayName is missing. Aborting setup.");
+        log("CHAT", "ERROR: Global state window.displayName missing. Halting execution.");
         return; 
     }
 
-    log("CHAT", "Environment verified for user:", window.displayName);
+    log("CHAT", "Active workspace cleared for user:", window.displayName);
 
-    // Initial feed render
+    // Initial table sync fetch
     await loadMessages();
 
     log("CHAT", "initChat COMPLETE");
 }
 
 // --------------------------------------------------
-// LOAD MESSAGES FROM DATABASE
+// DOWNLOAD MESSAGES
 // --------------------------------------------------
 async function loadMessages() {
     const { data, error } = await client
@@ -47,7 +32,7 @@ async function loadMessages() {
         .order("created_at", { ascending: true });
 
     if (error) {
-        log("Error loading messages:", error.message);
+        log("Error loading messages from database:", error.message);
         return;
     }
 
@@ -62,12 +47,12 @@ async function loadMessages() {
         box.appendChild(div);
     });
 
-    // Automatically stick scroll window to the bottom
+    // Automatically force scroll viewport tracking down
     box.scrollTop = box.scrollHeight;
 }
 
 // --------------------------------------------------
-// SEND MESSAGE
+// UPLOAD/SEND MESSAGE
 // --------------------------------------------------
 async function sendMessage() {
     const inputEl = document.getElementById("message-input");
@@ -75,7 +60,7 @@ async function sendMessage() {
     if (!text) return;
 
     if (!window.displayName) {
-        log("ERROR: Message blocked. Username global state is missing.");
+        log("ERROR: Message rejected. Identity parameter window.displayName is missing.");
         return;
     }
 
@@ -85,7 +70,7 @@ async function sendMessage() {
     });
 
     if (error) {
-        log("Error sending message:", error.message);
+        log("Error sending message to Supabase:", error.message);
         return;
     }
 
