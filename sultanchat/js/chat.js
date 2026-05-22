@@ -3,15 +3,18 @@
 // --------------------------------------------------
 function log(...args) {
     const chatBox = document.getElementById("chat");
+    if (!chatBox) return; // Guard clause in case DOM isn't ready
+    
     const logDiv = document.createElement("div");
     logDiv.style.color = "#999";
     logDiv.style.fontSize = "0.9em";
     logDiv.style.fontStyle = "italic";
-    logDiv.textContent = "[LOG] " + args.map(a => JSON.stringify(a)).join(" ");
+    logDiv.textContent = "[LOG] " + args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(" ");
     chatBox.appendChild(logDiv);
 }
 
-
+// Global state for user
+window.displayName = null;
 
 // --------------------------------------------------
 // initChat() — REQUIRED BY app.js
@@ -19,53 +22,29 @@ function log(...args) {
 async function initChat() {
     log("CHAT", "initChat ENTERED");
 
-    // Get session again (safe)
-    const { data } = await client.auth.getSession();
-    const session = data.session;
+    try {
+        // Fetch session safely
+        const { data, error } = await client.auth.getSession();
+        const session = data?.session;
 
-    if (!session) {
-        log("CHAT", "NO SESSION — redirecting");
-        window.location.href = "login.html";
-        return;
+        if (error || !session) {
+            log("CHAT", "NO SESSION OR ERROR — redirecting");
+            window.location.href = "login.html";
+            return;
+        }
+
+        // Load username
+        window.displayName = session.user?.user_metadata?.username;
+        log("CHAT", "USERNAME LOADED:", window.displayName);
+
+        // Load messages
+        await loadMessages();
+
+        log("CHAT", "initChat COMPLETE");
+    } catch (err) {
+        log("CHAT ERROR during init:", err.message);
     }
-
-    // Load username
-    window.displayName = session.user.user_metadata.username;
-    log("CHAT", "USERNAME LOADED:", window.displayName);
-
-    // Load messages
-    await loadMessages();
-
-    log("CHAT", "initChat COMPLETE");
 }
-
-
-
-
-
-// --------------------------------------------------
-// Load session + username
-// --------------------------------------------------
-window.displayName = null;
-
-client.auth.getSession().then(({ data }) => {
-    const session = data.session;
-
-    log("FULL SESSION:", session);
-    log("METADATA:", session?.user?.user_metadata);
-
-    if (!session) {
-        log("No session found — redirecting to login.");
-        window.location.href = "login.html";
-        return;
-    }
-
-    // ⭐ This is correct — your metadata key is "username"
-    window.displayName = session.user.user_metadata.username;
-    log("USERNAME LOADED:", window.displayName);
-
-    loadMessages();
-});
 
 // --------------------------------------------------
 // Load messages
@@ -82,20 +61,27 @@ async function loadMessages() {
     }
 
     const box = document.getElementById("chat");
+    if (!box) return;
+    
     box.innerHTML = "";
 
     data.forEach(msg => {
         const div = document.createElement("div");
-        div.textContent = msg.username + ": " + msg.text;
+        // Safe mapping in case username or text is missing
+        div.textContent = `${msg.username || 'Unknown'}: ${msg.text || ''}`;
         box.appendChild(div);
     });
+    
+    // Auto-scroll to bottom of chat
+    box.scrollTop = box.scrollHeight;
 }
 
 // --------------------------------------------------
 // Send message
 // --------------------------------------------------
 async function sendMessage() {
-    const text = document.getElementById("message-input").value.trim();
+    const inputEl = document.getElementById("message-input");
+    const text = inputEl.value.trim();
     if (!text) return;
 
     if (!window.displayName) {
@@ -103,11 +89,18 @@ async function sendMessage() {
         return;
     }
 
-    await client.from("message").insert({
+    const { error } = await client.from("message").insert({
         username: window.displayName,
         text: text
     });
 
-    document.getElementById("message-input").value = "";
-    loadMessages();
+    if (error) {
+        log("Error sending message:", error.message);
+        return;
+    }
+
+    inputEl.value = "";
+    
+    // Refresh the feed
+    await loadMessages();
 }
