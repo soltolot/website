@@ -1,19 +1,17 @@
-log("DEBUG", "APP JS LOADED");
-log("DISPLAY NAME", window.displayName);
+// ==================================================
+// app.js — APP STARTUP CONTROLLER (ORCHESTRATOR)
+// ==================================================
 
-// ===============================
-// APP STARTUP CONTROLLER (CLEAN)
-// ===============================
+log("DEBUG", "APP JS LOADED");
 
 let appStarted = false;
 
-// -------------------------------
-// SAFE START
-// -------------------------------
+// --------------------------------------------------
+// START SEQUENTIAL PIPELINE
+// --------------------------------------------------
 async function startApp() {
-
     if (appStarted) {
-        log("DEBUG", "startApp already called, skipping");
+        log("DEBUG", "startApp already called, skipping duplicate routine");
         return;
     }
     appStarted = true;
@@ -21,73 +19,78 @@ async function startApp() {
     log("BOOT", "startApp ENTERED");
 
     try {
-
         log("AUTH", "calling requireAuth()");
         const ok = await requireAuth();
         log("AUTH", "requireAuth returned: " + ok);
 
         if (!ok) {
-            log("AUTH", "AUTH BLOCKED — STOPPING");
+            log("AUTH", "AUTH BLOCKED — STOPPING INITS");
             return;
         }
 
         log("UI", "calling setupUI()");
         try {
-            await setupUI?.();
+            if (typeof setupUI === "function") {
+                await setupUI();
+            } else {
+                log("DEBUG", "setupUI function not found, skipping contextually");
+            }
         } catch (err) {
             log("ERROR", "setupUI failed: " + (err?.message || err));
         }
 
         log("CHAT", "calling initChat()");
         try {
-            await initChat?.();
+            if (typeof initChat === "function") {
+                await initChat();
+            } else {
+                log("ERROR", "initChat function is missing from execution tree!");
+            }
         } catch (err) {
             log("ERROR", "initChat failed: " + (err?.message || err));
         }
 
-        log("DONE", "app finished successfully");
+        log("DONE", "App pipeline finished successfully!");
 
     } catch (err) {
         log("FATAL", err?.message || err);
     }
 }
 
-// -------------------------------
-// GLOBAL AUTH WATCH
-// -------------------------------
+// --------------------------------------------------
+// GLOBAL AUTH WATCH (Single Source of Redirection Truth)
+// --------------------------------------------------
 function setupGlobalAuthWatch() {
-
     log("DEBUG", "setupGlobalAuthWatch ENTERED");
 
-    // Guard: check if client exists
     if (typeof client === "undefined" || !client.auth) {
-        log("ERROR", "Supabase client not initialized");
+        log("ERROR", "Supabase client not initialized globally");
         return;
     }
 
     client.auth.onAuthStateChange((event, session) => {
-
         log("AUTH", "AUTH STATE CHANGE: " + event);
 
-        if (!session) {
+        const isLoginPage = window.location.pathname.includes("login.html");
+
+        if (!session && !isLoginPage) {
             log("AUTH", "NO SESSION — redirecting to login.html");
             window.location.href = "login.html";
             return;
         }
 
-        if (session && window.location.pathname.includes("login")) {
+        if (session && isLoginPage) {
             log("AUTH", "LOGGED IN ON LOGIN PAGE — redirecting to chat.html");
             window.location.href = "chat.html";
         }
     });
 }
 
-// -------------------------------
-// BOOTSTRAP SEQUENCE
-// -------------------------------
+// --------------------------------------------------
+// BOOTSTRAP INITIALIZATION
+// --------------------------------------------------
 function boot() {
-
-    log("BOOT", "boot() ENTERED — BOOT SEQUENCE STARTED");
+    log("BOOT", "boot() ENTERED — RUNNING SEQUENCE");
 
     setupGlobalAuthWatch();
 
@@ -95,12 +98,14 @@ function boot() {
     startApp();
 
     log("BOOT", "calling setupDevToggle()");
-    setupDevToggle();
+    if (typeof setupDevToggle === "function") {
+        setupDevToggle();
+    }
 
     log("BOOT", "boot() FINISHED EXECUTING");
 }
 
-// ⭐ WAIT FOR DOM AND DEPENDENCIES BEFORE BOOT
+// Wait for DOM to finish loading completely
 document.addEventListener("DOMContentLoaded", () => {
     log("BOOT", "DOM READY — CALLING boot()");
     boot();
