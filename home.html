@@ -8,9 +8,11 @@
     <div class="home">
         <h1>SultanChat</h1>
 
-        <button class="button" onclick="goChat()">Enter Chat</button>
-        <button class="button" onclick="goLogin()">Login</button>
-        <button class="button" onclick="goSign()">Sign up</button>
+<div class="buttons">
+    <button class="button">Enter Chat</button>
+    <button class="button">Login</button>
+    <button class="button">Sign up</button>
+</div>        
         <p class="system">🟠  Homepage update in progress. Some features may be unstable. Full systems remain online.</p>
 
     </div>
@@ -34,6 +36,11 @@ body {
 .home {
     text-align: center;
     padding: 40px 30px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
 
     background: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(10px);
@@ -60,6 +67,14 @@ body {
     color: #444;
     font-size: 14px;
 }
+
+
+.buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+        
 
 .system {
     margin-top: 14px;
