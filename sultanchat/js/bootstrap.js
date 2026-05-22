@@ -28,19 +28,21 @@ window.__earlyErrorQueue = [];
 
 // --------------------------------
 // GLOBAL LOGGER
-// --------------------------------
 function log(...args) {
-    console.log(...args); // still logs to browser console
+    console.log(...args); // always log to console
 
-    const box = document.getElementById("chat"); // THIS is your chat area
-    if (!box) return; // prevents crashes
+    // write logs into the chat area
+    const box = document.getElementById("messages");
+    if (!box) return; // prevents crashes if chat isn't loaded yet
 
     const line = document.createElement("div");
+    line.style.color = "#888"; // makes logs visually different
     line.textContent = args
         .map(a => (typeof a === "string" ? a : JSON.stringify(a)))
         .join(" ");
     box.appendChild(line);
 }
+
 
 
     div.textContent = output;
