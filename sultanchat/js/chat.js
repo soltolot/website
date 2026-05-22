@@ -1,10 +1,10 @@
-// --------------------------------------------------
-// chat.js — Managed entirely by app.js
-// --------------------------------------------------
+// ==================================================
+// chat.js — CHAT INTERACTION & DOM INTERFACE
+// ==================================================
 
-window.displayName = null;
-
-// Better log() function (supports multiple arguments safely)
+// --------------------------------------------------
+// Logger tool supporting strings and objects safely
+// --------------------------------------------------
 function log(...args) {
     const chatBox = document.getElementById("chat");
     if (!chatBox) return; 
@@ -18,32 +18,27 @@ function log(...args) {
 }
 
 // --------------------------------------------------
-// initChat() — CALLED BY app.js AFTER AUTH IS VALID
+// initChat() — REQUIRED & CALLED BY app.js
 // --------------------------------------------------
 async function initChat() {
     log("CHAT", "initChat ENTERED");
 
-    // Grab the verified session safely
-    const { data } = await client.auth.getSession();
-    const session = data?.session;
-
-    if (!session) {
-        log("CHAT", "initChat aborted: No active session found.");
+    // Rely entirely on global state populated by auth.js
+    if (!window.displayName) {
+        log("CHAT", "ERROR: window.displayName is missing. Aborting setup.");
         return; 
     }
 
-    // Set user profile data globally
-    window.displayName = session.user?.user_metadata?.username || "Anonymous";
-    log("CHAT", "USERNAME LOADED:", window.displayName);
+    log("CHAT", "Environment verified for user:", window.displayName);
 
-    // Initial load of messages
+    // Initial feed render
     await loadMessages();
 
     log("CHAT", "initChat COMPLETE");
 }
 
 // --------------------------------------------------
-// Load messages
+// LOAD MESSAGES FROM DATABASE
 // --------------------------------------------------
 async function loadMessages() {
     const { data, error } = await client
@@ -67,11 +62,12 @@ async function loadMessages() {
         box.appendChild(div);
     });
 
-    box.scrollTop = box.scrollHeight; // Keep chat scrolled to bottom
+    // Automatically stick scroll window to the bottom
+    box.scrollTop = box.scrollHeight;
 }
 
 // --------------------------------------------------
-// Send message
+// SEND MESSAGE
 // --------------------------------------------------
 async function sendMessage() {
     const inputEl = document.getElementById("message-input");
@@ -79,7 +75,7 @@ async function sendMessage() {
     if (!text) return;
 
     if (!window.displayName) {
-        log("ERROR: Username not loaded yet.");
+        log("ERROR: Message blocked. Username global state is missing.");
         return;
     }
 
