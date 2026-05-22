@@ -1,5 +1,5 @@
 // ==================================================
-// app.js — APP STARTUP CONTROLLER (ORCHESTRATOR)
+// app.js — SEQUENTIAL PIPELINE INITIALIZATION
 // ==================================================
 
 log("DEBUG", "APP JS LOADED");
@@ -7,11 +7,11 @@ log("DEBUG", "APP JS LOADED");
 let appStarted = false;
 
 // --------------------------------------------------
-// START SEQUENTIAL PIPELINE
+// START SEQUENTIAL STARTUP EXECUTION TREE
 // --------------------------------------------------
 async function startApp() {
     if (appStarted) {
-        log("DEBUG", "startApp already called, skipping duplicate routine");
+        log("DEBUG", "startApp already invoked. Canceling loop duplication.");
         return;
     }
     appStarted = true;
@@ -19,94 +19,102 @@ async function startApp() {
     log("BOOT", "startApp ENTERED");
 
     try {
+        // Step 1: Run Auth Guard checks
         log("AUTH", "calling requireAuth()");
         const ok = await requireAuth();
         log("AUTH", "requireAuth returned: " + ok);
 
         if (!ok) {
-            log("AUTH", "AUTH BLOCKED — STOPPING INITS");
+            log("AUTH", "AUTHENTICATION GUARD BLOCKED EXECUTIONS — STOPPING SYSTEM");
             return;
         }
 
+        // Step 2: Initialize UI configurations
         log("UI", "calling setupUI()");
         try {
             if (typeof setupUI === "function") {
                 await setupUI();
             } else {
-                log("DEBUG", "setupUI function not found, skipping contextually");
+                log("DEBUG", "setupUI target module missing from runtime paths.");
             }
         } catch (err) {
-            log("ERROR", "setupUI failed: " + (err?.message || err));
+            log("ERROR", "setupUI crashed: " + (err?.message || err));
         }
 
+        // Step 3: Run Chat Engine
         log("CHAT", "calling initChat()");
         try {
             if (typeof initChat === "function") {
                 await initChat();
             } else {
-                log("ERROR", "initChat function is missing from execution tree!");
+                log("ERROR", "initChat framework method target missing from tracking branches!");
             }
         } catch (err) {
-            log("ERROR", "initChat failed: " + (err?.message || err));
+            log("ERROR", "initChat crashed: " + (err?.message || err));
         }
 
-        log("DONE", "App pipeline finished successfully!");
+        log("DONE", "All pipelines finished setup successfully.");
 
     } catch (err) {
-        log("FATAL", err?.message || err);
+        log("FATAL", "Core boot engine exception caught: " + (err?.message || err));
     }
 }
 
 // --------------------------------------------------
-// GLOBAL AUTH WATCH (Single Source of Redirection Truth)
+// GLOBAL AUTH WATCH (THE ONLY REDIRECTION LISTENER)
 // --------------------------------------------------
 function setupGlobalAuthWatch() {
     log("DEBUG", "setupGlobalAuthWatch ENTERED");
 
     if (typeof client === "undefined" || !client.auth) {
-        log("ERROR", "Supabase client not initialized globally");
+        log("ERROR", "Supabase client is inaccessible in current script context.");
         return;
     }
 
     client.auth.onAuthStateChange((event, session) => {
-        log("AUTH", "AUTH STATE CHANGE: " + event);
+        log("AUTH", "GLOBAL AUTH STATE TRIGGERED: " + event);
 
         const isLoginPage = window.location.pathname.includes("login.html");
 
         if (!session && !isLoginPage) {
-            log("AUTH", "NO SESSION — redirecting to login.html");
+            log("AUTH", "NO ROUTE SESSION DETECTED — moving window to login.html");
             window.location.href = "login.html";
             return;
         }
 
         if (session && isLoginPage) {
-            log("AUTH", "LOGGED IN ON LOGIN PAGE — redirecting to chat.html");
+            log("AUTH", "SESSION DETECTED ON USER LOGIN VIEW — moving window to chat.html");
             window.location.href = "chat.html";
         }
     });
 }
 
 // --------------------------------------------------
-// BOOTSTRAP INITIALIZATION
+// BOOTSTRAP MAIN INTERACTION INITIALIZATION
 // --------------------------------------------------
 function boot() {
-    log("BOOT", "boot() ENTERED — RUNNING SEQUENCE");
+    log("BOOT", "boot() ENTERED — RUNNING TIMELINE STAGES");
 
+    // Initialize routing tracker hook first
     setupGlobalAuthWatch();
 
+    // Fire the secure app pipeline
     log("BOOT", "calling startApp()");
     startApp();
 
+    // Calls your dev environment config file setup function seamlessly!
     log("BOOT", "calling setupDevToggle()");
     if (typeof setupDevToggle === "function") {
         setupDevToggle();
+    } else {
+        log("DEBUG", "setupDevToggle function context was not loaded via external environment dependencies.");
     }
 
-    log("BOOT", "boot() FINISHED EXECUTING");
+    log("BOOT", "boot() LIFECYCLE COMPLETED");
 }
 
-// Wait for DOM to finish loading completely
+// Attach pipeline start execution directly onto the DOM trigger
 document.addEventListener("DOMContentLoaded", () => {
-    log("BOOT", "DOM READY — CALLING boot()");
+    log("BOOT", "DOM ENVIRONMENT READY — CALLING boot()");
     boot();
 });
