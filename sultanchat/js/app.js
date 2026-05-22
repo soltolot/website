@@ -78,6 +78,13 @@ function setupGlobalAuthWatch() {
 
         if (!session && !isLoginPage) {
             log("AUTH", "NO ROUTE SESSION DETECTED — moving window to login.html");
+            
+            // Clean hook: Disconnect active real-time WebSockets before page tearing
+            if (client && typeof client.removeAllChannels === "function") {
+                log("AUTH", "Removing active real-time socket channels...");
+                client.removeAllChannels();
+            }
+
             window.location.href = "login.html";
             return;
         }
