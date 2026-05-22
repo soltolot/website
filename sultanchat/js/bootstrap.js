@@ -43,15 +43,6 @@ function log(...args) {
     box.appendChild(line);
 }
 
-
-
-    div.textContent = output;
-    div.style.whiteSpace = "pre-wrap";
-
-    chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
-};
-
 // --------------------------------
 // GLOBAL ERROR HOOKS (EARLY)
 // --------------------------------
