@@ -10,13 +10,109 @@
         <h1>SultanChat</h1>
         <p>real-time chat with live themes</p>
 
-        <button onclick="goChat()">Enter Chat</button>
+        <button id="button" onclick="goChat()">Enter Chat</button>
+        <button id="button" onclick="goLogin()">Login</button>
+        <button id="button" onclick="goSign()">Sign up</button>
+
     </div>
 
+    
+    <style>
+
+body {
+    font-family: sans-serif;
+    background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
+    margin: 0;
+    padding: 20px;
+    min-height: 100vh;
+}
+        
+/* STATUS BAR */
+#status, .status {
+    padding: 10px;
+    background: #FFEDD5;
+    color: #E85D04;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 12px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    background: #E65100;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.12s ease,
+        box-shadow 0.2s ease;
+
+    box-shadow:
+        0 4px 12px rgba(230, 81, 0, 0.25);
+}
+
+button:hover {
+    background: #DC4D00;
+    transform: translateY(-2px);
+    box-shadow:
+        0 6px 16px rgba(230, 81, 0, 0.35);
+}
+
+button:active {
+    transform: scale(0.95);
+    box-shadow:
+        0 2px 8px rgba(230, 81, 0, 0.2);
+}
+
+/* SYSTEM ERROR AND BACKEND OUTPUT LINES */
+.log-msg {
+    background: #B00020;
+    color: white;
+    font-family: monospace;
+    border-left: 5px solid #ff4d6d;
+    padding: 10px;
+    border-radius: 10px;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    width: calc(100% - 16px);
+    margin-bottom: 8px;
+}
+
+.error-msg {
+    background: #B00020;
+    color: white;
+    font-family: monospace;
+    border-left: 5px solid #ff4d6d;
+    padding: 10px;
+    border-radius: 10px;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    width: calc(100% - 16px);
+    margin-bottom: 8px;
+}
+        
+    </style>
+    
+    
     <script>
         function goChat() {
             window.location.href = "chat.html";
         }
+        function goLogin() {
+            window.location.href = "login.html";
+        }
+        function goSign() {
+            window.location.href = "signup.html";
+        }
+
     </script>
 
 </body>
