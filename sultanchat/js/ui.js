@@ -12,10 +12,9 @@ function setupUI() {
         log("UI", "Recovered theme color from local storage:", savedColor);
     }
 
-    // 2. ⭐ RECOVER AND VISUALLY INITIALIZE DEVELOPER MODE STATE
+    // 2. RECOVER DEVELOPER MODE STATE
     const devToggle = document.getElementById("dev-toggle");
     if (devToggle) {
-        // Sync the checkbox UI state with the global Boolean from bootstrap.js
         devToggle.checked = !!window.DEV_MODE;
         log("UI", "Initialized developer mode toggle state to:", window.DEV_MODE);
     }
@@ -25,7 +24,7 @@ function setupUI() {
     const closeBtn = document.getElementById("close-settings");
     const colors = document.querySelectorAll(".color-option");
 
-    // Open/Close Settings Panels
+    // Open/Close Settings Panel
     settingsBtn?.addEventListener("click", () => {
         if (overlay) overlay.style.display = "flex";
     });
@@ -38,24 +37,27 @@ function setupUI() {
         if (e.target === overlay) overlay.style.display = "none";
     });
 
-    // ⭐ LISTEN FOR DEVELOPER MODE CHANGES
+    // Developer mode toggle
     devToggle?.addEventListener("change", (e) => {
-        // Pass the checkbox's true/false state straight to the master utility
         window.setDevMode(e.target.checked);
     });
 
-    // Theme Customizer Selectors
+    // Theme color selection
     colors.forEach(c => {
         c.addEventListener("click", async () => {
             const color = c.dataset.color;
             if (!color) return;
 
+            // local update
             localStorage.setItem("myColor", color);
             document.documentElement.style.setProperty("--my-msg-color", color);
+
             log("UI", "Local style color altered to:", color);
 
+            // cloud sync
             if (window.displayName && typeof client !== "undefined") {
                 log("UI", "Syncing theme color choices to the cloud...");
+
                 const { error } = await client
                     .from("profiles")
                     .update({ color })
@@ -70,7 +72,7 @@ function setupUI() {
         });
     });
 
-    // Button Click Animations
+    // Button click animations
     document.querySelectorAll("button").forEach(btn => {
         btn.addEventListener("mousedown", () => {
             btn.style.transform = "scale(0.96)";
@@ -83,5 +85,44 @@ function setupUI() {
         });
     });
 
+    // Start realtime sync
+    setupColorSubscription();
+
     log("UI", "setupUI COMPLETED");
+}
+
+
+// ==================================================
+// REALTIME COLOR SYNC (Supabase)
+// ==================================================
+
+function setupColorSubscription() {
+    if (!window.displayName || typeof client === "undefined") return;
+
+    const channel = client
+        .channel("profile-color-live")
+        .on(
+            "postgres_changes",
+            {
+                event: "UPDATE",
+                schema: "public",
+                table: "profiles",
+                filter: `username=eq.${window.displayName}`,
+            },
+            (payload) => {
+                const newColor = payload.new.color;
+                if (!newColor) return;
+
+                const current = localStorage.getItem("myColor");
+                if (current === newColor) return;
+
+                localStorage.setItem("myColor", newColor);
+                document.documentElement.style.setProperty("--my-msg-color", newColor);
+
+                log("UI", "Live color update received:", newColor);
+            }
+        )
+        .subscribe();
+
+    log("UI", "Subscribed to live color updates");
 }
