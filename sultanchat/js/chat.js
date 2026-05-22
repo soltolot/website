@@ -1,6 +1,8 @@
 // ==================================================
-// chat.js — MESSAGING & DATA FEED RENDERS
+// chat.js — REAL-TIME MESSAGING ENGINE
 // ==================================================
+
+let messageSubscription = null;
 
 // --------------------------------------------------
 // initChat() — ORCHESTRATION PIPELINE INTERACTION
@@ -16,10 +18,42 @@ async function initChat() {
 
     log("CHAT", "Active workspace cleared for user:", window.displayName);
 
-    // Initial table sync fetch
+    // 1. Load the existing message history pool
     await loadMessages();
 
+    // 2. Turn on live listening for incoming messages instantly
+    subscribeToMessages();
+
     log("CHAT", "initChat COMPLETE");
+}
+
+// --------------------------------------------------
+// SUBSCRIBE TO REAL-TIME CHANGES 
+// --------------------------------------------------
+function subscribeToMessages() {
+    // Prevent duplicate channel subscriptions if initChat runs multiple times
+    if (messageSubscription) {
+        log("CHAT", "Cleaning up old live subscription channel...");
+        client.removeChannel(messageSubscription);
+    }
+
+    log("CHAT", "Connecting to Supabase Realtime channel...");
+
+    messageSubscription = client
+        .channel('public:message')
+        .on(
+            'postgres_changes', 
+            { event: 'INSERT', schema: 'public', table: 'message' }, 
+            (payload) => {
+                log("CHAT", "⚡ Live message received from:", payload.new.username);
+                
+                // Reload the feed to display the new message with precise server ordering
+                loadMessages(); 
+            }
+        )
+        .subscribe((status) => {
+            log("CHAT", "Realtime socket status updated to:", status);
+        });
 }
 
 // --------------------------------------------------
@@ -47,7 +81,7 @@ async function loadMessages() {
         box.appendChild(div);
     });
 
-    // Automatically force scroll viewport tracking down
+    // Keep scroll viewport anchored to the bottom
     box.scrollTop = box.scrollHeight;
 }
 
@@ -75,5 +109,7 @@ async function sendMessage() {
     }
 
     inputEl.value = "";
-    await loadMessages();
+    // NOTE: loadMessages() is intentionally omitted here! 
+    // Our real-time listener subscription catches the insert event 
+    // and updates the feed instantly for both you and everyone else.
 }
