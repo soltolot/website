@@ -118,7 +118,11 @@ function boot() {
     startApp();
 }
 
-// FIRE BOOT IMMEDIATELY
-log("BOOT", "CALLING boot()");
-boot();
-log("BOOT", "boot() FINISHED EXECUTING");
+// -------------------------------
+// ⭐ FIX: WAIT FOR DOM BEFORE BOOT
+// -------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+    log("BOOT", "DOM READY — CALLING boot()");
+    boot();
+    log("BOOT", "boot() FINISHED EXECUTING");
+});
