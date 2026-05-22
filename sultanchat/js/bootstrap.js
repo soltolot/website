@@ -1,18 +1,16 @@
-// ===============================
-// BOOTLOADER (EARLY ERRORS + DEV MODE + LOG)
-// MUST LOAD FIRST
-// ===============================
+// ==================================================
+// bootstrap.js — THE GLOBAL UTILITY FOUNDATION
+// ==================================================
 
-// --------------------------------
+// --------------------------------------------------
 // EARLY ERROR QUEUE
-// --------------------------------
+// --------------------------------------------------
 window.__earlyErrorQueue = [];
 
-// --------------------------------
-// DEV MODE PERSISTENCE
-// --------------------------------
+// --------------------------------------------------
+// CENTRALIZED DEV MODE SYSTEM (THE ONLY ONE)
+// --------------------------------------------------
 (function () {
-
     const saved = localStorage.getItem("DEV_MODE");
     window.DEV_MODE = saved === "true";
 
@@ -21,31 +19,34 @@ window.__earlyErrorQueue = [];
         window.DEV_MODE = value;
         localStorage.setItem("DEV_MODE", value ? "true" : "false");
 
-        window.log && window.log("DEV_MODE", value ? "ON 🧠" : "OFF 👤");
+        // Uses the log function declared right below
+        window.log("DEV_MODE", value ? "ON 🧠" : "OFF 👤");
     };
-
 })();
 
-// --------------------------------
-// GLOBAL LOGGER
+// --------------------------------------------------
+// CENTRALIZED LOGGER SYSTEM (THE ONLY ONE)
+// --------------------------------------------------
 function log(...args) {
-    console.log(...args); // always log to console
+    console.log(...args); // Always output to developer tools console
 
-    // write logs into the chat area
+    // Write logs visually into the chat UI area if it has rendered
     const box = document.getElementById("chat");
-    if (!box) return; // prevents crashes if chat isn't loaded yet
+    if (!box) return; 
 
     const line = document.createElement("div");
-    line.style.color = "#888"; // makes logs visually different
-    line.textContent = args
+    line.style.color = "#888"; 
+    line.style.fontSize = "0.9em";
+    line.style.fontStyle = "italic";
+    line.textContent = "[LOG] " + args
         .map(a => (typeof a === "string" ? a : JSON.stringify(a)))
         .join(" ");
     box.appendChild(line);
 }
 
-// --------------------------------
-// GLOBAL ERROR HOOKS (EARLY)
-// --------------------------------
+// --------------------------------------------------
+// GLOBAL RUNTIME ERROR HOOKS
+// --------------------------------------------------
 window.addEventListener("error", (event) => {
     window.__earlyErrorQueue.push({
         error: event.error || event.message,
@@ -60,13 +61,9 @@ window.addEventListener("unhandledrejection", (event) => {
     });
 });
 
-// --------------------------------
-// FLUSH EARLY ERRORS (CALLED BY error.js)
-// --------------------------------
+// Called externally by an error.js file if present
 window.flushEarlyErrors = function () {
-
     if (!window.__earlyErrorQueue?.length) return;
-
     if (typeof window.showError !== "function") return;
 
     window.__earlyErrorQueue.forEach(item => {
