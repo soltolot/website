@@ -84,15 +84,19 @@
 <!-- SCRIPTS (SAFE ORDER)     -->
 <!-- ========================= -->
 
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Core system -->
 <script src="js/bootstrap.js"></script>
 <script src="js/supabase.js"></script>
 <script src="js/auth.js"></script>
-
-<script src="js/ui.js"></script>   <!-- MISSING FILE -->
-
+<script src="js/ui.js"></script>
 <script src="js/chat.js"></script>
-<script src="js/error.js"></script>
-<script src="js/app.js"></script>
+
+<!-- Boot LAST -->
+<script src="js/app.js" defer></script>
+
 
 </body>
 </html>
