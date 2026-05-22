@@ -1,102 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>SultanChat</title>
+    <meta charset="UTF-8">
+    <title>SultanChat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="stylesheet" href="CSS/main.css">
 
-<link rel="icon" type="image/png" href="logo.png">
-<!-- CSS (CHECK PATH!) -->
-<link rel="stylesheet" href="CSS/main.css">
-
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-
 <body>
 
-<button id="settings-btn">⚙️</button>
+    <button id="settings-btn" aria-label="Open Settings">⚙️</button>
 
-<div class="container">
+    <div class="container">
+        <h2>SultanChat</h2>
 
-    <h2>SultanChat</h2>
+        <div id="chat"></div>
 
-    <div id="chat"></div>
+        <div id="status">● CONNECTING...</div>
 
-    <div id="status">● CONNECTING...</div>
-
-    <div class="send-area">
-        <input id="message-input" placeholder="Type your message...">
-        <button id="send-btn" onclick="sendMessage()">Send</button>
-    </div>
-
-    <div class="send-area">
-        <input id="suggest-input" placeholder="Send suggestion...">
-        <button id="suggest-btn" onclick="sendSuggest()">Suggest</button>
-    </div>
-
-</div>
-
-<!-- SETTINGS -->
-<div id="settings-overlay">
-    <div id="settings-window">
-
-        <h3>Choose Your Color</h3>
-
-        <div id="colorPicker">
-
-            <div class="color-option" data-color="#C62828" style="background:#C62828"></div>
-            <div class="color-option" data-color="#D84315" style="background:#D84315"></div>
-            <div class="color-option" data-color="#E65100" style="background:#E65100"></div>
-            <div class="color-option" data-color="#FF6200" style="background:#FF6200"></div>
-            <div class="color-option" data-color="#FF8A00" style="background:#FF8A00"></div>
-
-            <div class="color-option" data-color="#AD1457" style="background:#AD1457"></div>
-            <div class="color-option" data-color="#8E24AA" style="background:#8E24AA"></div>
-            <div class="color-option" data-color="#5E35B1" style="background:#5E35B1"></div>
-
-            <div class="color-option" data-color="#3949AB" style="background:#3949AB"></div>
-            <div class="color-option" data-color="#1E88E5" style="background:#1E88E5"></div>
-
-            <div class="color-option" data-color="#00897B" style="background:#00897B"></div>
-            <div class="color-option" data-color="#2E7D32" style="background:#2E7D32"></div>
-
-            <div class="color-option" data-color="#558B2F" style="background:#558B2F"></div>
-            <div class="color-option" data-color="#6D4C41" style="background:#6D4C41"></div>
-            <div class="color-option" data-color="#546E7A" style="background:#546E7A"></div>
-
+        <div class="send-area">
+            <input id="message-input" placeholder="Type your message..." onkeydown="if(event.key === 'Enter') sendMessage()">
+            <button id="send-btn" onclick="sendMessage()">Send</button>
         </div>
 
-
-        <label style="display:flex;align-items:center;gap:10px;margin-top:15px;">
-            <input type="checkbox" id="dev-toggle">
-            Developer Mode
-        </label>
-        
-
-        <button id="close-settings">Close</button>
-
+        <div class="send-area">
+            <input id="suggest-input" placeholder="Send suggestion..." onkeydown="if(event.key === 'Enter') sendSuggest()">
+            <button id="suggest-btn" onclick="sendSuggest()">Suggest</button>
+        </div>
     </div>
-</div>
 
-<!-- ========================= -->
-<!-- SCRIPTS (SAFE ORDER)     -->
-<!-- ========================= -->
+    <div id="settings-overlay">
+        <div id="settings-window">
+            <h3>Choose Your Color</h3>
 
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+            <div id="colorPicker">
+                <div class="color-option" data-color="#C62828" style="background:#C62828"></div>
+                <div class="color-option" data-color="#D84315" style="background:#D84315"></div>
+                <div class="color-option" data-color="#E65100" style="background:#E65100"></div>
+                <div class="color-option" data-color="#FF6200" style="background:#FF6200"></div>
+                <div class="color-option" data-color="#FF8A00" style="background:#FF8A00"></div>
 
-<!-- Core system -->
-<script src="js/bootstrap.js"></script>
-<script src="js/supabase.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/chat.js"></script>
+                <div class="color-option" data-color="#AD1457" style="background:#AD1457"></div>
+                <div class="color-option" data-color="#8E24AA" style="background:#8E24AA"></div>
+                <div class="color-option" data-color="#5E35B1" style="background:#5E35B1"></div>
 
-<!-- Boot LAST -->
-<script src="js/app.js" defer></script>
+                <div class="color-option" data-color="#3949AB" style="background:#3949AB"></div>
+                <div class="color-option" data-color="#1E88E5" style="background:#1E88E5"></div>
 
+                <div class="color-option" data-color="#00897B" style="background:#00897B"></div>
+                <div class="color-option" data-color="#2E7D32" style="background:#2E7D32"></div>
+
+                <div class="color-option" data-color="#558B2F" style="background:#558B2F"></div>
+                <div class="color-option" data-color="#6D4C41" style="background:#6D4C41"></div>
+                <div class="color-option" data-color="#546E7A" style="background:#546E7A"></div>
+            </div>
+
+            <label style="display:flex; align-items:center; gap:10px; margin-top:15px; cursor:pointer;">
+                <input type="checkbox" id="dev-toggle">
+                Developer Mode
+            </label>
+            
+            <button id="close-settings">Close</button>
+        </div>
+    </div>
+
+    <script src="js/bootstrap.js"></script>
+
+    <script src="js/supabase.js"></script>
+
+    <script src="js/auth.js"></script>
+
+    <script src="js/ui.js"></script>
+
+    <script src="js/chat.js"></script>
+
+    <script src="js/app.js"></script>
 
 </body>
 </html>
