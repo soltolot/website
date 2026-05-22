@@ -21,84 +21,80 @@
 
 body {
     font-family: sans-serif;
-    background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
     margin: 0;
-    padding: 20px;
     min-height: 100vh;
-}
-        
-/* STATUS BAR */
-#status, .status {
-    padding: 10px;
-    background: #FFEDD5;
-    color: #E85D04;
-    border-radius: 10px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 14px;
-    width: 100%;
-    box-sizing: border-box;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
 }
 
-#button {
-    padding: 12px 14px;
+/* main card */
+.home {
+    text-align: center;
+    padding: 40px 30px;
+
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px);
+
+    border-radius: 18px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+
+    width: 320px;
+}
+
+/* title */
+.home h1 {
+    margin: 0;
+    font-size: 32px;
+    color: #E65100;
+}
+
+/* subtitle */
+.home p {
+    margin-top: 10px;
+    margin-bottom: 25px;
+    color: #444;
     font-size: 14px;
-    font-weight: bold;
-    color: white;
-    background: #E65100;
+}
+
+/* button layout */
+.buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* buttons */
+button {
+    padding: 12px;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
+
+    font-weight: bold;
     cursor: pointer;
 
-    transition:
-        background 0.2s ease,
-        transform 0.12s ease,
-        box-shadow 0.2s ease;
+    color: white;
+    background: #E65100;
 
-    box-shadow:
-        0 4px 12px rgba(230, 81, 0, 0.25);
+    transition: 0.2s ease;
 }
 
+/* hover effect */
 button:hover {
-    background: #DC4D00;
     transform: translateY(-2px);
-    box-shadow:
-        0 6px 16px rgba(230, 81, 0, 0.35);
+    background: #DC4D00;
+    box-shadow: 0 10px 20px rgba(230, 81, 0, 0.25);
 }
 
+/* click feel */
 button:active {
-    transform: scale(0.95);
-    box-shadow:
-        0 2px 8px rgba(230, 81, 0, 0.2);
-}
-
-/* SYSTEM ERROR AND BACKEND OUTPUT LINES */
-.log-msg {
-    background: #B00020;
-    color: white;
-    font-family: monospace;
-    border-left: 5px solid #A9A9A9;
-    padding: 10px;
-    border-radius: 10px;
-    white-space: pre-wrap;
-    overflow-x: auto;
-    width: calc(100% - 16px);
-    margin-bottom: 8px;
-}
-
-.error-msg {
-    background: #B00020;
-    color: white;
-    font-family: monospace;
-    border-left: 5px solid #ff4d6d;
-    padding: 10px;
-    border-radius: 10px;
-    white-space: pre-wrap;
-    overflow-x: auto;
-    width: calc(100% - 16px);
-    margin-bottom: 8px;
-}
-        
+    transform: scale(0.96);
+}        
     </style>
     
     
