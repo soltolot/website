@@ -1,9 +1,13 @@
 // --------------------------------------------------
-// Better log() function (supports multiple arguments)
+// chat.js — Managed entirely by app.js
 // --------------------------------------------------
+
+window.displayName = null;
+
+// Better log() function (supports multiple arguments safely)
 function log(...args) {
     const chatBox = document.getElementById("chat");
-    if (!chatBox) return; // Guard clause in case DOM isn't ready
+    if (!chatBox) return; 
     
     const logDiv = document.createElement("div");
     logDiv.style.color = "#999";
@@ -13,37 +17,29 @@ function log(...args) {
     chatBox.appendChild(logDiv);
 }
 
-// Global state for user
-window.displayName = null;
-
 // --------------------------------------------------
-// initChat() — REQUIRED BY app.js
+// initChat() — CALLED BY app.js AFTER AUTH IS VALID
 // --------------------------------------------------
 async function initChat() {
     log("CHAT", "initChat ENTERED");
 
-    try {
-        // Fetch session safely
-        const { data, error } = await client.auth.getSession();
-        const session = data?.session;
+    // Grab the verified session safely
+    const { data } = await client.auth.getSession();
+    const session = data?.session;
 
-        if (error || !session) {
-            log("CHAT", "NO SESSION OR ERROR — redirecting");
-            window.location.href = "login.html";
-            return;
-        }
-
-        // Load username
-        window.displayName = session.user?.user_metadata?.username;
-        log("CHAT", "USERNAME LOADED:", window.displayName);
-
-        // Load messages
-        await loadMessages();
-
-        log("CHAT", "initChat COMPLETE");
-    } catch (err) {
-        log("CHAT ERROR during init:", err.message);
+    if (!session) {
+        log("CHAT", "initChat aborted: No active session found.");
+        return; 
     }
+
+    // Set user profile data globally
+    window.displayName = session.user?.user_metadata?.username || "Anonymous";
+    log("CHAT", "USERNAME LOADED:", window.displayName);
+
+    // Initial load of messages
+    await loadMessages();
+
+    log("CHAT", "initChat COMPLETE");
 }
 
 // --------------------------------------------------
@@ -67,13 +63,11 @@ async function loadMessages() {
 
     data.forEach(msg => {
         const div = document.createElement("div");
-        // Safe mapping in case username or text is missing
         div.textContent = `${msg.username || 'Unknown'}: ${msg.text || ''}`;
         box.appendChild(div);
     });
-    
-    // Auto-scroll to bottom of chat
-    box.scrollTop = box.scrollHeight;
+
+    box.scrollTop = box.scrollHeight; // Keep chat scrolled to bottom
 }
 
 // --------------------------------------------------
@@ -100,7 +94,5 @@ async function sendMessage() {
     }
 
     inputEl.value = "";
-    
-    // Refresh the feed
     await loadMessages();
 }
