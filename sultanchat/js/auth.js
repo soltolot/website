@@ -1,101 +1,69 @@
+// ==================================================
+// auth.js — AUTH SYSTEM (SESSION + USER)
+// ==================================================
+
+window.currentUser = null;
 window.displayName = null;
 
-// ===============================
-// AUTH SYSTEM (SESSION + USER)
-// ===============================
-
-let currentUser = null;
-let displayName = null;
-
-// -------------------------------
-// WAIT FOR SUPABASE READY
-// -------------------------------
-function waitForAuth() {
-    return new Promise((resolve) => {
-
-        const { data: listener } =
-            client.auth.onAuthStateChange(() => {
-                listener.subscription.unsubscribe();
-                resolve();
-            });
-
-        // fallback in case event doesn't fire fast
-        setTimeout(resolve, 300);
-    });
-}
-
-// -------------------------------
-// GET SESSION SAFELY
-// -------------------------------
+// --------------------------------------------------
+// GET SESSION SAFELY (With fallback retry for hydration)
+// --------------------------------------------------
 async function getSessionSafe() {
-
     const { data: { session } } = await client.auth.getSession();
-
     if (session) return session;
 
-    // small retry (fixes Supabase hydration delay bug)
+    // Small retry delay (fixes Supabase local storage hydration delay bug)
     await new Promise(r => setTimeout(r, 300));
-
     const retry = await client.auth.getSession();
     return retry.data.session || null;
 }
 
-// -------------------------------
+// --------------------------------------------------
 // LOAD USER
-// -------------------------------
+// --------------------------------------------------
 async function loadUser() {
+    const { data: { user }, error } = await client.auth.getUser();
+    if (error || !user) return null;
 
-    const { data: { user } } = await client.auth.getUser();
-
-    if (!user) return null;
-
-    currentUser = user;
-
-    displayName =
-        user.user_metadata?.display_name || "Anonymous";
+    window.currentUser = user;
+    
+    // Checks for 'username', then 'display_name', then falls back to email prefix
+    window.displayName = user.user_metadata?.username || 
+                         user.user_metadata?.display_name || 
+                         user.email?.split('@')[0] || 
+                         "Anonymous";
 
     return user;
 }
 
-// -------------------------------
-// LOGOUT (optional helper)
-// -------------------------------
-async function logout() {
-    await client.auth.signOut();
-    window.location.href = "login.html";
-}
-
-// -------------------------------
-// AUTH GUARD (STOP UNAUTH ACCESS)
-// -------------------------------
+// --------------------------------------------------
+// AUTH GUARD (USED BY APP.JS)
+// --------------------------------------------------
 async function requireAuth() {
-
+    log("AUTH", "Checking session stability...");
     const session = await getSessionSafe();
 
     if (!session) {
-        window.location.href = "login.html";
+        log("AUTH", "No valid session found in requireAuth.");
         return false;
     }
 
-    await loadUser();
+    log("AUTH", "Session found. Loading profile data...");
+    const user = await loadUser();
 
-    if (!currentUser || !displayName) {
-        window.location.href = "login.html";
+    if (!user) {
+        log("AUTH", "Session exists, but user profile failed to download.");
         return false;
     }
 
     return true;
 }
 
-// -------------------------------
-// LISTENER (PREVENT FAKE ACCESS)
-// -------------------------------
-function setupAuthListener() {
-
-    client.auth.onAuthStateChange((event, session) => {
-
-        if (!session) {
-            window.location.href = "login.html";
-        }
-    });
+// --------------------------------------------------
+// LOGOUT UTILITY
+// --------------------------------------------------
+async function logout() {
+    log("AUTH", "Logging out...");
+    await client.auth.signOut();
+    window.location.href = "login.html";
 }
