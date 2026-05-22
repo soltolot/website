@@ -32,7 +32,7 @@ function log(...args) {
     console.log(...args); // always log to console
 
     // write logs into the chat area
-    const box = document.getElementById("messages");
+    const box = document.getElementById("chat");
     if (!box) return; // prevents crashes if chat isn't loaded yet
 
     const line = document.createElement("div");
