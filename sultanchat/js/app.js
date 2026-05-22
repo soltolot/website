@@ -1,49 +1,6 @@
 log("DEBUG", "APP JS LOADED");
 log("DISPLAY NAME", window.displayName);
 
-
-window.DEV_MODE = JSON.parse(localStorage.getItem("DEV_MODE") || "false");
-
-// safe logger call (prevents crash if log() not loaded yet)
-function setDevMode(value) {
-
-    log("DEBUG", "setDevMode CALLED with " + value);
-
-    window.DEV_MODE = value;
-    localStorage.setItem("DEV_MODE", JSON.stringify(value));
-
-    if (typeof log === "function") {
-        log("DEV_MODE", value ? "ON 🧠" : "OFF 👤");
-    }
-}
-
-function setupDevToggle() {
-
-    log("DEBUG", "setupDevToggle() ENTERED");
-
-    const toggle = document.getElementById("dev-toggle");
-
-    if (!toggle) {
-        log("DEBUG", "setupDevToggle: toggle NOT FOUND");
-        return;
-    }
-
-    log("DEBUG", "setupDevToggle: toggle FOUND");
-
-    toggle.checked = !!window.DEV_MODE;
-
-    toggle.addEventListener("change", (e) => {
-        log("DEBUG", "setupDevToggle: toggle CHANGED");
-        setDevMode(!!e.target.checked);
-    });
-}
-
-if (typeof log === "function") {
-    log("DEBUG", "log() EXISTS — calling requireAuth soon");
-} else {
-    console.log("APP JS WORKING (fallback)");
-}
-
 // ===============================
 // APP STARTUP CONTROLLER (CLEAN)
 // ===============================
@@ -54,6 +11,12 @@ let appStarted = false;
 // SAFE START
 // -------------------------------
 async function startApp() {
+
+    if (appStarted) {
+        log("DEBUG", "startApp already called, skipping");
+        return;
+    }
+    appStarted = true;
 
     log("BOOT", "startApp ENTERED");
 
@@ -69,15 +32,23 @@ async function startApp() {
         }
 
         log("UI", "calling setupUI()");
-        setupUI?.();
+        try {
+            await setupUI?.();
+        } catch (err) {
+            log("ERROR", "setupUI failed: " + (err?.message || err));
+        }
 
         log("CHAT", "calling initChat()");
-        await initChat?.();
+        try {
+            await initChat?.();
+        } catch (err) {
+            log("ERROR", "initChat failed: " + (err?.message || err));
+        }
 
         log("DONE", "app finished successfully");
 
     } catch (err) {
-        log("FATAL", err);
+        log("FATAL", err?.message || err);
     }
 }
 
@@ -87,6 +58,12 @@ async function startApp() {
 function setupGlobalAuthWatch() {
 
     log("DEBUG", "setupGlobalAuthWatch ENTERED");
+
+    // Guard: check if client exists
+    if (typeof client === "undefined" || !client.auth) {
+        log("ERROR", "Supabase client not initialized");
+        return;
+    }
 
     client.auth.onAuthStateChange((event, session) => {
 
@@ -116,13 +93,15 @@ function boot() {
 
     log("BOOT", "calling startApp()");
     startApp();
+
+    log("BOOT", "calling setupDevToggle()");
+    setupDevToggle();
+
+    log("BOOT", "boot() FINISHED EXECUTING");
 }
 
-// -------------------------------
-// ⭐ FIX: WAIT FOR DOM BEFORE BOOT
-// -------------------------------
+// ⭐ WAIT FOR DOM AND DEPENDENCIES BEFORE BOOT
 document.addEventListener("DOMContentLoaded", () => {
     log("BOOT", "DOM READY — CALLING boot()");
     boot();
-    log("BOOT", "boot() FINISHED EXECUTING");
 });
