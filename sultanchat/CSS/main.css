@@ -1,5 +1,5 @@
 :root {
-    --my-msg-color: #FF6200;
+    --my-msg-color: #FF6200; /* Fallback baseline */
 }
 
 body {
@@ -21,7 +21,7 @@ body {
     border: 2px solid #FFBB66;
 }
 
-/* CHAT */
+/* CHAT AREA WINDOW */
 #chat {
     height: 380px;
     overflow-y: auto;
@@ -30,23 +30,52 @@ body {
     border-radius: 15px;
     border: 1px solid #FFDDAA;
     margin-bottom: 10px;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
+/* BASE BUBBLE CLASS (Fills workspace exactly like your interactive buttons layout width) */
 .msg {
     color: white;
-    padding: 10px 12px;
+    padding: 12px;
     border-radius: 12px;
-    margin-bottom: 8px;
     word-break: break-word;
     font-size: 15px;
+    box-sizing: border-box;
+
+    /* Configuration: Fills the entire box box container width minus structural padding padding offset */
+    width: calc(100% - 4px);
+    max-width: 100%;
+    
+    /* Dynamically receives background shades straight from JavaScript logic variables! */
+    background-color: var(--bubble-color, #546E7A);
+    
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s ease;
 }
 
+/* Make inline usernames stand out */
+.msg strong {
+    margin-right: 4px;
+    font-weight: bold;
+}
+
+/* USER'S OWN PERSONAL MESSAGE BUBBLE SPECIFICS */
 .my-msg {
-    background: var(--my-msg-color);
+    /* Uses color selected by user */
+    box-shadow: 0 3px 10px rgba(230, 81, 0, 0.15);
 }
 
-/* STATUS */
-.status {
+/* OTHER USER MESSAGE BUBBLE SPECIFICS */
+.other-msg {
+    /* Uses color fetched from their profile data */
+    opacity: 0.95; 
+}
+
+/* STATUS BAR */
+#status, .status {
     padding: 10px;
     background: #FFEDD5;
     color: #E85D04;
@@ -58,7 +87,7 @@ body {
     box-sizing: border-box;
 }
     
-/* INPUT AREA */
+/* INPUT AREA ROW LAYOUT */
 .send-area {
     display: flex;
     gap: 8px;
@@ -95,23 +124,19 @@ button {
 }
 
 button:hover {
-
     background: #DC4D00;
-
     transform: translateY(-2px);
-
     box-shadow:
         0 6px 16px rgba(230, 81, 0, 0.35);
 }
 
 button:active {
-
     transform: scale(0.95);
-
     box-shadow:
         0 2px 8px rgba(230, 81, 0, 0.2);
 }
-/* SETTINGS BUTTON */
+
+/* SETTINGS BUTTON FIXED CORNER PACKING */
 #settings-btn {
     position: fixed;
     top: 15px;
@@ -125,7 +150,7 @@ button:active {
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-/* SETTINGS MODAL */
+/* SETTINGS MODAL LAYERS */
 #settings-overlay {
     position: fixed;
     inset: 0;
@@ -133,6 +158,7 @@ button:active {
     display: none;
     justify-content: center;
     align-items: center;
+    z-index: 999;
 }
 
 #settings-window {
@@ -144,7 +170,7 @@ button:active {
     text-align: center;
 }
 
-/* 15 COLOR PALETTE (RESTORED STYLE) */
+/* 15 COLOR PALETTE BUTTONS */
 .color-option {
     width: 28px;
     height: 28px;
@@ -154,10 +180,9 @@ button:active {
     cursor: pointer;
     border: 2px solid white;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    
 }
 
-
+/* SYSTEM ERROR AND BACKEND OUTPUT LINES */
 .system-msg {
     background: #B00020;
     color: white;
@@ -167,4 +192,6 @@ button:active {
     border-radius: 10px;
     white-space: pre-wrap;
     overflow-x: auto;
+    width: calc(100% - 16px);
+    margin-bottom: 8px;
 }
