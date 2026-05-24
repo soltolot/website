@@ -99,25 +99,22 @@ function setupGlobalAuthWatch() {
 // --------------------------------------------------
 // BOOTSTRAP MAIN INTERACTION INITIALIZATION
 // --------------------------------------------------
-function boot() {
+async function boot() {
     log("BOOT", "boot() ENTERED — RUNNING TIMELINE STAGES");
 
-    // Initialize routing tracker hook first
     setupGlobalAuthWatch();
 
-    // Fire the secure app pipeline
     log("BOOT", "calling startApp()");
-    startApp();
+    await startApp(); // 🔥 IMPORTANT CHANGE
 
-    // Calls your dev environment config file setup function seamlessly!
     log("BOOT", "calling setupDevToggle()");
     if (typeof setupDevToggle === "function") {
         setupDevToggle();
-    } else {
-        log("DEBUG", "setupDevToggle function context was not loaded via external environment dependencies.");
     }
 
     log("BOOT", "boot() LIFECYCLE COMPLETED");
+
+    document.getElementById("status").textContent = "CONNECTED";
 }
 
 // Attach pipeline start execution directly onto the DOM trigger
