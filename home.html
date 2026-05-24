@@ -152,6 +152,30 @@ input {
     
     
     <script>
+
+        async function sendSuggest() {
+        const inputEl = document.getElementById("suggest-input");
+            const text = inputEl.value.trim();
+            if (!text) return;
+
+            if (!window.displayName) {
+                log("ERROR: Message rejected. Identity parameter window.displayName is missing.");
+                return;
+            }
+
+            const { error } = await client.from("message").insert({
+                username: window.displayName,
+                suggestion: text
+            });
+
+            if (error) {
+                log("Error sending message to Supabase:", error.message);
+                 return;
+            }
+
+            inputEl.value = "";
+        }
+        
         function goChat() {
             window.location.href = "sultanchat/chat.html";
         }
