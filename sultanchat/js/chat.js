@@ -18,22 +18,27 @@ async function initChat() {
     await loadMessages();
 
     subscribeToMessages();
-    subscribeToProfileColors(); // 🔥 NEW
+    subscribeToProfileColors(); // 🔥 ONLY NEW FEATURE HOOK
 
     log("CHAT", "initChat COMPLETE");
 }
 
 // --------------------------------------------------
-// PROFILE CACHE
+// CACHE PROFILES (username → color)
 // --------------------------------------------------
 async function loadProfilesCache() {
-    const { data, error } = await client.from("profiles").select("username, color");
+    const { data, error } = await client
+        .from("profiles")
+        .select("username, color");
 
     if (error) return;
 
     cachedProfiles = {};
+
     data.forEach(p => {
-        if (p.username) cachedProfiles[p.username] = p.color;
+        if (p.username) {
+            cachedProfiles[p.username] = p.color;
+        }
     });
 }
 
@@ -51,14 +56,14 @@ function subscribeToMessages() {
             'postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'message' },
             () => {
-                loadMessages(); // keep your current behavior
+                loadMessages();
             }
         )
         .subscribe();
 }
 
 // --------------------------------------------------
-// 🔥 NEW: LIVE PROFILE COLOR SYNC (GLOBAL)
+// 🔥 NEW: GLOBAL PROFILE COLOR SUBSCRIPTION
 // --------------------------------------------------
 function subscribeToProfileColors() {
     if (profileSubscription) {
@@ -69,15 +74,22 @@ function subscribeToProfileColors() {
         .channel('public:profiles-live')
         .on(
             'postgres_changes',
-            { event: 'UPDATE', schema: 'public', table: 'profiles' },
+            {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'profiles'
+            },
             (payload) => {
-                const { username, color } = payload.new;
+
+                const username = payload.new.username;
+                const color = payload.new.color;
 
                 if (!username || !color) return;
 
+                // update cache instantly
                 cachedProfiles[username] = color;
 
-                // 🔥 instantly repaint all bubbles of this user
+                // repaint existing bubbles instantly
                 repaintUserMessages(username, color);
             }
         )
@@ -85,7 +97,7 @@ function subscribeToProfileColors() {
 }
 
 // --------------------------------------------------
-// LOAD & RENDER MESSAGES
+// LOAD + RENDER MESSAGES
 // --------------------------------------------------
 async function loadMessages() {
     const { data, error } = await client
@@ -106,19 +118,24 @@ async function loadMessages() {
         const isMe = username === window.displayName;
 
         const bubble = document.createElement("div");
-        bubble.dataset.username = username; // 🔥 IMPORTANT FOR REPAINT
+
+        // 🔥 IMPORTANT: enables live repaint targeting
+        bubble.dataset.username = username;
 
         if (isMe) {
             bubble.classList.add("msg", "my-msg");
+
             const myColor = localStorage.getItem("myColor") || "#FF6200";
             bubble.style.setProperty("--bubble-color", myColor);
         } else {
             bubble.classList.add("msg", "other-msg");
+
             const theirColor = cachedProfiles[username] || "#546E7A";
             bubble.style.setProperty("--bubble-color", theirColor);
         }
 
         bubble.innerHTML = `<strong>${username}:</strong> ${textContent}`;
+
         box.appendChild(bubble);
     });
 
@@ -126,7 +143,7 @@ async function loadMessages() {
 }
 
 // --------------------------------------------------
-// 🔥 REPAINT ENGINE
+// 🔥 LIVE REPAINT ENGINE
 // --------------------------------------------------
 function repaintUserMessages(username, color) {
     const bubbles = document.querySelectorAll(`[data-username="${username}"]`);
@@ -144,10 +161,16 @@ async function sendMessage() {
     const text = inputEl.value.trim();
     if (!text) return;
 
-    await client.from("message").insert({
-        username: window.displayName,
-        text
-    });
+    if (!window.displayName) return;
+
+    const { error } = await client
+        .from("message")
+        .insert({
+            username: window.displayName,
+            text
+        });
+
+    if (error) return;
 
     inputEl.value = "";
 }
