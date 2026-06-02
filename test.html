@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Click-to-Run Sandbox</title>
+<title>Full Web Sandbox</title>
 
 <style>
 body {
@@ -13,30 +13,20 @@ body {
 
 textarea {
     width: 100%;
-    height: 160px;
+    height: 220px;
     font-family: monospace;
     font-size: 14px;
     padding: 10px;
     border: 2px solid #ffbb66;
     border-radius: 10px;
-    outline: none;
     background: #fff4e0;
-}
-
-#preview {
-    margin-top: 15px;
-    padding: 15px;
-    border-radius: 10px;
-    border: 2px solid #ffd0a0;
-    background: white;
-    min-height: 120px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    outline: none;
 }
 
 .toolbar {
     display: flex;
     gap: 10px;
-    margin-bottom: 10px;
+    margin: 10px 0;
 }
 
 button {
@@ -52,82 +42,73 @@ button {
 button:hover {
     background: #d84315;
 }
+
+iframe {
+    width: 100%;
+    height: 300px;
+    border: 2px solid #ffd0a0;
+    border-radius: 10px;
+    background: white;
+}
 </style>
 
 </head>
 
 <body>
 
-<h2>🧪 Click-to-Run Sandbox</h2>
+<h2>🧪 Full Web Sandbox (HTML + CSS + JS)</h2>
 
 <div class="toolbar">
-    <button onclick="runCode()">▶ Run Code</button>
-    <button onclick="setSafeMode()">Safe Mode</button>
-    <button onclick="setHtmlMode()">HTML + JS Mode</button>
+    <button onclick="runCode()">▶ Run</button>
 </div>
 
 <textarea id="input">
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Test Page</title>
+
+<style>
+body {
+    font-family: sans-serif;
+    background: #f0f8ff;
+}
+h3 {
+    color: red;
+}
+</style>
+</head>
+
+<body>
+
 <h3>Hello 👋</h3>
-<p>Click Run to execute.</p>
+<p>This is fully sandboxed.</p>
 
 <script>
-alert("JS runs only when you press Run!");
+alert("JS is running inside iframe!");
 </script>
+
+</body>
+</html>
 </textarea>
 
-<div id="preview"></div>
+<iframe id="preview"></iframe>
 
 <script>
 const input = document.getElementById("input");
 const preview = document.getElementById("preview");
 
-let mode = "html";
-
-// -----------------------------
-// SCRIPT EXECUTOR
-// -----------------------------
-function runScripts(container) {
-    const scripts = container.querySelectorAll("script");
-
-    scripts.forEach(oldScript => {
-        const newScript = document.createElement("script");
-
-        if (oldScript.src) {
-            newScript.src = oldScript.src;
-        } else {
-            newScript.textContent = oldScript.textContent;
-        }
-
-        oldScript.remove();
-        document.body.appendChild(newScript);
-    });
-}
-
-// -----------------------------
-// MAIN RUN FUNCTION (BUTTON)
-// -----------------------------
+// --------------------------------------------------
+// RUN FULL HTML DOCUMENT INSIDE IFRAME
+// --------------------------------------------------
 function runCode() {
-    preview.innerHTML = input.value;
-
-    if (mode === "html") {
-        runScripts(preview);
-    }
+    const doc = preview.contentDocument || preview.contentWindow.document;
+    doc.open();
+    doc.write(input.value);
+    doc.close();
 }
 
-// -----------------------------
-// MODES
-// -----------------------------
-function setSafeMode() {
-    mode = "safe";
-    runCode();
-}
-
-function setHtmlMode() {
-    mode = "html";
-    runCode();
-}
-
-// initial render (does NOT auto-run on typing)
+// initial render
 runCode();
 </script>
 
