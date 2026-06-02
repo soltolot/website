@@ -1,93 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Live HTML Sandbox</title>
-
-<style>
-body {
-    font-family: sans-serif;
-    margin: 20px;
-    background: #fff8f0;
-}
-
-textarea {
-    width: 100%;
-    height: 140px;
-    font-family: monospace;
-    font-size: 14px;
-    padding: 10px;
-    border: 2px solid #ffbb66;
-    border-radius: 10px;
-    outline: none;
-    background: #fff4e0;
-}
-
-#preview {
-    margin-top: 15px;
-    padding: 15px;
-    border-radius: 10px;
-    border: 2px solid #ffd0a0;
-    background: white;
-    min-height: 120px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-}
-
-.toolbar {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-button {
-    padding: 8px 12px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    background: #e65100;
-    color: white;
-    font-weight: bold;
-}
-
-button:hover {
-    background: #d84315;
-}
-</style>
-
-</head>
-<body>
-
-<h2>🧪 Live HTML Sandbox</h2>
-
-<div class="toolbar">
-    <button onclick="setSafeMode()">Safe Mode</button>
-    <button onclick="setHtmlMode()">HTML Mode</button>
-</div>
-
-<textarea id="input" placeholder="Type HTML here...">
-<h3>Hello 👋</h3>
-<p>Edit this text and see live changes.</p>
-</textarea>
-
-<div id="preview"></div>
-
 <script>
 const input = document.getElementById("input");
 const preview = document.getElementById("preview");
 
-let mode = "html"; // default
+let mode = "html";
+
+function runScripts(container) {
+    const scripts = container.querySelectorAll("script");
+
+    scripts.forEach(oldScript => {
+        const newScript = document.createElement("script");
+
+        if (oldScript.src) {
+            newScript.src = oldScript.src;
+        } else {
+            newScript.textContent = oldScript.textContent;
+        }
+
+        oldScript.remove();
+        document.body.appendChild(newScript);
+    });
+}
 
 function render() {
-    if (mode === "safe") {
-        preview.textContent = input.value;
-    } else {
-        preview.innerHTML = input.value;
+    preview.innerHTML = input.value;
+
+    if (mode === "html") {
+        runScripts(preview);
     }
 }
 
 input.addEventListener("input", render);
 
-// mode switchers
 function setSafeMode() {
     mode = "safe";
     render();
@@ -98,9 +41,5 @@ function setHtmlMode() {
     render();
 }
 
-// initial render
 render();
 </script>
-
-</body>
-</html>
