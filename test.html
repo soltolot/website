@@ -1,9 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live HTML + JS Sandbox</title>
+
+<style>
+body {
+    font-family: sans-serif;
+    margin: 20px;
+    background: #fff8f0;
+}
+
+textarea {
+    width: 100%;
+    height: 160px;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 10px;
+    border: 2px solid #ffbb66;
+    border-radius: 10px;
+    outline: none;
+    background: #fff4e0;
+}
+
+#preview {
+    margin-top: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #ffd0a0;
+    background: white;
+    min-height: 120px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #e65100;
+    color: white;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #d84315;
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>🧪 Live HTML + JS Sandbox</h2>
+
+<div class="toolbar">
+    <button onclick="setSafeMode()">Safe Mode</button>
+    <button onclick="setHtmlMode()">HTML + JS Mode</button>
+</div>
+
+<textarea id="input">
+<h3>Hello 👋</h3>
+<p>Edit this and JS will run too.</p>
+
+<script>
+alert("JS is running!");
+</script>
+</textarea>
+
+<div id="preview"></div>
+
 <script>
 const input = document.getElementById("input");
 const preview = document.getElementById("preview");
 
 let mode = "html";
 
+// --------------------------------------------------
+// RUN AND RE-EXECUTE SCRIPTS SAFELY
+// --------------------------------------------------
 function runScripts(container) {
     const scripts = container.querySelectorAll("script");
 
@@ -21,6 +102,9 @@ function runScripts(container) {
     });
 }
 
+// --------------------------------------------------
+// MAIN RENDER FUNCTION
+// --------------------------------------------------
 function render() {
     preview.innerHTML = input.value;
 
@@ -29,8 +113,12 @@ function render() {
     }
 }
 
+// live update
 input.addEventListener("input", render);
 
+// --------------------------------------------------
+// MODE SWITCHERS
+// --------------------------------------------------
 function setSafeMode() {
     mode = "safe";
     render();
@@ -41,5 +129,9 @@ function setHtmlMode() {
     render();
 }
 
+// initial render
 render();
 </script>
+
+</body>
+</html>
