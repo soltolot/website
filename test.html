@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Live HTML + JS Sandbox</title>
+<title>Click-to-Run Sandbox</title>
 
 <style>
 body {
@@ -58,19 +58,20 @@ button:hover {
 
 <body>
 
-<h2>🧪 Live HTML + JS Sandbox</h2>
+<h2>🧪 Click-to-Run Sandbox</h2>
 
 <div class="toolbar">
+    <button onclick="runCode()">▶ Run Code</button>
     <button onclick="setSafeMode()">Safe Mode</button>
     <button onclick="setHtmlMode()">HTML + JS Mode</button>
 </div>
 
 <textarea id="input">
 <h3>Hello 👋</h3>
-<p>Edit this and JS will run too.</p>
+<p>Click Run to execute.</p>
 
 <script>
-alert("JS is running!");
+alert("JS runs only when you press Run!");
 </script>
 </textarea>
 
@@ -82,9 +83,9 @@ const preview = document.getElementById("preview");
 
 let mode = "html";
 
-// --------------------------------------------------
-// RUN AND RE-EXECUTE SCRIPTS SAFELY
-// --------------------------------------------------
+// -----------------------------
+// SCRIPT EXECUTOR
+// -----------------------------
 function runScripts(container) {
     const scripts = container.querySelectorAll("script");
 
@@ -102,10 +103,10 @@ function runScripts(container) {
     });
 }
 
-// --------------------------------------------------
-// MAIN RENDER FUNCTION
-// --------------------------------------------------
-function render() {
+// -----------------------------
+// MAIN RUN FUNCTION (BUTTON)
+// -----------------------------
+function runCode() {
     preview.innerHTML = input.value;
 
     if (mode === "html") {
@@ -113,24 +114,21 @@ function render() {
     }
 }
 
-// live update
-input.addEventListener("input", render);
-
-// --------------------------------------------------
-// MODE SWITCHERS
-// --------------------------------------------------
+// -----------------------------
+// MODES
+// -----------------------------
 function setSafeMode() {
     mode = "safe";
-    render();
+    runCode();
 }
 
 function setHtmlMode() {
     mode = "html";
-    render();
+    runCode();
 }
 
-// initial render
-render();
+// initial render (does NOT auto-run on typing)
+runCode();
 </script>
 
 </body>
