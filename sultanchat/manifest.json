@@ -1,1 +1,17 @@
-
+{
+  "name": "SultanChat",
+  "short_name": "SultanChat",
+  "start_url": "sultanchat.html",
+  "display": "standalone",
+  "theme_color": "#E65100",
+  "background_color": "#FFF4E0",
+  "icons": [
+    {
+      "src": "sultanchat/assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+  
+    }
+  ]
+}
