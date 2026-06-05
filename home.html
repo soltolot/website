@@ -14,16 +14,11 @@
 <button class="button" onclick="goChat()">Enter Chat</button>
 <button class="button" onclick="goLogin()">Login</button>
 <button class="button" onclick="goSign()">Sign up</button></div>  
-<div class="send-area">
-    <input id="input" placeholder="Enter a suggestion..." onkeydown="if(event.key === 'Enter') sendSuggest()">
-    <button class="button" onclick="sendSuggest()">Suggest</button> 
-</div>
 <p class="system">
-🟠 Update in progress. Some features may be unstable. Full system remains online.<br><br>
+Latest updates:<br><br>
 
-Now updating:<br>
-• Homepage UI<br>
-• Adding sound FX
+• Added a Dark mode<br>
+• Added Sound FX
 </p>
     </div>
 
@@ -152,29 +147,6 @@ input {
     
     
     <script>
-
-        async function sendSuggest() {
-        const inputEl = document.getElementById("input");
-            const text = inputEl.value.trim();
-            if (!text) return;
-
-            if (!window.displayName) {
-                log("ERROR: Message rejected. Identity parameter window.displayName is missing.");
-                return;
-            }
-
-            const { error } = await client.from("message").insert({
-                username: "Guest",
-                suggestion: text
-            });
-
-            if (error) {
-                log("Error sending message to Supabase:", error.message);
-                 return;
-            }
-
-            inputEl.value = "";
-        }
         
         function goChat() {
             window.location.href = "sultanchat/chat.html";
