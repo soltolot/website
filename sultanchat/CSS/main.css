@@ -1,117 +1,147 @@
+/* ==================================================
+   🎨 THEME VARIABLES (LIGHT MODE DEFAULT)
+================================================== */
 :root {
     --accent: #E65100;
     --accent-hover: #DC4D00;
 
     --bg: #FFF8F0;
-    --bg-2: #FFEDD5;
-    --card: white;
-    --text: #222;
-    --muted: #666;
+    --bg2: #FFEDD5;
 
-    --chat-bg: #FFF9F0;
-    --input-bg: #FFF4E0;
+    --card: #FFFFFF;
+    --text: #222222;
+    --muted: #666666;
+
+    --chat: #FFF9F0;
+    --input: #FFF4E0;
     --border: #FFBB66;
 
-    --system-bg: #FFEDD5;
+    --status-bg: #FFEDD5;
+
+    --bubble-user: var(--accent);
 }
 
-/* 🌙 DARK MODE VARIABLES */
+/* ==================================================
+   🌙 DARK MODE (BALANCED — NOT TOO BLACK)
+================================================== */
 body.dark {
     --accent: #E05A00;
     --accent-hover: #F06A12;
 
     --bg: #1A1A1A;
-    --bg-2: #222222;
+    --bg2: #222222;
+
     --card: #2A241F;
     --text: #F2F2F2;
     --muted: #B5B5B5;
 
-    --chat-bg: #201B17;
-    --input-bg: #2B2520;
+    --chat: #201B17;
+    --input: #2B2520;
     --border: #3B322C;
 
-    --system-bg: #2A1A10;
+    --status-bg: #2A1A10;
+
+    --bubble-user: #E05A00;
 }
 
-/* 🌍 GLOBAL */
+/* ==================================================
+   🌍 GLOBAL LAYOUT
+================================================== */
 body {
-    font-family: sans-serif;
-    background: linear-gradient(135deg, var(--bg), var(--bg-2));
     margin: 0;
     padding: 20px;
     min-height: 100vh;
+
+    font-family: sans-serif;
+
+    background: linear-gradient(135deg, var(--bg), var(--bg2));
     color: var(--text);
-    transition: background 0.25s ease, color 0.25s ease;
+
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* 🧱 CONTAINER */
+/* ==================================================
+   🧱 MAIN CONTAINER
+================================================== */
 .container {
     max-width: 420px;
     margin: auto;
+
     background: var(--card);
     padding: 25px;
+
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
     border: 2px solid var(--border);
-    transition: all 0.25s ease;
+
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+
+    transition: all 0.3s ease;
 }
 
-/* 💬 CHAT */
+/* ==================================================
+   💬 CHAT WINDOW
+================================================== */
 #chat {
     height: 380px;
     overflow-y: auto;
-    background: var(--chat-bg);
+
+    background: var(--chat);
+    border: 1px solid var(--border);
+
     padding: 15px;
     border-radius: 15px;
-    border: 1px solid var(--border);
-    margin-bottom: 10px;
 
     display: flex;
     flex-direction: column;
     gap: 8px;
+
+    transition: background 0.3s ease;
 }
 
-/* 💭 MESSAGE BUBBLES */
+/* ==================================================
+   💭 MESSAGE BUBBLES
+================================================== */
 .msg {
-    color: white;
     padding: 12px;
     border-radius: 12px;
-    word-break: break-word;
-    font-size: 15px;
-    box-sizing: border-box;
 
     width: 100%;
-    background-color: var(--bubble-color, #546E7A);
+    box-sizing: border-box;
+    word-break: break-word;
 
-    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
-    transition: background-color 0.2s ease;
+    color: white;
+
+    background: var(--bubble-user);
+
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, background 0.2s ease;
 }
 
-/* 👤 USER MESSAGES */
-.my-msg {
-    box-shadow: 0 3px 10px rgba(230, 81, 0, 0.15);
+.msg:hover {
+    transform: translateY(-1px);
 }
 
-/* 👥 OTHER MESSAGES */
-.other-msg {
-    opacity: 0.95;
-}
+/* ==================================================
+   📡 STATUS BAR
+================================================== */
+#status {
+    margin-top: 10px;
 
-/* 📢 STATUS */
-#status, .status {
     padding: 10px;
-    background: var(--system-bg);
-    color: var(--accent);
     border-radius: 10px;
+
     text-align: center;
     font-weight: bold;
-    font-size: 14px;
-    width: 100%;
-    box-sizing: border-box;
+
+    background: var(--status-bg);
+    color: var(--accent);
+
     border: 1px solid var(--border);
 }
 
-/* ⌨️ INPUT ROW */
+/* ==================================================
+   ⌨️ INPUT AREA
+================================================== */
 .send-area {
     display: flex;
     gap: 8px;
@@ -121,27 +151,31 @@ body {
 input {
     flex: 1;
     padding: 12px;
-    background: var(--input-bg);
+
+    background: var(--input);
     border: 2px solid var(--border);
+
     border-radius: 10px;
-    font-size: 15px;
     outline: none;
+
     color: var(--text);
 }
 
-/* 🔘 BUTTON */
+/* ==================================================
+   🔘 BUTTONS
+================================================== */
 button {
     padding: 12px 14px;
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
-    background: var(--accent);
+
     border: none;
     border-radius: 10px;
+
     cursor: pointer;
 
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    background: var(--accent);
+    color: white;
+
+    transition: transform 0.2s ease, background 0.2s ease;
 }
 
 button:hover {
@@ -150,68 +184,73 @@ button:hover {
 }
 
 button:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
 }
 
-/* ⚙️ SETTINGS BUTTON */
+/* ==================================================
+   ⚙️ SETTINGS BUTTON
+================================================== */
 #settings-btn {
     position: fixed;
     top: 15px;
     right: 15px;
-    font-size: 22px;
-    background: var(--card);
-    border: none;
-    border-radius: 12px;
+
     padding: 8px 12px;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+
+    border-radius: 12px;
+    border: none;
+
+    background: var(--card);
     color: var(--text);
+
+    cursor: pointer;
+
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-/* 🪟 OVERLAY */
+/* ==================================================
+   🪟 SETTINGS OVERLAY
+================================================== */
 #settings-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.55);
+
+    background: rgba(0,0,0,0.5);
+
     display: none;
     justify-content: center;
     align-items: center;
-    z-index: 999;
 }
 
-/* 🧩 SETTINGS WINDOW */
+/* ==================================================
+   🧩 SETTINGS WINDOW
+================================================== */
 #settings-window {
-    background: var(--card);
-    padding: 20px;
-    border-radius: 16px;
     width: 90%;
     max-width: 360px;
-    text-align: center;
+
+    padding: 20px;
+
+    border-radius: 16px;
+
+    background: var(--card);
     color: var(--text);
 }
 
-/* 🎨 COLOR OPTIONS */
+/* ==================================================
+   🎨 COLOR PICKER
+================================================== */
 .color-option {
     width: 28px;
     height: 28px;
+
     border-radius: 8px;
+
     display: inline-block;
     margin: 4px;
+
     cursor: pointer;
+
     border: 2px solid white;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-}
-
-/* 🚨 SYSTEM MESSAGES */
-.system-msg {
-    background: #3A0F14;
-    color: white;
-    font-family: monospace;
-    border-left: 5px solid #FF4D6D;
-    padding: 10px;
-    border-radius: 10px;
-    white-space: pre-wrap;
-    overflow-x: auto;
-    width: 100%;
-    margin-bottom: 8px;
 }
