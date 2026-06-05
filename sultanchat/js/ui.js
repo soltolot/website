@@ -1,48 +1,93 @@
 // ==================================================
-// ui.js — INTERFACE, THEMES, & DEVELOPER TOGGLE
+// ui.js — INTERFACE, THEMES, COLORS, DEV MODE
 // ==================================================
 
 function setupUI() {
     log("UI", "setupUI ENTERED");
 
-    // 1. Recover saved theme color from cache instantly
+    // ===============================
+    // COLOR RESTORE (LOCAL STORAGE)
+    // ===============================
     const savedColor = localStorage.getItem("myColor");
+
     if (savedColor) {
         document.documentElement.style.setProperty("--my-msg-color", savedColor);
-        log("UI", "Recovered theme color from local storage:", savedColor);
+        log("UI", "Recovered theme color:", savedColor);
     }
 
-    // 2. RECOVER DEVELOPER MODE STATE
+    // ===============================
+    // DEV MODE INIT
+    // ===============================
     const devToggle = document.getElementById("dev-toggle");
+
     if (devToggle) {
         devToggle.checked = !!window.DEV_MODE;
-        log("UI", "Initialized developer mode toggle state to:", window.DEV_MODE);
+        log("UI", "Dev mode initialized:", window.DEV_MODE);
     }
 
+    // ===============================
+    // DARK MODE INIT
+    // ===============================
+    const darkToggle = document.getElementById("dark-mode-toggle");
+
+    const savedTheme = localStorage.getItem("theme");
+    const isDark = savedTheme === "dark";
+
+    if (isDark) {
+        document.body.classList.add("dark");
+    }
+
+    if (darkToggle) {
+        darkToggle.checked = isDark;
+    }
+
+    // ===============================
+    // SETTINGS ELEMENTS
+    // ===============================
     const settingsBtn = document.getElementById("settings-btn");
     const overlay = document.getElementById("settings-overlay");
     const closeBtn = document.getElementById("close-settings");
     const colors = document.querySelectorAll(".color-option");
 
-    // Open/Close Settings Panel
+    // ===============================
+    // OPEN / CLOSE SETTINGS
+    // ===============================
     settingsBtn?.addEventListener("click", () => {
-        if (overlay) overlay.style.display = "flex";
+        overlay.style.display = "flex";
     });
 
     closeBtn?.addEventListener("click", () => {
-        if (overlay) overlay.style.display = "none";
+        overlay.style.display = "none";
     });
 
     overlay?.addEventListener("click", (e) => {
-        if (e.target === overlay) overlay.style.display = "none";
+        if (e.target === overlay) {
+            overlay.style.display = "none";
+        }
     });
 
-    // Developer mode toggle
+    // ===============================
+    // DEV MODE TOGGLE
+    // ===============================
     devToggle?.addEventListener("change", (e) => {
         window.setDevMode(e.target.checked);
     });
 
-    // Theme color selection
+    // ===============================
+    // DARK MODE TOGGLE
+    // ===============================
+    darkToggle?.addEventListener("change", (e) => {
+        const dark = e.target.checked;
+
+        document.body.classList.toggle("dark", dark);
+        localStorage.setItem("theme", dark ? "dark" : "light");
+
+        log("UI", "Dark mode:", dark ? "enabled" : "disabled");
+    });
+
+    // ===============================
+    // COLOR PICKER
+    // ===============================
     colors.forEach(c => {
         c.addEventListener("click", async () => {
             const color = c.dataset.color;
@@ -52,11 +97,11 @@ function setupUI() {
             localStorage.setItem("myColor", color);
             document.documentElement.style.setProperty("--my-msg-color", color);
 
-            log("UI", "Local style color altered to:", color);
+            log("UI", "Color changed:", color);
 
             // cloud sync
             if (window.displayName && typeof client !== "undefined") {
-                log("UI", "Syncing theme color choices to the cloud...");
+                log("UI", "Syncing color to Supabase...");
 
                 const { error } = await client
                     .from("profiles")
@@ -64,28 +109,34 @@ function setupUI() {
                     .eq("username", window.displayName);
 
                 if (error) {
-                    log("ERROR", "Supabase profile sync failed: " + error.message);
+                    log("ERROR", "Supabase sync failed:", error.message);
                 } else {
-                    log("UI", "Theme color synced cleanly to Supabase.");
+                    log("UI", "Color synced successfully.");
                 }
             }
         });
     });
 
-    // Button click animations
+    // ===============================
+    // BUTTON PRESS ANIMATION
+    // ===============================
     document.querySelectorAll("button").forEach(btn => {
         btn.addEventListener("mousedown", () => {
             btn.style.transform = "scale(0.96)";
         });
+
         btn.addEventListener("mouseup", () => {
             btn.style.transform = "scale(1)";
         });
+
         btn.addEventListener("mouseleave", () => {
             btn.style.transform = "scale(1)";
         });
     });
 
-    // Start realtime sync
+    // ===============================
+    // REALTIME COLOR SYNC (SUPABASE)
+    // ===============================
     setupColorSubscription();
 
     log("UI", "setupUI COMPLETED");
@@ -119,10 +170,10 @@ function setupColorSubscription() {
                 localStorage.setItem("myColor", newColor);
                 document.documentElement.style.setProperty("--my-msg-color", newColor);
 
-                log("UI", "Live color update received:", newColor);
+                log("UI", "Live color update:", newColor);
             }
         )
         .subscribe();
 
-    log("UI", "Subscribed to live color updates");
+    log("UI", "Subscribed to color updates");
 }
