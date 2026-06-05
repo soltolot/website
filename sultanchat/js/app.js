@@ -4,14 +4,6 @@
 
 log("DEBUG", "APP JS LOADED");
 
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/service-worker.js")
-            .then(() => log("SW registered"))
-            .catch(err => log("SW failed:", err));
-    });
-}
-
 let appStarted = false;
 
 // --------------------------------------------------
