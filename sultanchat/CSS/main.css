@@ -1,5 +1,5 @@
 /* ==================================================
-   🎨 THEME VARIABLES (LIGHT MODE DEFAULT)
+   🎨 ROOT THEME VARIABLES (LIGHT MODE)
 ================================================== */
 :root {
     --accent: #E65100;
@@ -10,19 +10,20 @@
 
     --card: #FFFFFF;
     --text: #222222;
-    --muted: #666666;
-
-    --chat: #FFF9F0;
-    --input: #FFF4E0;
     --border: #FFBB66;
+
+    --chat-bg: #FFF9F0;
+
+    --input-bg: #FFF4E0;
 
     --status-bg: #FFEDD5;
 
-    --bubble-user: var(--accent);
+    --my-msg: #E65100;
+    --other-msg: #546E7A;
 }
 
 /* ==================================================
-   🌙 DARK MODE (BALANCED — NOT TOO BLACK)
+   🌙 DARK MODE
 ================================================== */
 body.dark {
     --accent: #E05A00;
@@ -33,19 +34,20 @@ body.dark {
 
     --card: #2A241F;
     --text: #F2F2F2;
-    --muted: #B5B5B5;
-
-    --chat: #201B17;
-    --input: #2B2520;
     --border: #3B322C;
+
+    --chat-bg: #201B17;
+
+    --input-bg: #2B2520;
 
     --status-bg: #2A1A10;
 
-    --bubble-user: #E05A00;
+    --my-msg: #E05A00;
+    --other-msg: #4B5563;
 }
 
 /* ==================================================
-   🌍 GLOBAL LAYOUT
+   🌍 GLOBAL
 ================================================== */
 body {
     margin: 0;
@@ -61,7 +63,7 @@ body {
 }
 
 /* ==================================================
-   🧱 MAIN CONTAINER
+   🧱 CONTAINER
 ================================================== */
 .container {
     max-width: 420px;
@@ -85,7 +87,7 @@ body {
     height: 380px;
     overflow-y: auto;
 
-    background: var(--chat);
+    background: var(--chat-bg);
     border: 1px solid var(--border);
 
     padding: 15px;
@@ -99,26 +101,38 @@ body {
 }
 
 /* ==================================================
-   💭 MESSAGE BUBBLES
+   💭 MESSAGE SYSTEM
 ================================================== */
+
+/* base message = structure only */
 .msg {
     padding: 12px;
     border-radius: 12px;
 
     width: 100%;
     box-sizing: border-box;
+
     word-break: break-word;
 
     color: white;
 
-    background: var(--bubble-user);
-
     box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+
     transition: transform 0.2s ease, background 0.2s ease;
 }
 
 .msg:hover {
     transform: translateY(-1px);
+}
+
+/* 👤 YOUR MESSAGE */
+.my-msg {
+    background: var(--my-msg);
+}
+
+/* 👥 OTHER USER */
+.other-msg {
+    background: var(--other-msg);
 }
 
 /* ==================================================
@@ -152,7 +166,7 @@ input {
     flex: 1;
     padding: 12px;
 
-    background: var(--input);
+    background: var(--input-bg);
     border: 2px solid var(--border);
 
     border-radius: 10px;
