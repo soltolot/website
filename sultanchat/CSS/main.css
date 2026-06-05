@@ -1,42 +1,77 @@
 :root {
-    --my-msg-color: #FF6200; /* Fallback baseline */
+    --accent: #E65100;
+    --accent-hover: #DC4D00;
+
+    --bg: #FFF8F0;
+    --bg-2: #FFEDD5;
+    --card: white;
+    --text: #222;
+    --muted: #666;
+
+    --chat-bg: #FFF9F0;
+    --input-bg: #FFF4E0;
+    --border: #FFBB66;
+
+    --system-bg: #FFEDD5;
 }
 
+/* 🌙 DARK MODE VARIABLES */
+body.dark {
+    --accent: #E05A00;
+    --accent-hover: #F06A12;
+
+    --bg: #1A1A1A;
+    --bg-2: #222222;
+    --card: #2A241F;
+    --text: #F2F2F2;
+    --muted: #B5B5B5;
+
+    --chat-bg: #201B17;
+    --input-bg: #2B2520;
+    --border: #3B322C;
+
+    --system-bg: #2A1A10;
+}
+
+/* 🌍 GLOBAL */
 body {
     font-family: sans-serif;
-    background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
+    background: linear-gradient(135deg, var(--bg), var(--bg-2));
     margin: 0;
     padding: 20px;
     min-height: 100vh;
+    color: var(--text);
+    transition: background 0.25s ease, color 0.25s ease;
 }
 
-/* YOUR ORIGINAL CARD STYLE */
+/* 🧱 CONTAINER */
 .container {
     max-width: 420px;
     margin: auto;
-    background: white;
+    background: var(--card);
     padding: 25px;
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
-    border: 2px solid #FFBB66;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    border: 2px solid var(--border);
+    transition: all 0.25s ease;
 }
 
-/* CHAT AREA WINDOW */
+/* 💬 CHAT */
 #chat {
     height: 380px;
     overflow-y: auto;
-    background: #FFF9F0;
+    background: var(--chat-bg);
     padding: 15px;
     border-radius: 15px;
-    border: 1px solid #FFDDAA;
+    border: 1px solid var(--border);
     margin-bottom: 10px;
-    
+
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-/* BASE BUBBLE CLASS (Fills workspace exactly like your interactive buttons layout width) */
+/* 💭 MESSAGE BUBBLES */
 .msg {
     color: white;
     padding: 12px;
@@ -45,49 +80,38 @@ body {
     font-size: 15px;
     box-sizing: border-box;
 
-    /* Configuration: Fills the entire box box container width minus structural padding padding offset */
-    width: calc(100% - 4px);
-    max-width: 100%;
-    
-    /* Dynamically receives background shades straight from JavaScript logic variables! */
+    width: 100%;
     background-color: var(--bubble-color, #546E7A);
-    
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
     transition: background-color 0.2s ease;
 }
 
-/* Make inline usernames stand out */
-.msg strong {
-    margin-right: 4px;
-    font-weight: bold;
-}
-
-/* USER'S OWN PERSONAL MESSAGE BUBBLE SPECIFICS */
+/* 👤 USER MESSAGES */
 .my-msg {
-    /* Uses color selected by user */
     box-shadow: 0 3px 10px rgba(230, 81, 0, 0.15);
 }
 
-/* OTHER USER MESSAGE BUBBLE SPECIFICS */
+/* 👥 OTHER MESSAGES */
 .other-msg {
-    /* Uses color fetched from their profile data */
-    opacity: 0.95; 
+    opacity: 0.95;
 }
 
-/* STATUS BAR */
+/* 📢 STATUS */
 #status, .status {
     padding: 10px;
-    background: #FFEDD5;
-    color: #E85D04;
+    background: var(--system-bg);
+    color: var(--accent);
     border-radius: 10px;
     text-align: center;
     font-weight: bold;
     font-size: 14px;
     width: 100%;
     box-sizing: border-box;
+    border: 1px solid var(--border);
 }
-    
-/* INPUT AREA ROW LAYOUT */
+
+/* ⌨️ INPUT ROW */
 .send-area {
     display: flex;
     gap: 8px;
@@ -97,60 +121,54 @@ body {
 input {
     flex: 1;
     padding: 12px;
-    background: #FFF4E0;
-    border: 2px solid #FFBB66;
+    background: var(--input-bg);
+    border: 2px solid var(--border);
     border-radius: 10px;
     font-size: 15px;
     outline: none;
+    color: var(--text);
 }
 
+/* 🔘 BUTTON */
 button {
     padding: 12px 14px;
     font-size: 14px;
     font-weight: bold;
     color: white;
-    background: #E65100;
+    background: var(--accent);
     border: none;
     border-radius: 10px;
     cursor: pointer;
 
-    transition:
-        background 0.2s ease,
-        transform 0.12s ease,
-        box-shadow 0.2s ease;
-
-    box-shadow:
-        0 4px 12px rgba(230, 81, 0, 0.25);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 button:hover {
-    background: #DC4D00;
+    background: var(--accent-hover);
     transform: translateY(-2px);
-    box-shadow:
-        0 6px 16px rgba(230, 81, 0, 0.35);
 }
 
 button:active {
     transform: scale(0.95);
-    box-shadow:
-        0 2px 8px rgba(230, 81, 0, 0.2);
 }
 
-/* SETTINGS BUTTON FIXED CORNER PACKING */
+/* ⚙️ SETTINGS BUTTON */
 #settings-btn {
     position: fixed;
     top: 15px;
     right: 15px;
     font-size: 22px;
-    background: white;
+    background: var(--card);
     border: none;
     border-radius: 12px;
     padding: 8px 12px;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    color: var(--text);
 }
 
-/* SETTINGS MODAL LAYERS */
+/* 🪟 OVERLAY */
 #settings-overlay {
     position: fixed;
     inset: 0;
@@ -161,16 +179,18 @@ button:active {
     z-index: 999;
 }
 
+/* 🧩 SETTINGS WINDOW */
 #settings-window {
-    background: white;
+    background: var(--card);
     padding: 20px;
     border-radius: 16px;
     width: 90%;
     max-width: 360px;
     text-align: center;
+    color: var(--text);
 }
 
-/* 15 COLOR PALETTE BUTTONS */
+/* 🎨 COLOR OPTIONS */
 .color-option {
     width: 28px;
     height: 28px;
@@ -182,16 +202,16 @@ button:active {
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-/* SYSTEM ERROR AND BACKEND OUTPUT LINES */
+/* 🚨 SYSTEM MESSAGES */
 .system-msg {
-    background: #B00020;
+    background: #3A0F14;
     color: white;
     font-family: monospace;
-    border-left: 5px solid #ff4d6d;
+    border-left: 5px solid #FF4D6D;
     padding: 10px;
     border-radius: 10px;
     white-space: pre-wrap;
     overflow-x: auto;
-    width: calc(100% - 16px);
+    width: 100%;
     margin-bottom: 8px;
 }
