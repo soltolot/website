@@ -1,155 +1,93 @@
-/* ==================================================
-   🎨 ROOT THEME VARIABLES (LIGHT MODE)
-================================================== */
 :root {
-    --accent: #E65100;
-    --accent-hover: #DC4D00;
-
-    --bg: #FFF8F0;
-    --bg2: #FFEDD5;
-
-    --card: #FFFFFF;
-    --text: #222222;
-    --border: #FFBB66;
-
-    --chat-bg: #FFF9F0;
-
-    --input-bg: #FFF4E0;
-
-    --status-bg: #FFEDD5;
-
-    --my-msg-color: #E65100;
-    --other-msg: #546E7A;
+    --my-msg-color: #FF6200; /* Fallback baseline */
 }
 
-/* ==================================================
-   🌙 DARK MODE
-================================================== */
-body.dark {
-    --accent: #E05A00;
-    --accent-hover: #F06A12;
-
-    --bg: #1A1A1A;
-    --bg2: #222222;
-
-    --card: #2A241F;
-    --text: #F2F2F2;
-    --border: #3B322C;
-
-    --chat-bg: #201B17;
-
-    --input-bg: #2B2520;
-
-    --status-bg: #2A1A10;
-
-    --my-msg-color: #E05A00;
-    --other-msg: #4B5563;
-}
-
-/* ==================================================
-   🌍 GLOBAL
-================================================== */
 body {
+    font-family: sans-serif;
+    background: linear-gradient(135deg, #FFF8F0, #FFEDD5);
     margin: 0;
     padding: 20px;
     min-height: 100vh;
-
-    font-family: sans-serif;
-
-    background: linear-gradient(135deg, var(--bg), var(--bg2));
-    color: var(--text);
-
-    transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* ==================================================
-   🧱 CONTAINER
-================================================== */
+/* YOUR ORIGINAL CARD STYLE */
 .container {
     max-width: 420px;
     margin: auto;
-
-    background: var(--card);
+    background: white;
     padding: 25px;
-
     border-radius: 20px;
-    border: 2px solid var(--border);
-
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-
-    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(255, 140, 0, 0.15);
+    border: 2px solid #FFBB66;
 }
 
-/* ==================================================
-   💬 CHAT WINDOW
-================================================== */
+/* CHAT AREA WINDOW */
 #chat {
     height: 380px;
     overflow-y: auto;
-
-    background: var(--chat-bg);
-    border: 1px solid var(--border);
-
+    background: #FFF9F0;
     padding: 15px;
     border-radius: 15px;
-
+    border: 1px solid #FFDDAA;
+    margin-bottom: 10px;
+    
     display: flex;
     flex-direction: column;
     gap: 8px;
-
-    transition: background 0.3s ease;
 }
 
-/* ==================================================
-   💭 MESSAGE SYSTEM
-================================================== */
-
-/* base message = structure only */
+/* BASE BUBBLE CLASS (Fills workspace exactly like your interactive buttons layout width) */
 .msg {
+    color: white;
     padding: 12px;
     border-radius: 12px;
-
-    width: 100%;
+    word-break: break-word;
+    font-size: 15px;
     box-sizing: border-box;
 
-    word-break: break-word;
-
-    color: white;
-
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-
-    transition: transform 0.2s ease, background 0.2s ease;
+    /* Configuration: Fills the entire box box container width minus structural padding padding offset */
+    width: calc(100% - 4px);
+    max-width: 100%;
+    
+    /* Dynamically receives background shades straight from JavaScript logic variables! */
+    background-color: var(--bubble-color, #546E7A);
+    
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.2s ease;
 }
 
-.msg:hover {
-    transform: translateY(-1px);
+/* Make inline usernames stand out */
+.msg strong {
+    margin-right: 4px;
+    font-weight: bold;
 }
 
-/* 👤 YOUR MESSAGE */
-.msg {
-    background: var(--bubble-color);
+/* USER'S OWN PERSONAL MESSAGE BUBBLE SPECIFICS */
+.my-msg {
+    /* Uses color selected by user */
+    box-shadow: 0 3px 10px rgba(230, 81, 0, 0.15);
 }
-/* ==================================================
-   📡 STATUS BAR
-================================================== */
-#status {
-    margin-top: 10px;
 
+/* OTHER USER MESSAGE BUBBLE SPECIFICS */
+.other-msg {
+    /* Uses color fetched from their profile data */
+    opacity: 0.95; 
+}
+
+/* STATUS BAR */
+#status, .status {
     padding: 10px;
+    background: #FFEDD5;
+    color: #E85D04;
     border-radius: 10px;
-
     text-align: center;
     font-weight: bold;
-
-    background: var(--status-bg);
-    color: var(--accent);
-
-    border: 1px solid var(--border);
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
 }
-
-/* ==================================================
-   ⌨️ INPUT AREA
-================================================== */
+    
+/* INPUT AREA ROW LAYOUT */
 .send-area {
     display: flex;
     gap: 8px;
@@ -159,106 +97,101 @@ body {
 input {
     flex: 1;
     padding: 12px;
-
-    background: var(--input-bg);
-    border: 2px solid var(--border);
-
+    background: #FFF4E0;
+    border: 2px solid #FFBB66;
     border-radius: 10px;
+    font-size: 15px;
     outline: none;
-
-    color: var(--text);
 }
 
-/* ==================================================
-   🔘 BUTTONS
-================================================== */
 button {
     padding: 12px 14px;
-
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    background: #E65100;
     border: none;
     border-radius: 10px;
-
     cursor: pointer;
 
-    background: var(--accent);
-    color: white;
+    transition:
+        background 0.2s ease,
+        transform 0.12s ease,
+        box-shadow 0.2s ease;
 
-    transition: transform 0.2s ease, background 0.2s ease;
+    box-shadow:
+        0 4px 12px rgba(230, 81, 0, 0.25);
 }
 
 button:hover {
-    background: var(--accent-hover);
+    background: #DC4D00;
     transform: translateY(-2px);
+    box-shadow:
+        0 6px 16px rgba(230, 81, 0, 0.35);
 }
 
 button:active {
-    transform: scale(0.96);
+    transform: scale(0.95);
+    box-shadow:
+        0 2px 8px rgba(230, 81, 0, 0.2);
 }
 
-/* ==================================================
-   ⚙️ SETTINGS BUTTON
-================================================== */
+/* SETTINGS BUTTON FIXED CORNER PACKING */
 #settings-btn {
     position: fixed;
     top: 15px;
     right: 15px;
-
-    padding: 8px 12px;
-
-    border-radius: 12px;
+    font-size: 22px;
+    background: white;
     border: none;
-
-    background: var(--card);
-    color: var(--text);
-
+    border-radius: 12px;
+    padding: 8px 12px;
     cursor: pointer;
-
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-/* ==================================================
-   🪟 SETTINGS OVERLAY
-================================================== */
+/* SETTINGS MODAL LAYERS */
 #settings-overlay {
     position: fixed;
     inset: 0;
-
-    background: rgba(0,0,0,0.5);
-
+    background: rgba(0,0,0,0.55);
     display: none;
     justify-content: center;
     align-items: center;
+    z-index: 999;
 }
 
-/* ==================================================
-   🧩 SETTINGS WINDOW
-================================================== */
 #settings-window {
+    background: white;
+    padding: 20px;
+    border-radius: 16px;
     width: 90%;
     max-width: 360px;
-
-    padding: 20px;
-
-    border-radius: 16px;
-
-    background: var(--card);
-    color: var(--text);
+    text-align: center;
 }
 
-/* ==================================================
-   🎨 COLOR PICKER
-================================================== */
+/* 15 COLOR PALETTE BUTTONS */
 .color-option {
     width: 28px;
     height: 28px;
-
     border-radius: 8px;
-
     display: inline-block;
     margin: 4px;
-
     cursor: pointer;
-
     border: 2px solid white;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* SYSTEM ERROR AND BACKEND OUTPUT LINES */
+.system-msg {
+    background: #B00020;
+    color: white;
+    font-family: monospace;
+    border-left: 5px solid #ff4d6d;
+    padding: 10px;
+    border-radius: 10px;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    width: calc(100% - 16px);
+    margin-bottom: 8px;
 }
