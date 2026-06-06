@@ -126,15 +126,9 @@ body {
 }
 
 /* 👤 YOUR MESSAGE */
-.my-msg {
-    background: var(--my-msg-color);
+.msg {
+    background: var(--bubble-color);
 }
-
-/* 👥 OTHER USER */
-.other-msg {
-    background: var(--other-msg);
-}
-
 /* ==================================================
    📡 STATUS BAR
 ================================================== */
