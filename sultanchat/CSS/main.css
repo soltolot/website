@@ -18,7 +18,7 @@
 
     --status-bg: #FFEDD5;
 
-    --my-msg: #E65100;
+    --my-msg-color: #E65100;
     --other-msg: #546E7A;
 }
 
@@ -42,7 +42,7 @@ body.dark {
 
     --status-bg: #2A1A10;
 
-    --my-msg: #E05A00;
+    --my-msg-color: #E05A00;
     --other-msg: #4B5563;
 }
 
@@ -127,7 +127,7 @@ body {
 
 /* 👤 YOUR MESSAGE */
 .my-msg {
-    background: var(--my-msg);
+    background: var(--my-msg-color);
 }
 
 /* 👥 OTHER USER */
