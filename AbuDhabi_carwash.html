@@ -17,35 +17,69 @@
       margin-top: 50px;
     }
 
+    button {
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      background-color: #1976D2;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+
+      transition:
+        background-color 0.2s ease,
+        transform 0.12s ease,
+        box-shadow 0.2s ease;
+
+      box-shadow:
+        0 4px 12px rgba(25, 118, 210, 0.25);
+    }
+
+    button:hover {
+      background-color: #1565C0;
+      transform: translateY(-2px);
+      box-shadow:
+        0 6px 16px rgba(25, 118, 210, 0.35);
+    }
+
+    button:active {
+      transform: scale(0.95);
+      box-shadow:
+        0 2px 8px rgba(25, 118, 210, 0.2);
+    }
   </style>
 </head>
 
 <body>
-  <h5><a href="https://soltolot.github.io/website/reviews.html">Reviews</a></h5>
-  <h5><a href="https://soltolot.github.io/website/prices.html">Packages and Prices</a></h5>
+
+  <button onclick="window.location.href='reviews.html'">
+    Reviews
+  </button>
+
+  <button onclick="window.location.href='prices.html'">
+    Packages & Prices
+  </button>
 
   <h1>Abu Dhabi Car Wash</h1>
-  <h3>🕒 Open 8AM - 11PM</h3>
 
+  <h3>🕒 Open 8AM - 11PM</h3>
 
   <h2>Contact Us</h2>
 
-  <p>
-    📞
-    <a href="https://www.example.com">WhatsApp Account</a>
-  </p>
+  <button onclick="window.location.href='https://wa.me/971501234567'">
+    WhatsApp Account
+  </button>
 
-  <p>
-    📍 Location:
-    <a href="https://www.google.com/maps/search/?api=1&query=Abu+Dhabi,UAE">
-      Abu Dhabi, UAE
-    </a>
-  </p>
-
+  <button onclick="window.location.href='https://www.google.com/maps/search/?api=1&query=Abu+Dhabi,UAE'">
+    Google Maps
+  </button>
 
   <img src="carawash.webp" class="carwash" width="500">
-  
-  <p>Made By <strong>Sultan Alawad</strong>, <strong>Khalifa City A</strong></p>
-  
+
+  <p>
+    Made By <strong>Sultan Alawad</strong>, <strong>Khalifa City A</strong>
+  </p>
+
 </body>
 </html>
