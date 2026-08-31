@@ -15,7 +15,7 @@
       margin: 20px;
     }
 
-        button {
+    button {
       padding: 12px 14px;
       font-size: 14px;
       font-weight: bold;
@@ -48,10 +48,15 @@
     }
 
     .reviews {
-        display: flex;
-        align-items: center;
+      display: flex;
+      align-items: flex-start;
+      gap: 30px;
     }
 
+    .review {
+      display: flex;
+      flex-direction: column;
+    }
   </style>
 </head>
 
@@ -60,14 +65,20 @@
   <button onclick="window.location.href='AbuDhabi_carwash.html'">
     Back
   </button>
+
   <div class="reviews">
-  <h3>⭐⭐⭐⭐⭐ Ahmed: "My car looked brand new!"</h3>
 
-  <img src="car.jpeg" class="car" width="500">
+    <div class="review">
+      <h3>⭐⭐⭐⭐⭐ Ahmed: "My car looked brand new!"</h3>
+      <img src="car.jpeg" class="car" width="500">
+    </div>
 
-  <h3>⭐⭐⭐⭐ Abdullah: "Fast and affordable car wash."</h3>
+    <div class="review">
+      <h3>⭐⭐⭐⭐ Abdullah: "Fast and affordable car wash."</h3>
+      <img src="car1.jpeg" class="car" width="500">
+    </div>
 
-  <img src="car1.jpeg" class="car" width="500">
   </div>
+
 </body>
 </html>
