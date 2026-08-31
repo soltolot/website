@@ -1,21 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       background-color: white;
       font-family: Arial;
       text-align: center;
+      margin: 20px;
     }
 
     .carwash {
       display: block;
       width: 500px;
       max-width: 90%;
+      height: auto;
       margin: 30px auto;
       border-radius: 10px;
-    }   
-    
+    }
+
     p {
       margin-top: 50px;
     }
@@ -51,6 +55,32 @@
       box-shadow:
         0 2px 8px rgba(25, 118, 210, 0.2);
     }
+
+    @media (max-width: 600px) {
+      body {
+        margin: 10px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      h2 {
+        font-size: 22px;
+      }
+
+      h3 {
+        font-size: 18px;
+      }
+
+      button {
+        margin: 4px;
+      }
+
+      p {
+        margin-top: 30px;
+      }
+    }
   </style>
 </head>
 
@@ -68,8 +98,7 @@
 
   <h3>🕒 Open 8AM - 11PM</h3>
 
-  <img src="carawash.webp" class="carwash" width="500">
-
+  <img src="carawash.webp" class="carwash">
 
   <h2>Contact Us</h2>
 
@@ -80,7 +109,6 @@
   <button onclick="window.location.href='https://www.google.com/maps/search/?api=1&query=Abu+Dhabi,UAE'">
     Google Maps
   </button>
-
 
   <p>
     Made By <strong>Sultan Alawad</strong>, <strong>Khalifa City A</strong>
