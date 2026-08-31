@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       background-color: white;
       font-family: Arial;
+      margin: 20px;
     }
 
     .car {
+      width: 500px;
+      max-width: 100%;
+      height: auto;
       border-radius: 10px;
     }
 
@@ -49,14 +55,38 @@
 
     .reviews {
       display: flex;
+      justify-content: center;
       align-items: flex-start;
       gap: 30px;
+      flex-wrap: wrap;
     }
 
     .review {
       display: flex;
       flex-direction: column;
       align-items: center;
+      width: 500px;
+      max-width: 100%;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        margin: 10px;
+      }
+
+      h3 {
+        margin: 10px;
+        font-size: 18px;
+      }
+
+      .reviews {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .review {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -71,12 +101,12 @@
 
     <div class="review">
       <h3>⭐⭐⭐⭐⭐ Ahmed: "My car looked brand new!"</h3>
-      <img src="car.jpeg" class="car" width="500">
+      <img src="car.jpeg" class="car">
     </div>
 
     <div class="review">
       <h3>⭐⭐⭐⭐ Abdullah: "Fast and affordable car wash."</h3>
-      <img src="car1.jpeg" class="car" width="300">
+      <img src="car1.jpeg" class="car">
     </div>
 
   </div>
