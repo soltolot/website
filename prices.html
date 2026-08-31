@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      background-color: white;
+      font-family: Arial;
+      text-align: center;
+      margin: 20px;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+    }
+
+    .prices {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .package {
+      padding: 25px;
+      border: 2px solid #1976D2;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15);
+    }
+
+    .package h2 {
+      color: #1976D2;
+    }
+
+    .price {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .package p {
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px 14px;
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      background-color: #1976D2;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+
+      transition:
+        background-color 0.2s ease,
+        transform 0.12s ease,
+        box-shadow 0.2s ease;
+
+      box-shadow:
+        0 4px 12px rgba(25, 118, 210, 0.25);
+    }
+
+    button:hover {
+      background-color: #1565C0;
+      transform: translateY(-2px);
+      box-shadow:
+        0 6px 16px rgba(25, 118, 210, 0.35);
+    }
+
+    button:active {
+      transform: scale(0.95);
+      box-shadow:
+        0 2px 8px rgba(25, 118, 210, 0.2);
+    }
+  </style>
+</head>
+
+<body>
+
+  <button onclick="window.location.href='AbuDhabi_carwash.html'">
+    Back
+  </button>
+
+  <h1>Packages & Prices</h1>
+
+  <div class="prices">
+
+    <div class="package">
+      <h2>Basic Wash</h2>
+      <p class="price">30 AED</p>
+      <p>Exterior wash</p>
+      <p>Car drying</p>
+      <p>Wheel cleaning</p>
+    </div>
+
+    <div class="package">
+      <h2>Premium Wash</h2>
+      <p class="price">60 AED</p>
+      <p>Exterior wash</p>
+      <p>Interior cleaning</p>
+      <p>Wheel cleaning</p>
+      <p>Dashboard cleaning</p>
+    </div>
+
+    <div class="package">
+      <h2>Full Detailing</h2>
+      <p class="price">150 AED</p>
+      <p>Exterior wash</p>
+      <p>Full interior cleaning</p>
+      <p>Wax & polish</p>
+      <p>Deep cleaning</p>
+    </div>
+
+  </div>
+
+</body>
+</html>
