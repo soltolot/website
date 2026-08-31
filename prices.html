@@ -15,54 +15,49 @@ h1 {
   margin-bottom: 30px;
 }
 
-.prices {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-
 .package {
   padding: 25px;
-  background-color: #1976D2;
+  background: linear-gradient(145deg, #2196F3, #1565C0);
   color: white;
+
   border: 2px solid #0D47A1;
-  border-radius: 15px;
+  border-radius: 18px;
 
   box-shadow:
-    0 6px 15px rgba(0, 0, 0, 0.18);
+    0 8px 20px rgba(13, 71, 161, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 
   transition:
-    transform 0.15s ease,
+    transform 0.2s ease,
     box-shadow 0.2s ease;
 }
 
 .package:hover {
-  transform: translateY(-7px);
+  transform: translateY(-8px) scale(1.02);
 
   box-shadow:
-    0 12px 25px rgba(0, 0, 0, 0.25);
+    0 15px 30px rgba(13, 71, 161, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .package h2 {
+  color: white;
   margin-top: 0;
-  font-size: 24px;
 }
 
 .price {
   font-size: 32px;
   font-weight: bold;
-  margin: 15px 0;
+  color: white;
 }
 
 .package p:not(.price) {
   padding: 8px;
-  margin: 5px 0;
-  background-color: rgba(255, 255, 255, 0.12);
-  border-radius: 6px;
-}
-    
+  margin: 6px 0;
+
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+}    
 .package p {
   font-size: 16px;
 }
